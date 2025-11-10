@@ -28,39 +28,6 @@
             margin-bottom: 10px;
         }
         
-        .lang-selector {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .lang-btn {
-            display: inline-block;
-            padding: 8px 16px;
-            margin: 5px;
-            background: #fff;
-            color: #000;
-            border: 1px solid #000;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .lang-btn:hover {
-            background: #f0f0f0;
-        }
-        
-        .lang-btn.active {
-            background: #000;
-            color: #fff;
-        }
-        
-        .content {
-            display: none;
-        }
-        
-        .content.active {
-            display: block;
-        }
-        
         h2 {
             color: #000;
             margin-top: 25px;
@@ -108,36 +75,13 @@
             color: #666;
             font-size: 12px;
         }
-        
-        /* RTL support for Arabic */
-        .rtl {
-            direction: rtl;
-            text-align: right;
-        }
-        
-        .rtl ul {
-            margin-right: 30px;
-            margin-left: 0;
-        }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Music Box - Privacy Policy</h1>
-        <p>Politique de Confidentialité / Política de Privacidad / سياسة الخصوصية</p>
     </div>
-        
-        <div class="lang-selector">
-            <button class="lang-btn active" onclick="showLang('en')">English</button>
-            <button class="lang-btn" onclick="showLang('fr')">Français</button>
-            <button class="lang-btn" onclick="showLang('es')">Español</button>
-            <button class="lang-btn" onclick="showLang('ar')">العربية</button>
-        </div>
-        
-        <!-- English -->
-        <div id="en" class="content active">
-            
-            <h2>Introduction</h2>
+    <h2>Introduction</h2>
             <p>Music Box ("we", "our" or "the application") respects your privacy and is committed to protecting your personal data. This privacy policy informs you about how we collect, use, and protect your information when you use our music player application.</p>
             
             <h2>Information We Collect</h2>
@@ -202,179 +146,77 @@
             <p>We take reasonable measures to protect your data, but no transmission over the Internet is 100% secure. Your music data remains on your device and is never sent to our servers.</p>
             
             <h2>Children</h2>
-            <p>Music Box does not knowingly collect personal information from children under 13.</p>
-            
-            <div class="contact">
-                <h2>Contact</h2>
-                <p><strong>Email:</strong> synergydev2006@gmail.com</p>
-                <p><strong>Developer:</strong> SynergyDev</p>
-            </div>
-        </div>
-        
-        <!-- French -->
-        <div id="fr" class="content">
-            
-            <h2>Introduction</h2>
-            <p>Music Box ("nous", "notre" ou "l'application") respecte votre vie privée et s'engage à protéger vos données personnelles.</p>
-            
-            <h2>Informations que nous collectons</h2>
-            
-            <h3>Données locales</h3>
-            <ul>
-                <li><strong>Bibliothèque musicale :</strong> L'application accède à vos fichiers audio locaux. Ces données restent uniquement sur votre appareil.</li>
-                <li><strong>Métadonnées :</strong> Titres, artistes, albums, pochettes et autres informations.</li>
-                <li><strong>Préférences utilisateur :</strong> Vos playlists, favoris, historique d'écoute et paramètres.</li>
-                <li><strong>Pochettes personnalisées :</strong> Images que vous choisissez.</li>
-            </ul>
-            
-            <h3>Données de publicité</h3>
-            <p>L'application utilise Google AdMob. AdMob peut collecter :</p>
-            <ul>
-                <li>Identifiant publicitaire Android (AAID)</li>
-                <li>Adresse IP</li>
-                <li>Type d'appareil et système d'exploitation</li>
-                <li>Interactions avec les publicités</li>
-            </ul>
-            <p>Plus d'informations : <a href="https://policies.google.com/privacy" target="_blank">Politique Google</a></p>
-            
-            <h2>Utilisation de vos données</h2>
-            <ul>
-                <li><strong>Fonctionnement :</strong> Pour lire votre musique et gérer vos playlists.</li>
-                <li><strong>Amélioration :</strong> Pour corriger les bugs et améliorer les fonctionnalités.</li>
-                <li><strong>Publicités :</strong> AdMob peut afficher des publicités personnalisées.</li>
-            </ul>
-            
-            <h2>Stockage des données</h2>
-            <ul>
-                <li><strong>Stockage local uniquement :</strong> Toutes vos données restent sur votre appareil.</li>
-                <li><strong>Aucun serveur distant :</strong> Nous ne transférons pas vos données.</li>
-            </ul>
-            
-            <h2>Vos droits</h2>
-            <ul>
-                <li>Accéder à vos données (dans l'application)</li>
-                <li>Supprimer vos données (en désinstallant l'app)</li>
-                <li>Refuser les publicités personnalisées (Paramètres Android → Google → Annonces)</li>
-            </ul>
-            
-            <div class="contact">
-                <h2>Contact</h2>
-                <p><strong>Email :</strong> synergydev2006@gmail.com</p>
-                <p><strong>Développeur :</strong> SynergyDev</p>
-            </div>
-        </div>
-        
-        <!-- Spanish -->
-        <div id="es" class="content">
-            
-            <h2>Introducción</h2>
-            <p>Music Box respeta su privacidad y se compromete a proteger sus datos personales.</p>
-            
-            <h2>Información que recopilamos</h2>
-            
-            <h3>Datos locales</h3>
-            <ul>
-                <li><strong>Biblioteca musical:</strong> La aplicación accede a sus archivos de audio locales. Estos datos permanecen en su dispositivo.</li>
-                <li><strong>Metadatos:</strong> Títulos, artistas, álbumes, carátulas.</li>
-                <li><strong>Preferencias:</strong> Listas de reproducción, favoritos, historial.</li>
-            </ul>
-            
-            <h3>Datos de publicidad</h3>
-            <p>La aplicación utiliza Google AdMob. AdMob puede recopilar:</p>
-            <ul>
-                <li>ID de publicidad de Android (AAID)</li>
-                <li>Dirección IP</li>
-                <li>Tipo de dispositivo</li>
-                <li>Interacciones con anuncios</li>
-            </ul>
-            
-            <h2>Uso de sus datos</h2>
-            <ul>
-                <li><strong>Funcionamiento:</strong> Para reproducir música y gestionar listas.</li>
-                <li><strong>Mejora:</strong> Para corregir errores.</li>
-                <li><strong>Publicidad:</strong> Para mostrar anuncios relevantes.</li>
-            </ul>
-            
-            <h2>Sus derechos</h2>
-            <ul>
-                <li>Acceder a sus datos</li>
-                <li>Eliminar sus datos</li>
-                <li>Rechazar anuncios personalizados (Configuración Android → Google → Anuncios)</li>
-            </ul>
-            
-            <div class="contact">
-                <h2>Contacto</h2>
-                <p><strong>Email:</strong> synergydev2006@gmail.com</p>
-                <p><strong>Desarrollador:</strong> SynergyDev</p>
-            </div>
-        </div>
-        
-        <!-- Arabic -->
-        <div id="ar" class="content rtl">
-            
-            <h2>مقدمة</h2>
-            <p>يحترم تطبيق Music Box خصوصيتك ويلتزم بحماية بياناتك الشخصية.</p>
-            
-            <h2>المعلومات التي نجمعها</h2>
-            
-            <h3>البيانات المحلية</h3>
-            <ul>
-                <li><strong>مكتبة الموسيقى:</strong> يصل التطبيق إلى ملفات الصوت المحلية. تبقى هذه البيانات على جهازك فقط.</li>
-                <li><strong>البيانات الوصفية:</strong> العناوين والفنانين والألبومات والأغلفة.</li>
-                <li><strong>التفضيلات:</strong> قوائم التشغيل والمفضلات وسجل الاستماع.</li>
-            </ul>
-            
-            <h3>بيانات الإعلانات</h3>
-            <p>يستخدم التطبيق Google AdMob. قد يجمع AdMob:</p>
-            <ul>
-                <li>معرف الإعلانات على Android (AAID)</li>
-                <li>عنوان IP</li>
-                <li>نوع الجهاز ونظام التشغيل</li>
-                <li>التفاعلات مع الإعلانات</li>
-            </ul>
-            
-            <h2>كيف نستخدم بياناتك</h2>
-            <ul>
-                <li><strong>التشغيل:</strong> لتشغيل موسيقاك وإدارة قوائم التشغيل.</li>
-                <li><strong>التحسين:</strong> لإصلاح الأخطاء وتحسين الميزات.</li>
-                <li><strong>الإعلانات:</strong> لعرض إعلانات ذات صلة.</li>
-            </ul>
-            
-            <h2>حقوقك</h2>
-            <ul>
-                <li>الوصول إلى بياناتك</li>
-                <li>حذف بياناتك</li>
-                <li>رفض الإعلانات المخصصة (إعدادات Android ← Google ← الإعلانات)</li>
-            </ul>
-            
-            <div class="contact">
-                <h2>الاتصال</h2>
-                <p><strong>البريد الإلكتروني:</strong> synergydev2006@gmail.com</p>
-                <p><strong>المطور:</strong> SynergyDev</p>
-            </div>
-        </div>
-        
+            <p>Music Box does not knowingly collect personal information from children under 13. If you are a parent or guardian and discover that your child has provided us with personal information, please contact us and we will delete such information.</p>
+    
+    <h2>Third-Party Services</h2>
+    <p>This application uses third-party services that may collect information used to identify you:</p>
+    <ul>
+        <li><strong>Google AdMob:</strong> Displays advertisements. <a href="https://support.google.com/admob/answer/6128543" target="_blank">AdMob Privacy Policy</a></li>
+        <li><strong>Google Firebase Analytics:</strong> Collects anonymous usage statistics. <a href="https://firebase.google.com/support/privacy" target="_blank">Firebase Privacy Policy</a></li>
+        <li><strong>Google Play Services:</strong> Required for app functionality. <a href="https://policies.google.com/privacy" target="_blank">Google Privacy Policy</a></li>
+    </ul>
+    
+    <h2>Application Permissions</h2>
+    <p>Music Box requests the following permissions to function properly:</p>
+    <ul>
+        <li><strong>READ_EXTERNAL_STORAGE / READ_MEDIA_AUDIO:</strong> To access and play your music files stored on your device.</li>
+        <li><strong>INTERNET:</strong> To display advertisements and send anonymous analytics.</li>
+        <li><strong>ACCESS_NETWORK_STATE:</strong> To check internet connectivity for ads.</li>
+        <li><strong>MODIFY_AUDIO_SETTINGS:</strong> To access the system equalizer.</li>
+        <li><strong>FOREGROUND_SERVICE:</strong> To play music in the background when the app is minimized.</li>
+        <li><strong>REQUEST_IGNORE_BATTERY_OPTIMIZATIONS:</strong> To prevent the system from stopping music playback to save battery.</li>
+        <li><strong>POST_NOTIFICATIONS:</strong> To display playback controls in the notification area.</li>
+    </ul>
+    
+    <h2>Data Retention</h2>
+    <p>All your data (playlists, favorites, listening history, preferences) is stored locally on your device. This data is retained until you uninstall the application or manually delete it through the app settings. We do not store any of your data on remote servers.</p>
+    
+    <h2>Your Choices</h2>
+    <ul>
+        <li><strong>Advertising:</strong> You can opt out of personalized advertising by visiting your device's Settings → Google → Ads → Opt out of Ads Personalization.</li>
+        <li><strong>Analytics:</strong> Firebase Analytics collects anonymous data that cannot be disabled individually, but no personally identifiable information is collected.</li>
+        <li><strong>Permissions:</strong> You can revoke permissions at any time through Android Settings → Apps → Music Box → Permissions. Note that revoking storage permission will prevent the app from accessing your music.</li>
+    </ul>
+    
+    <h2>California Privacy Rights (CCPA)</h2>
+    <p>If you are a California resident, you have the right to:</p>
+    <ul>
+        <li>Know what personal information is collected about you</li>
+        <li>Know whether your personal information is sold or disclosed and to whom</li>
+        <li>Opt out of the sale of your personal information</li>
+        <li>Request deletion of your personal information</li>
+        <li>Not be discriminated against for exercising your privacy rights</li>
+    </ul>
+    <p><strong>Note:</strong> Music Box does not sell your personal information. All data remains on your device.</p>
+    
+    <h2>European Union Users (GDPR)</h2>
+    <p>If you are located in the European Union, you have the following rights under GDPR:</p>
+    <ul>
+        <li><strong>Right to Access:</strong> You can access your data directly within the app.</li>
+        <li><strong>Right to Rectification:</strong> You can modify your playlists and preferences in the app.</li>
+        <li><strong>Right to Erasure:</strong> You can delete your data by uninstalling the app or clearing app data.</li>
+        <li><strong>Right to Data Portability:</strong> Your playlists and preferences are stored locally and you can access them through file managers.</li>
+        <li><strong>Right to Object:</strong> You can object to personalized advertising through Android settings.</li>
+    </ul>
+    <p>Legal basis for processing: Legitimate interest (app functionality) and Consent (advertising).</p>
+    
+    <h2>International Data Transfers</h2>
+    <p>Your music and personal data remain on your device and are not transferred internationally. However, anonymous analytics data collected by Firebase may be processed by Google in countries outside your country of residence, including the United States.</p>
+    
+    <h2>Changes to This Policy</h2>
+    <p>We may update this privacy policy from time to time to reflect changes in our practices or for legal, operational, or regulatory reasons. Any changes will be posted on this page. We encourage you to review this policy periodically. Your continued use of Music Box after changes are posted constitutes your acceptance of the updated policy.</p>
+    
+    <h2>Do Not Track</h2>
+    <p>Music Box does not track users across third-party websites. However, our advertising partners (Google AdMob) may track users for advertising purposes. You can enable "Limit Ad Tracking" in your device settings to reduce tracking.</p>
+    
+    <div class="contact">
+        <h2>Contact</h2>
+        <p><strong>Email:</strong> synergydev006@gmail.com</p>
+        <p><strong>Developer:</strong> SynergyDev</p>
+    </div>
+    
     <div class="footer">
         <p>© 2025 Music Box by SynergyDev. All rights reserved.</p>
     </div>
-    </div>
-    
-    <script>
-        function showLang(lang) {
-            // Hide all content
-            const contents = document.querySelectorAll('.content');
-            contents.forEach(content => content.classList.remove('active'));
-            
-            // Remove active from all buttons
-            const buttons = document.querySelectorAll('.lang-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            
-            // Show selected content
-            document.getElementById(lang).classList.add('active');
-            
-            // Mark button as active
-            event.target.classList.add('active');
-        }
-    </script>
 </body>
 </html>
