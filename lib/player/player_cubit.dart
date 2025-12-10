@@ -809,6 +809,30 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     } catch (_) {}
   }
 
+  /// Remove multiple songs from the queue and allSongs by their IDs
+  void removeSongsById(List<int> ids) {
+    if (ids.isEmpty) return;
+    final idsSet = ids.toSet();
+    final newSongs = state.songs.where((s) => !idsSet.contains(s.id)).toList();
+    final newAllSongs = state.allSongs.where((s) => !idsSet.contains(s.id)).toList();
+    
+    // Adjust currentIndex if the current song was removed
+    int? newIndex = state.currentIndex;
+    if (newIndex != null && state.currentSongId != null && idsSet.contains(state.currentSongId!)) {
+      // Current song was deleted, reset to null or first available
+      newIndex = newSongs.isNotEmpty ? 0 : null;
+    } else if (newIndex != null && newIndex >= newSongs.length) {
+      newIndex = newSongs.isNotEmpty ? newSongs.length - 1 : null;
+    }
+    
+    emit(state.copyWith(
+      songs: newSongs, 
+      allSongs: newAllSongs,
+      currentIndex: newIndex,
+      currentSongId: newIndex != null && newSongs.isNotEmpty ? newSongs[newIndex].id : null,
+    ));
+  }
+
   // -----------------------------
   // Metadata overrides (persistence + helpers)
   // -----------------------------
