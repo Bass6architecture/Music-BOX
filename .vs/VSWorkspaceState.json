@@ -1,0 +1,15 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\android",
+    "\\android\\app",
+    "\\android\\app\\src\\main",
+    "\\android\\app\\src\\main\\java",
+    "\\android\\app\\src\\main\\java\\io",
+    "\\android\\app\\src\\main\\java\\io\\flutter",
+    "\\build\\app",
+    "\\build\\app\\kotlin"
+  ],
+  "SelectedNode": "\\android\\app\\build.gradle.kts",
+  "PreviewInSolutionExplorer": false
+}

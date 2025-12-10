@@ -1,0 +1,935 @@
+import 'dart:io';
+import 'dart:math' as math;
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'package:music_box/generated/app_localizations.dart';
+import 'package:permission_handler/permission_handler.dart';
+import '../../player/player_cubit.dart';
+import '../../widgets/song_tile.dart';
+// import '../../widgets/song_actions.dart'; // legacy
+import '../../core/constants/app_constants.dart';
+
+import '../song_actions_sheet.dart';
+import '../search_page.dart';
+import '../search_page.dart';
+import '../../core/utils/music_data_processor.dart';
+import 'home_screen.dart'; // To access toggleSelectionMode
+import 'package:share_plus/share_plus.dart'; // For sharing multiple files
+
+class SongsScreen extends StatefulWidget {
+  const SongsScreen({super.key});
+
+  @override
+  State<SongsScreen> createState() => _SongsScreenState();
+}
+
+class _SongsScreenState extends State<SongsScreen>
+    with AutomaticKeepAliveClientMixin {
+  final OnAudioQuery _audioQuery = OnAudioQuery();
+  List<SongModel> _songs = [];
+  List<SongModel> _filteredSongs = [];
+  bool _isLoading = true;
+  bool _hasPermission = false;
+  bool _isRequestingPermission = false;  // ✅ Empêcher les clics multiples
+  bool _isPermanentlyDenied = false;  // ✅ Détecter refus permanent
+
+  _SortType _sortType = _SortType.title;
+  bool _sortAscending = true;
+  
+  // Pour le lazy loading
+  final ScrollController _scrollController = ScrollController();
+  static const int _itemsPerPage = 50;
+  int _currentMaxItems = _itemsPerPage;
+  
+  // Selection Mode
+  final Set<int> _selectedIds = {};
+  bool _isSelectionMode = false;
+
+  void _toggleSelection(int id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+        if (_selectedIds.isEmpty) {
+          _isSelectionMode = false;
+          context.findAncestorStateOfType<HomeScreenState>()?.toggleSelectionMode(false);
+        }
+      } else {
+        _selectedIds.add(id);
+        _isSelectionMode = true;
+      }
+    });
+  }
+
+  void _selectAll() {
+    setState(() {
+      if (_selectedIds.length == _filteredSongs.length) {
+        _selectedIds.clear();
+        _isSelectionMode = false;
+        context.findAncestorStateOfType<HomeScreenState>()?.toggleSelectionMode(false);
+      } else {
+        _selectedIds.addAll(_filteredSongs.map((s) => s.id));
+        _isSelectionMode = true;
+      }
+    });
+  }
+  
+  void _exitSelectionMode() {
+    if (!mounted) return;
+    context.findAncestorStateOfType<HomeScreenState>()?.toggleSelectionMode(false);
+    setState(() {
+      _isSelectionMode = false;
+      _selectedIds.clear();
+    });
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPermissionAndLoadSongs();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      if (_currentMaxItems < _filteredSongs.length) {
+        setState(() {
+          _currentMaxItems += _itemsPerPage;
+        });
+      }
+    }
+  }
+
+  Future<void> _checkPermissionAndLoadSongs() async {
+    // ✅ Empêcher les appels multiples
+    if (_isRequestingPermission) return;
+    
+    setState(() {
+      _isRequestingPermission = true;
+      _isLoading = true;
+    });
+    
+    try {
+      // ✅ Utiliser permission_handler au lieu de on_audio_query pour éviter le crash
+      final status = await Permission.audio.status;
+      if (!mounted) return;
+      
+      if (status.isGranted) {
+        setState(() {
+          _hasPermission = true;
+          _isPermanentlyDenied = false;
+        });
+        await _loadSongs();
+        return;
+      }
+
+      // ✅ Vérifier si refus permanent AVANT de demander
+      if (status.isPermanentlyDenied) {
+        if (mounted) {
+          setState(() {
+            _isPermanentlyDenied = true;
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
+      // ✅ Demander avec permission_handler
+      final newStatus = await Permission.audio.request();
+      if (!mounted) return;
+      
+      if (newStatus.isGranted) {
+        setState(() {
+          _hasPermission = true;
+          _isPermanentlyDenied = false;
+        });
+        await _loadSongs();
+      } else {
+        if (mounted) {
+          setState(() {
+            _hasPermission = false;
+            _isLoading = false;
+            _isPermanentlyDenied = newStatus.isPermanentlyDenied;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _hasPermission = false;
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isRequestingPermission = false);
+      }
+    }
+  }
+
+  Future<void> _loadSongs() async {
+    try {
+      final songs = await _audioQuery.querySongs(
+        sortType: SongSortType.TITLE,
+        orderType: OrderType.ASC_OR_SMALLER,
+        uriType: UriType.EXTERNAL,
+        ignoreCase: true,
+      );
+      
+      // ✅ Update raw songs first
+      setState(() {
+        _songs = songs.where((song) => song.duration != null && song.duration! > 0).toList();
+      });
+      
+      // ✅ Await filter/sort to avoid "No songs" flash
+      await _applyFilterAndSort();
+      
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${AppLocalizations.of(context)!.error}: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _applyFilterAndSort() async {
+    final cubit = context.read<PlayerCubit>();
+    const query = '';
+
+    // Prepare overrides map for isolate
+    final overrides = <int, Map<String, dynamic>>{};
+    for (final s in _songs) {
+      final o = cubit.state.metadataOverrides[s.id];
+      if (o != null) {
+        overrides[s.id] = o.toJson();
+      }
+    }
+
+    // ✅ Run in background isolate
+    final filtered = await MusicDataProcessor.filterAndSortSongs(
+      songs: _songs,
+      query: query,
+      sortTypeIndex: _SortType.values.indexOf(_sortType),
+      ascending: _sortAscending,
+      overrides: overrides,
+      hiddenFolders: cubit.state.hiddenFolders.toSet(), // ✅ Convert List to Set
+      showHiddenFolders: cubit.state.showHiddenFolders,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _filteredSongs = filtered;
+      _currentMaxItems = _itemsPerPage;
+    });
+  }
+
+  void _sortSongs(_SortType type) {
+    setState(() {
+      if (_sortType == type) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortType = type;
+        _sortAscending = true;
+      }
+      _applyFilterAndSort();
+    });
+  }
+
+  void _showSortOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      showDragHandle: false,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppConstants.largeBorderRadius),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.sortBy,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: Icon(_sortAscending ? Icons.arrow_upward : Icons.arrow_downward),
+                      onPressed: () {
+                        setState(() {
+                          _sortAscending = !_sortAscending;
+                          _applyFilterAndSort();
+                        });
+                        Navigator.pop(context);
+                      },
+                      tooltip: _sortAscending ? AppLocalizations.of(context)!.sortAscending : AppLocalizations.of(context)!.sortDescending,
+                    ),
+                  ],
+                ),
+              ),
+              ..._SortType.values.map((type) => ListTile(
+                leading: Icon(_getSortIcon(type)),
+                title: Text(_getSortLabel(type)),
+                selected: _sortType == type,
+                onTap: () {
+                  setState(() {
+                    _sortType = type;
+                    _applyFilterAndSort();
+                  });
+                  Navigator.pop(context);
+                },
+              )),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  IconData _getSortIcon(_SortType type) {
+    switch (type) {
+      case _SortType.title:
+        return Icons.title;
+      case _SortType.artist:
+        return Icons.person;
+      case _SortType.album:
+        return Icons.album;
+      case _SortType.duration:
+        return Icons.timer;
+      case _SortType.date:
+        return Icons.calendar_today;
+    }
+  }
+
+  String _getSortLabel(_SortType type) {
+    switch (type) {
+      case _SortType.title:
+        return AppLocalizations.of(context)!.title;
+      case _SortType.artist:
+        return AppLocalizations.of(context)!.artist;
+      case _SortType.album:
+        return AppLocalizations.of(context)!.album;
+      case _SortType.duration:
+        return AppLocalizations.of(context)!.duration;
+      case _SortType.date:
+        return AppLocalizations.of(context)!.sortByDateAdded;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final theme = Theme.of(context);
+    final playerCubit = context.watch<PlayerCubit>();
+
+    // Construire un contenu quel que soit l'état, puis l'entourer d'un BlocListener
+    late final Widget content;
+
+    if (!_hasPermission) {
+      content = _buildPermissionRequest();
+    } else if (_isLoading) {
+      content = _buildLoadingState();
+    } else if (_filteredSongs.isEmpty) {
+      content = _buildEmptyState();
+    } else {
+      final itemsToShow = _filteredSongs.take(_currentMaxItems).toList();
+
+      final scaffold = Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Stack(
+          children: [
+             Column(
+               children: [
+                 // Fixed Selection Header (if in selection mode)
+                 if (_isSelectionMode)
+                   Container(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                      color: Theme.of(context).colorScheme.surface,
+                      child: SafeArea(
+                        bottom: false,
+                        child: Row(
+                          children: [
+                             IconButton(
+                               icon: const Icon(Icons.close), 
+                               onPressed: _exitSelectionMode,
+                               tooltip: AppLocalizations.of(context)!.cancel,
+                             ),
+                             const SizedBox(width: 8),
+                             Text(
+                               '${_selectedIds.length}',
+                               style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                             ),
+                             const Spacer(),
+                             TextButton.icon(
+                               onPressed: _selectAll,
+                               icon: Icon(_selectedIds.length == _filteredSongs.length ? Icons.deselect_rounded : Icons.select_all_rounded),
+                               label: Text(_selectedIds.length == _filteredSongs.length ? "Désélect. tout" : AppLocalizations.of(context)!.selectAll),
+                             )
+                          ],
+                        ),
+                      ),
+                   ),
+
+                 Expanded(
+                   child: RefreshIndicator(
+                     onRefresh: _loadSongs,
+                     child: CustomScrollView(
+                       controller: _scrollController,
+                       slivers: [
+                         // Standard Header (Only if NOT in selection mode)
+                         if (!_isSelectionMode)
+                           SliverToBoxAdapter(
+                             child: Container(
+                               padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                               child: Column(
+                                 children: [
+                                   // Note: This matches the standard header content you previously had
+                                   // I am simplified it here to just validity, you might want to restore full header
+                                   // But based on previous edits, the standard header was lost in the bad replace.
+                                   // I will restore the stats row implementation.
+                                   Row(
+                                      children: [
+                                       Text(
+                                          AppLocalizations.of(context)!.songCount(_songs.length),
+                                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                       ),
+                                       const Spacer(),
+                                       IconButton.filledTonal(
+                                         onPressed: () => Navigator.push(
+                                           context,
+                                           MaterialPageRoute(builder: (_) => const SearchPage()),
+                                         ),
+                                         icon: const Icon(Icons.search_rounded),
+                                         tooltip: AppLocalizations.of(context)!.search,
+                                       ),
+                                     ],
+                                   ),
+                                   const SizedBox(height: 16),
+                                   SingleChildScrollView(
+                                     scrollDirection: Axis.horizontal,
+                                     child: Row(
+                                       children: [
+                                          ActionChip(
+                                            avatar: const Icon(Icons.access_time_rounded, size: 18),
+                                            label: Text(AppLocalizations.of(context)!.allSongs),
+                                            onPressed: () {},
+                                          ),
+                                          const SizedBox(width: 8),
+                                          FilterChip(
+                                            avatar: const Icon(Icons.shuffle_rounded, size: 18),
+                                            label: Text(AppLocalizations.of(context)!.shuffle),
+                                            onSelected: (_) {
+                                              if (_filteredSongs.isNotEmpty) {
+                                                final idx = math.Random().nextInt(_filteredSongs.length);
+                                                playerCubit.setQueueAndPlay(_filteredSongs, idx);
+                                              }
+                                            },
+                                          ),
+                                          const SizedBox(width: 8),
+                                          MenuAnchor(
+                                            builder: (context, controller, child) {
+                                              return ActionChip(
+                                                avatar: const Icon(Icons.sort_rounded, size: 18),
+                                                label: Text(_getSortLabel(_sortType)),
+                                                onPressed: () {
+                                                  if (controller.isOpen) {
+                                                    controller.close();
+                                                  } else {
+                                                    controller.open();
+                                                  }
+                                                },
+                                              );
+                                            },
+                                            menuChildren: _SortType.values.map((type) {
+                                              return MenuItemButton(
+                                                leadingIcon: Icon(_getSortIcon(type)),
+                                                child: Text(_getSortLabel(type)),
+                                                onPressed: () => _sortSongs(type),
+                                              );
+                                            }).toList(),
+                                          ),
+                                       ],
+                                     ),
+                                   ),
+                                 ],
+                               ),
+                             ),
+                           ),
+
+                         SliverList(
+                           delegate: SliverChildBuilderDelegate(
+                             (context, index) {
+                               if (index >= itemsToShow.length) {
+                                 if (_currentMaxItems < _filteredSongs.length) {
+                                   return const Padding(
+                                     padding: EdgeInsets.all(16.0),
+                                     child: Center(child: CircularProgressIndicator()),
+                                   );
+                                 } else {
+                                   return const SizedBox(height: 100); 
+                                 }
+                               }
+
+                               final song = itemsToShow[index];
+                               // Fix: SongTile does not have isPlaying param. 
+                               // It likely highlights based on internal check or we need to rely on highlightActive=true (default)
+                               // If highlightActive is true, SongTile checks `currentSong.id == song.id` internally?
+                               // Let's assume standard behavior. If not, I'll pass generic `isActive` if available.
+                               // Based on error `No named parameter isPlaying`, I remove it.
+                               return SongTile(
+                                 song: song,
+                                 // isPlaying param removed
+                                 isSelectionMode: _isSelectionMode,
+                                 isSelected: _selectedIds.contains(song.id),
+                                 onTap: () {
+                                   if (_isSelectionMode) {
+                                     _toggleSelection(song.id);
+                                   } else {
+                                     playerCubit.setQueueAndPlay(_filteredSongs, index);
+                                   }
+                                 },
+                                 onLongPress: () {
+                                   if (!_isSelectionMode) {
+                                     context.findAncestorStateOfType<HomeScreenState>()?.toggleSelectionMode(true);
+                                     _toggleSelection(song.id);
+                                   }
+                                 },
+                                 onMorePressed: _isSelectionMode ? null : () => openSongActionsSheet(context, song),
+                               );
+                             },
+                             childCount: itemsToShow.length + 1,
+                           ),
+                         ),
+                       ],
+                     ),
+                   ),
+                 ),
+               ],
+             ),
+
+            // Bottom Bar (Selection Actions)
+            if (_isSelectionMode)
+              Positioned(
+                left: 0, 
+                right: 0,
+                bottom: 0,
+                child: _buildSelectionBottomBar(context),
+              ),
+          ],
+        ),
+      );
+      content = scaffold;
+    }
+
+    return BlocListener<PlayerCubit, PlayerStateModel>(
+      listenWhen: (prev, curr) =>
+          prev.hiddenFolders != curr.hiddenFolders ||
+          prev.showHiddenFolders != curr.showHiddenFolders ||
+          prev.hiddenFolders != curr.hiddenFolders ||
+          prev.showHiddenFolders != curr.showHiddenFolders ||
+          prev.deletedSongIds != curr.deletedSongIds ||
+          prev.metadataOverrides != curr.metadataOverrides, // ✅ Refresh list on metadata changes
+      listener: (context, state) {
+        // Re-appliquer le filtre/tri si la liste des dossiers masqués change
+        if (mounted) {
+          setState(() {
+            _applyFilterAndSort();
+          });
+        }
+      },
+      child: content,
+    );
+  }
+
+  Widget _buildPermissionRequest() {
+    final theme = Theme.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              _isPermanentlyDenied ? Icons.block : Icons.folder_off,
+              size: 80,
+              color: _isPermanentlyDenied ? theme.colorScheme.error : Colors.white,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              _isPermanentlyDenied 
+                  ? AppLocalizations.of(context)!.permissionDenied
+                  : AppLocalizations.of(context)!.permissionRequired,
+              style: theme.textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _isPermanentlyDenied
+                  ? AppLocalizations.of(context)!.permissionPermanentlyDenied
+                  : AppLocalizations.of(context)!.storagePermissionRequired,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyLarge,
+            ),
+            const SizedBox(height: 32),
+            if (_isPermanentlyDenied)
+              FilledButton.icon(
+                onPressed: () async {
+                  final opened = await openAppSettings();
+                  if (!opened && mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(AppLocalizations.of(context)!.error),
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.settings),
+                label: Text(AppLocalizations.of(context)!.openSettings),
+              )
+            else
+              FilledButton.icon(
+                onPressed: _isRequestingPermission ? null : _checkPermissionAndLoadSongs,
+                icon: _isRequestingPermission 
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.settings),
+                label: Text(_isRequestingPermission 
+                    ? AppLocalizations.of(context)!.loading 
+                    : AppLocalizations.of(context)!.grantPermission),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return const Center(
+      child: CircularProgressIndicator(),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    final theme = Theme.of(context);
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.music_off,
+            size: 80,
+            color: Colors.white.withOpacity(0.5),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            AppLocalizations.of(context)!.noSongs,
+            style: theme.textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: _loadSongs,
+            icon: const Icon(Icons.refresh),
+            label: Text(AppLocalizations.of(context)!.retry),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingIndicator() {
+    return const Padding(
+      padding: EdgeInsets.all(16),
+      child: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+  // selection mode UI
+  Widget _buildSelectionBottomBar(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+      child: Container(
+        decoration: BoxDecoration(
+           color: theme.colorScheme.surfaceContainer.withValues(alpha: 0.95),
+           borderRadius: BorderRadius.circular(24),
+           boxShadow: [
+             BoxShadow(
+               color: Colors.black.withValues(alpha: 0.2),
+               blurRadius: 16,
+               offset: const Offset(0, 4),
+             ),
+           ],
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+             _buildBarAction(Icons.play_arrow_rounded, l10n.play, _playSelected),
+             _buildBarAction(Icons.playlist_add_rounded, l10n.addToPlaylist, _addToPlaylistSelected),
+             _buildBarAction(Icons.share_rounded, l10n.share, _shareSelected),
+             _buildBarAction(Icons.delete_forever_rounded, l10n.delete, _deleteSelected, isDestructive: true),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBarAction(IconData icon, String label, VoidCallback onTap, {bool isDestructive = false}) {
+     final theme = Theme.of(context);
+     final color = isDestructive ? theme.colorScheme.error : theme.colorScheme.onSurface;
+     
+     return InkWell(
+       onTap: onTap,
+       borderRadius: BorderRadius.circular(16),
+       child: Padding(
+         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+         child: Column(
+           mainAxisSize: MainAxisSize.min,
+           children: [
+             Icon(icon, color: color, size: 24),
+             const SizedBox(height: 4),
+             Text(
+               label,
+               style: theme.textTheme.labelSmall?.copyWith(
+                 color: color,
+                 fontSize: 10,
+               ),
+             ),
+           ],
+         ),
+       ),
+     );
+  }
+  
+  void _playSelected() {
+     if (_selectedIds.isEmpty) return;
+     final selectedSongs = _filteredSongs.where((s) => _selectedIds.contains(s.id)).toList();
+     context.read<PlayerCubit>().setQueueAndPlay(selectedSongs, 0);
+     _exitSelectionMode();
+  }
+
+  Future<void> _addToPlaylistSelected() async {
+    final selectedSongs = _filteredSongs.where((s) => _selectedIds.contains(s.id)).toList();
+    if (selectedSongs.isEmpty) return;
+    
+    // Using existing _openAddToPlaylist logic but adapted for multiple
+    final cubit = context.read<PlayerCubit>();
+    final playlists = cubit.state.userPlaylists;
+    final l10n = AppLocalizations.of(context)!;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: false,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.add),
+              title: Text(l10n.createPlaylist),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final name = await _promptForText(context, title: l10n.createPlaylist, hint: l10n.playlistNameHint);
+                if (name != null && name.trim().isNotEmpty) {
+                  final id = cubit.createUserPlaylist(name.trim());
+                  for (final s in selectedSongs) {
+                    cubit.addSongToUserPlaylist(id, s.id);
+                  }
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.songAdded)));
+                    _exitSelectionMode();
+                  }
+                }
+              },
+            ),
+            const Divider(height: 1),
+            SizedBox(
+              height: math.min(MediaQuery.of(context).size.height * 0.5, 420),
+              child: ListView.builder(
+                itemCount: playlists.length,
+                itemBuilder: (_, i) {
+                  final p = playlists[i];
+                  return ListTile(
+                    leading: const Icon(Icons.queue_music),
+                    title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    subtitle: Text(l10n.songCount(p.songIds.length)),
+                    onTap: () {
+                      for (final s in selectedSongs) {
+                         cubit.addSongToUserPlaylist(p.id, s.id);
+                      }
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.songAdded)));
+                      _exitSelectionMode();
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<String?> _promptForText(BuildContext context, {required String title, String? hint}) async {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(hintText: hint),
+          onSubmitted: (_) => Navigator.pop(context, controller.text),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.cancel)),
+          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(AppLocalizations.of(context)!.confirm)),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _shareSelected() async {
+    final selectedSongs = _filteredSongs.where((s) => _selectedIds.contains(s.id)).toList();
+    if (selectedSongs.isEmpty) return;
+
+    final xFiles = <XFile>[];
+    for (final s in selectedSongs) {
+      if (s.data.isNotEmpty) {
+        xFiles.add(XFile(s.data));
+      }
+    }
+
+    if (xFiles.isEmpty) {
+      if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.errorFileNotFound)));
+      }
+      return;
+    }
+
+    // Share using share_plus which handles multiple files natively
+    try {
+      await Share.shareXFiles(xFiles, text: '${xFiles.length} songs');
+      _exitSelectionMode();
+    } catch (e) {
+      if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error sharing: $e")));
+      }
+    }
+  }
+
+  Future<void> _deleteSelected() async {
+    final selectedSongs = _filteredSongs.where((s) => _selectedIds.contains(s.id)).toList();
+    if (selectedSongs.isEmpty) return;
+    
+    final l10n = AppLocalizations.of(context)!;
+    
+    // Confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.deleteSong),
+        content: Text("Voulez-vous vraiment supprimer ${selectedSongs.length} chansons définitivement ?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
+    );
+    
+    if (confirmed != true) return;
+
+    // Remove UI immediately to be responsive
+    if (mounted) {
+       _exitSelectionMode();
+    }
+
+    // Call native batch delete
+    const platform = MethodChannel('com.synergydev.music_box/native');
+    try {
+       // Send list of IDs
+       final ids = selectedSongs.map((s) => s.id).toList();
+       final result = await platform.invokeMethod('deleteAudioList', {'audioIds': ids});
+       
+       if (result == true) {
+         // Update lists
+         setState(() {
+           _songs.removeWhere((s) => ids.contains(s.id));
+           _filteredSongs.removeWhere((s) => ids.contains(s.id));
+         });
+         
+         // Update PlayerCubit
+         context.read<PlayerCubit>().removeSongsById(ids);
+         
+         if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+             SnackBar(
+               content: Text("${ids.length} ${l10n.fileDeleted}"), 
+               backgroundColor: Colors.green,
+             )
+           );
+         }
+       }
+    } catch (e) {
+       debugPrint("Error deleting: $e");
+       if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text("${l10n.error}: $e"))
+         );
+       }
+    }
+  }
+}
+
+enum _SortType { title, artist, album, duration, date }

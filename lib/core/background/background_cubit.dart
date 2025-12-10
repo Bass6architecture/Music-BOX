@@ -1,0 +1,54 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+enum BackgroundType {
+  none,
+  gradientMusical,
+  gradientDark,
+  particles,
+  waves,
+  neonCity,
+  vinylSunset,
+  auroraRhythm,
+}
+
+class BackgroundCubit extends Cubit<BackgroundType> {
+  BackgroundCubit() : super(BackgroundType.none);
+
+  static const _keyBackground = 'selected_background';
+
+  Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getInt(_keyBackground);
+    if (saved != null && saved < BackgroundType.values.length) {
+      emit(BackgroundType.values[saved]);
+    }
+  }
+
+  Future<void> setBackground(BackgroundType background) async {
+    emit(background);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_keyBackground, background.index);
+  }
+
+  String? get assetPath {
+    switch (state) {
+      case BackgroundType.none:
+        return null;
+      case BackgroundType.gradientMusical:
+        return 'assets/backgrounds/bg_gradient_musical.png';
+      case BackgroundType.gradientDark:
+        return 'assets/backgrounds/bg_gradient_dark.png';
+      case BackgroundType.particles:
+        return 'assets/backgrounds/bg_particles.png';
+      case BackgroundType.waves:
+        return 'assets/backgrounds/bg_waves.png';
+      case BackgroundType.neonCity:
+        return 'assets/backgrounds/bg_neon_city.png';
+      case BackgroundType.vinylSunset:
+        return 'assets/backgrounds/bg_vinyl_sunset.png';
+      case BackgroundType.auroraRhythm:
+        return 'assets/backgrounds/bg_aurora_rhythm.png';
+    }
+  }
+}

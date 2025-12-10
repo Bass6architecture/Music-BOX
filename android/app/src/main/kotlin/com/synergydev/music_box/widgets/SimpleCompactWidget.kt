@@ -1,0 +1,267 @@
+package com.synergydev.music_box.widgets
+
+import android.app.PendingIntent
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProvider
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.widget.RemoteViews
+import com.synergydev.music_box.MainActivity
+import com.synergydev.music_box.R
+import java.io.File
+
+class SimpleCompactWidget : AppWidgetProvider() {
+    
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray
+    ) {
+        for (appWidgetId in appWidgetIds) {
+            updateAppWidget(context, appWidgetManager, appWidgetId)
+        }
+    }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        
+        when (intent.action) {
+            "com.synergydev.music_box.PLAY_PAUSE" -> {
+                android.util.Log.d("SimpleCompactWidget", "Play/Pause button clicked")
+                // Send command to Flutter via broadcast
+                val flutterIntent = Intent("com.synergydev.music_box.WIDGET_COMMAND").apply {
+                    putExtra("command", "play_pause")
+                    setPackage(context.packageName)
+                }
+                context.sendBroadcast(flutterIntent)
+                // Removed updateAllWidgets(context) - Flutter will update widgets when needed
+            }
+            "com.synergydev.music_box.NEXT" -> {
+                android.util.Log.d("SimpleCompactWidget", "Next button clicked")
+                val flutterIntent = Intent("com.synergydev.music_box.WIDGET_COMMAND").apply {
+                    putExtra("command", "next")
+                    setPackage(context.packageName)
+                }
+                context.sendBroadcast(flutterIntent)
+                // Removed updateAllWidgets(context) - Flutter will update widgets when needed
+            }
+            "com.synergydev.music_box.PREVIOUS" -> {
+                android.util.Log.d("SimpleCompactWidget", "Previous button clicked")
+                val flutterIntent = Intent("com.synergydev.music_box.WIDGET_COMMAND").apply {
+                    putExtra("command", "previous")
+                    setPackage(context.packageName)
+                }
+                context.sendBroadcast(flutterIntent)
+                // Removed updateAllWidgets(context) - Flutter will update widgets when needed
+            }
+            "com.synergydev.music_box.UPDATE_WIDGET" -> {
+                updateAllWidgets(context)
+            }
+        }
+    }
+    
+    private fun updateAllWidgets(context: Context) {
+        val appWidgetManager = AppWidgetManager.getInstance(context)
+        val appWidgetIds = appWidgetManager.getAppWidgetIds(
+            ComponentName(context, SimpleCompactWidget::class.java)
+        )
+        for (appWidgetId in appWidgetIds) {
+            updateAppWidget(context, appWidgetManager, appWidgetId)
+        }
+    }
+
+    companion object {
+        fun updateAppWidget(
+            context: Context,
+            appWidgetManager: AppWidgetManager,
+            appWidgetId: Int
+        ) {
+            val views = RemoteViews(context.packageName, R.layout.widget_compact_simple)
+
+            // Compute safe pixel sizes to stay under Binder limit (~1MB)
+            val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
+            val density = context.resources.displayMetrics.density
+            val minWdp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH).coerceAtLeast(200)
+            val minHdp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT).coerceAtLeast(40)
+            val widgetWpx = (minWdp * density).toInt()
+            val widgetHpx = (minHdp * density).toInt()
+            val maxPixels = 175_000 // ~700KB ARGB_8888
+            val currentPixels = (widgetWpx.toLong() * widgetHpx.toLong()).coerceAtLeast(1)
+            val scale = kotlin.math.min(1.0, kotlin.math.sqrt(maxPixels.toDouble() / currentPixels.toDouble()))
+            val bgW = kotlin.math.max(280.0, widgetWpx * scale).toInt()
+            val bgH = kotlin.math.max(120.0, widgetHpx * scale).toInt()
+            val albumTargetPx = ((48 * density) * 1.5f).toInt().coerceAtLeast(120).coerceAtMost(192)
+            
+            // Get saved data
+            val prefs = context.getSharedPreferences("widget_data", Context.MODE_PRIVATE)
+            val title = prefs.getString("title", "Music Box") ?: "Music Box"
+            val artist = prefs.getString("artist", "Artist") ?: "Artist"
+            val isPlaying = prefs.getBoolean("isPlaying", false)
+            val artPath = prefs.getString("artPath", null)
+            
+            // Set text
+            views.setTextViewText(R.id.song_title, title)
+            views.setTextViewText(R.id.artist_name, artist)
+            
+            // Set play/pause icon
+            views.setImageViewResource(
+                R.id.btn_play_pause,
+                if (isPlaying) R.drawable.ic_widget_pause_modern else R.drawable.ic_widget_play_modern
+            )
+            
+            // Set album art + background overlay (sharp cover + smooth blurred background)
+            if (artPath != null && File(artPath).exists()) {
+                try {
+                    val opts = BitmapFactory.Options().apply {
+                        inPreferredConfig = Bitmap.Config.ARGB_8888
+                        inDither = false
+                        inScaled = false
+                    }
+                    val bitmap = BitmapFactory.decodeFile(artPath, opts)
+                    if (bitmap != null) {
+                        val minDim = kotlin.math.min(bitmap.width, bitmap.height)
+                        val artBitmap = if (minDim > albumTargetPx) {
+                            Bitmap.createScaledBitmap(bitmap, albumTargetPx, albumTargetPx, true)
+                        } else {
+                            bitmap
+                        }
+                        views.setImageViewBitmap(R.id.album_art, artBitmap)
+                        // Background overlay
+                        try {
+                            val base = Bitmap.createScaledBitmap(bitmap, bgW, bgH, true)
+                            val blurred = boxBlur(base, 10)
+                            views.setImageViewBitmap(R.id.bg_overlay, blurred)
+                        } catch (_: Exception) {
+                            // bg_overlay may not exist
+                        }
+                        // don't recycle original bitmap as it may be used above
+                    }
+                } catch (e: Exception) {
+                    views.setImageViewResource(R.id.album_art, R.drawable.ic_widget_music_default)
+                    try { views.setImageViewResource(R.id.bg_overlay, R.drawable.ic_widget_music_default) } catch (_: Exception) {}
+                }
+            } else {
+                views.setImageViewResource(R.id.album_art, R.drawable.ic_widget_music_default)
+                try { views.setImageViewResource(R.id.bg_overlay, R.drawable.ic_widget_music_default) } catch (_: Exception) {}
+            }
+            
+            // Set click intents
+            val playPauseIntent = PendingIntent.getBroadcast(
+                context,
+                0,
+                Intent(context, SimpleCompactWidget::class.java).apply {
+                    action = "com.synergydev.music_box.PLAY_PAUSE"
+                },
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            views.setOnClickPendingIntent(R.id.btn_play_pause, playPauseIntent)
+            
+            val nextIntent = PendingIntent.getBroadcast(
+                context,
+                1,
+                Intent(context, SimpleCompactWidget::class.java).apply {
+                    action = "com.synergydev.music_box.NEXT"
+                },
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            views.setOnClickPendingIntent(R.id.btn_next, nextIntent)
+            
+            val previousIntent = PendingIntent.getBroadcast(
+                context,
+                2,
+                Intent(context, SimpleCompactWidget::class.java).apply {
+                    action = "com.synergydev.music_box.PREVIOUS"
+                },
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            views.setOnClickPendingIntent(R.id.btn_previous, previousIntent)
+            
+            // Open app on widget click
+            val appIntent = PendingIntent.getActivity(
+                context,
+                0,
+                Intent(context, MainActivity::class.java),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            views.setOnClickPendingIntent(R.id.album_art, appIntent)
+            
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+        }
+
+        // Simple two-pass box blur for ARGB_8888 bitmaps
+        private fun boxBlur(src: Bitmap, radius: Int): Bitmap {
+            if (radius <= 0) return src
+            val w = src.width
+            val h = src.height
+            val out = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            val pixels = IntArray(w * h)
+            val temp = IntArray(w * h)
+            src.getPixels(pixels, 0, w, 0, 0, w, h)
+
+            val div = radius * 2 + 1
+
+            // Horizontal pass
+            var idx = 0
+            for (y in 0 until h) {
+                var rSum = 0; var gSum = 0; var bSum = 0; var aSum = 0
+                for (i in -radius..radius) {
+                    val x = clamp(i, 0, w - 1)
+                    val p = pixels[y * w + x]
+                    aSum += p ushr 24
+                    rSum += p shr 16 and 0xFF
+                    gSum += p shr 8 and 0xFF
+                    bSum += p and 0xFF
+                }
+                for (x in 0 until w) {
+                    temp[idx++] = (clamp(aSum / div, 0, 255) shl 24) or
+                            (clamp(rSum / div, 0, 255) shl 16) or
+                            (clamp(gSum / div, 0, 255) shl 8) or
+                            clamp(bSum / div, 0, 255)
+                    val xOut = x - radius
+                    val xIn = x + radius + 1
+                    val pOut = pixels[y * w + clamp(xOut, 0, w - 1)]
+                    val pIn = pixels[y * w + clamp(xIn, 0, w - 1)]
+                    aSum += (pIn ushr 24) - (pOut ushr 24)
+                    rSum += (pIn shr 16 and 0xFF) - (pOut shr 16 and 0xFF)
+                    gSum += (pIn shr 8 and 0xFF) - (pOut shr 8 and 0xFF)
+                    bSum += (pIn and 0xFF) - (pOut and 0xFF)
+                }
+            }
+
+            // Vertical pass
+            for (x in 0 until w) {
+                var rSum = 0; var gSum = 0; var bSum = 0; var aSum = 0
+                for (i in -radius..radius) {
+                    val y = clamp(i, 0, h - 1)
+                    val p = temp[y * w + x]
+                    aSum += p ushr 24
+                    rSum += p shr 16 and 0xFF
+                    gSum += p shr 8 and 0xFF
+                    bSum += p and 0xFF
+                }
+                for (y in 0 until h) {
+                    pixels[y * w + x] = (clamp(aSum / div, 0, 255) shl 24) or
+                            (clamp(rSum / div, 0, 255) shl 16) or
+                            (clamp(gSum / div, 0, 255) shl 8) or
+                            clamp(bSum / div, 0, 255)
+                    val yOut = y - radius
+                    val yIn = y + radius + 1
+                    val pOut = temp[clamp(yOut, 0, h - 1) * w + x]
+                    val pIn = temp[clamp(yIn, 0, h - 1) * w + x]
+                    aSum += (pIn ushr 24) - (pOut ushr 24)
+                    rSum += (pIn shr 16 and 0xFF) - (pOut shr 16 and 0xFF)
+                    gSum += (pIn shr 8 and 0xFF) - (pOut shr 8 and 0xFF)
+                    bSum += (pIn and 0xFF) - (pOut and 0xFF)
+                }
+            }
+
+            out.setPixels(pixels, 0, w, 0, 0, w, h)
+            return out
+        }
+
+        private fun clamp(v: Int, min: Int, max: Int): Int = if (v < min) min else if (v > max) max else v
+    }
+}

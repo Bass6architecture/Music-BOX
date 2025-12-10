@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Background circle -->
+    <path
+        android:pathData="M54,54m-54,0a54,54 0,1 1,108 0a54,54 0,1 1,-108 0"
+        android:fillColor="#1A1A1A"/>
+    
+    <!-- Music box -->
+    <group
+        android:translateX="27"
+        android:translateY="27"
+        android:scaleX="0.5"
+        android:scaleY="0.5">
+        
+        <!-- Box base with gradient -->
+        <path
+            android:pathData="M27,40 L27,65 L81,65 L81,40 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:startX="27"
+                    android:startY="40"
+                    android:endX="81"
+                    android:endY="65"
+                    android:type="linear">
+                    <item android:offset="0" android:color="#7C4DFF"/>
+                    <item android:offset="1" android:color="#4A90E2"/>
+                </gradient>
+            </aapt:attr>
+        </path>
+        
+        <!-- Box lid -->
+        <path
+            android:pathData="M20,35 L35,25 L89,25 L74,35 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:startX="20"
+                    android:startY="25"
+                    android:endX="89"
+                    android:endY="35"
+                    android:type="linear">
+                    <item android:offset="0" android:color="#9C27B0"/>
+                    <item android:offset="1" android:color="#5DADE2"/>
+                </gradient>
+            </aapt:attr>
+        </path>
+        
+        <!-- Music note -->
+        <path
+            android:pathData="M54,15 Q54,35 54,35 Q50,33 46,33 Q40,33 40,38 Q40,43 46,43 Q52,43 54,40 L54,20 L64,20 L64,15 Z"
+            android:fillColor="#FFFFFF"
+            android:fillAlpha="0.95"/>
+    </group>
+</vector>

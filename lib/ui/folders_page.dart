@@ -1,0 +1,468 @@
+import 'dart:io' as io;
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'package:music_box/generated/app_localizations.dart';
+import 'package:path/path.dart' as p;
+import 'package:android_intent_plus/android_intent.dart';
+
+import '../player/player_cubit.dart';
+import '../widgets/permission_wrapper.dart';
+import 'hidden_folders_page.dart';
+import 'folder_songs_page.dart';
+
+class FoldersPage extends StatefulWidget {
+  const FoldersPage({super.key, this.embedded = false});
+  final bool embedded;
+
+  @override
+  State<FoldersPage> createState() => _FoldersPageState();
+}
+
+class _FoldersPageState extends State<FoldersPage> {
+  final OnAudioQuery _audioQuery = OnAudioQuery();
+  bool _loading = false;
+  Map<String, int> _folderCounts = <String, int>{}; // folderPath -> song count
+  bool _hasLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startLoading();
+  }
+  
+  void _startLoading() {
+    if (!_hasLoaded) {
+      _hasLoaded = true;
+      _load();
+    }
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    try {
+      final allSongs = await _audioQuery.querySongs(
+        uriType: UriType.EXTERNAL,
+        ignoreCase: true,
+      );
+      if (!mounted) return;
+      final cubit = context.read<PlayerCubit>();
+      // Filtrer via PlayerCubit pour respecter les dossiers masqués existants
+      final visibleSongs = cubit.filterSongs(allSongs.where((s) => s.uri != null).toList());
+
+      final counts = <String, int>{};
+      for (final s in visibleSongs) {
+        final path = s.data;
+        if (path.isEmpty) continue;
+        final dir = p.dirname(path);
+        counts.update(dir, (v) => v + 1, ifAbsent: () => 1);
+      }
+      counts.removeWhere((k, v) => v <= 0);
+      setState(() => _folderCounts = counts);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${AppLocalizations.of(context)!.error}: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _hideFolder(String folder) async {
+    final cubit = context.read<PlayerCubit>();
+    final newHidden = {...cubit.state.hiddenFolders, folder}.toList();
+    await cubit.updateHiddenFolders(newHidden);
+    if (!mounted) return;
+    setState(() => _folderCounts.remove(folder));
+
+    // Snackbar avec Annuler / OK
+    // ✅ Supprimé : Plus de message SnackBar
+    /*
+    var canceled = false;
+    final snack = SnackBar(
+      content: Text(AppLocalizations.of(context)!.folderHidden),
+      action: SnackBarAction(
+        label: AppLocalizations.of(context)!.cancel,
+        onPressed: () async {
+          canceled = true;
+          // Fermer immédiatement toute snackbar visible (y compris la suivante si déjà affichée)
+          if (mounted) {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          }
+          final revert = {...cubit.state.hiddenFolders}..remove(folder);
+          await cubit.updateHiddenFolders(revert.toList());
+          await _load();
+        },
+      ),
+      behavior: SnackBarBehavior.floating,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snack);
+
+    // Après la première snackbar, proposer "Voir dossiers masqués"
+    await Future.delayed(const Duration(milliseconds: 1500));
+    if (!mounted) return;
+    // Ne pas montrer si l'utilisateur a annulé, ou si le dossier n'est plus masqué
+    final stillHidden = context.read<PlayerCubit>().state.hiddenFolders.contains(folder);
+    if (!canceled && stillHidden) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.viewHiddenFolders),
+          action: SnackBarAction(
+            label: AppLocalizations.of(context)!.open,
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const HiddenFoldersPage()),
+              );
+            },
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+    */
+  }
+
+  void _showFolderMenu(String folder, int count) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.visibility_off),
+                title: Text(AppLocalizations.of(context)!.hideFolder),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  await _hideFolder(folder);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: Text(AppLocalizations.of(context)!.folderProperties),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  showDialog<void>(
+                    context: context,
+                    builder: (dCtx) => AlertDialog(
+                      title: Text(AppLocalizations.of(context)!.folderProperties),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(folder),
+                          const SizedBox(height: 8),
+                          Text(AppLocalizations.of(context)!.songCount(count)),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(dCtx), child: Text(AppLocalizations.of(context)!.close)),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.folder_open),
+                title: Text(AppLocalizations.of(context)!.openLocation),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  if (!io.Platform.isAndroid) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(AppLocalizations.of(context)!.androidOnly)),
+                      );
+                    }
+                    return;
+                  }
+                  
+                  debugPrint('📂 Ouverture du dossier: $folder');
+                  
+                  // Essayer d'ouvrir dans l'explorateur
+                  bool intentLaunched = false;
+                  
+                  // Méthode 1: Construire l'URI Documents correctement
+                  try {
+                    // Encoder le chemin correctement pour Documents UI
+                    String documentPath = folder.replaceFirst('/storage/emulated/0/', '');
+                    // URL encoder le chemin pour éviter les problèmes avec les caractères spéciaux
+                    documentPath = Uri.encodeComponent(documentPath);
+                    
+                    final intent = AndroidIntent(
+                      action: 'android.intent.action.VIEW',
+                      data: 'content://com.android.externalstorage.documents/document/primary:$documentPath',
+                      type: 'vnd.android.document/directory',
+                      flags: <int>[0x10000000, 0x00000001], // FLAG_ACTIVITY_NEW_TASK | FLAG_GRANT_READ_URI_PERMISSION
+                    );
+                    await intent.launch();
+                    intentLaunched = true;
+                    debugPrint('✅ Dossier ouvert avec Documents UI');
+                  } catch (e1) {
+                    debugPrint('❌ Méthode 1 (Documents) échouée: $e1');
+                    
+                    // Méthode 2: Ouvrir le gestionnaire de fichiers générique
+                    try {
+                      final intent = AndroidIntent(
+                        action: 'android.intent.action.VIEW',
+                        type: 'resource/folder',
+                        flags: <int>[0x10000000],
+                      );
+                      await intent.launch();
+                      intentLaunched = true;
+                      debugPrint('✅ Gestionnaire de fichiers ouvert');
+                    } catch (e2) {
+                      debugPrint('❌ Méthode 2 (gestionnaire) échouée: $e2');
+                    }
+                  }
+                  
+                  // Si aucun intent n'a marché, afficher le chemin
+                  if (!intentLaunched) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${AppLocalizations.of(context)!.openLocation}: $folder'),
+                          action: SnackBarAction(
+                            label: AppLocalizations.of(context)!.copyPath,
+                            onPressed: () {
+                              Clipboard.setData(ClipboardData(text: folder));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(AppLocalizations.of(context)!.pathCopied)),
+                              );
+                            },
+                          ),
+                          duration: const Duration(seconds: 5),
+                        ),
+                      );
+                    }
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    final content = _loading
+        ? const Center(child: CircularProgressIndicator())
+        : _folderCounts.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.folder_off_outlined, size: 64, color: theme.colorScheme.primary),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      AppLocalizations.of(context)!.noFolders,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const HiddenFoldersPage()),
+                        );
+                      },
+                      icon: const Icon(Icons.visibility_off_outlined),
+                      label: Text(AppLocalizations.of(context)!.viewHiddenFolders),
+                    ),
+                  ],
+                ),
+              )
+            : CustomScrollView(
+                slivers: [
+                  if (!widget.embedded)
+                    SliverAppBar(
+                      expandedHeight: 120,
+                      floating: false,
+                      pinned: true,
+                      stretch: true,
+                      backgroundColor: theme.scaffoldBackgroundColor,
+                      surfaceTintColor: Colors.transparent,
+                      // ✅ Actions déplacées ici (dans SliverAppBar)
+                      actions: [
+                        IconButton(
+                          icon: const Icon(Icons.visibility_off_outlined),
+                          tooltip: AppLocalizations.of(context)!.viewHiddenFolders,
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const HiddenFoldersPage()),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      flexibleSpace: FlexibleSpaceBar(
+                        titlePadding: const EdgeInsetsDirectional.only(start: 16, bottom: 16),
+                        title: Text(
+                          AppLocalizations.of(context)!.folders,
+                          style: TextStyle(color: theme.colorScheme.onSurface),
+                        ),
+                        background: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+                                theme.colorScheme.surface,
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  SliverPadding(
+                    padding: const EdgeInsets.all(16),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final folderPaths = _folderCounts.keys.toList()..sort();
+                          final folderPath = folderPaths[index];
+                          final folderName = p.basename(folderPath);
+                          final count = _folderCounts[folderPath] ?? 0;
+                          
+                          return _FolderTile(
+                            name: folderName,
+                            count: count,
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => BlocProvider.value(
+                                    value: context.read<PlayerCubit>(),
+                                    child: FolderSongsPage(
+                                      folderPath: folderPath,
+                                      songCount: count,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                            onLongPress: () => _showFolderMenu(folderPath, count),
+                          );
+                        },
+                        childCount: _folderCounts.length,
+                      ),
+                    ),
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                ],
+              );
+
+    final widgetToShow = widget.embedded ? content : Scaffold(body: content);
+
+    return BlocListener<PlayerCubit, PlayerStateModel>(
+        listenWhen: (prev, curr) =>
+            prev.hiddenFolders != curr.hiddenFolders ||
+            prev.showHiddenFolders != curr.showHiddenFolders ||
+            prev.deletedSongIds != curr.deletedSongIds,
+        listener: (context, state) {
+          _load();
+        },
+        child: widgetToShow,
+      );
+  }
+}
+
+class _FolderTile extends StatelessWidget {
+  const _FolderTile({
+    required this.name,
+    required this.count,
+    required this.onTap,
+    required this.onLongPress,
+  });
+
+  final String name;
+  final int count;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.05),
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          onLongPress: onLongPress,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.folder_rounded,
+                    color: theme.colorScheme.secondary,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        AppLocalizations.of(context)!.songCount(count),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.more_vert_rounded,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  onPressed: onLongPress,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

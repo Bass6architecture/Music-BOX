@@ -1,0 +1,420 @@
+{
+  "@@locale": "fr",
+  
+  "appName": "Music Box",
+  "ok": "OK",
+  "cancel": "Annuler",
+  "delete": "Supprimer",
+  "save": "Enregistrer",
+  "share": "Partager",
+  "edit": "Modifier",
+  "add": "Ajouter",
+  "remove": "Retirer",
+  "search": "Rechercher",
+  "loading": "Chargement...",
+  "error": "Erreur",
+  "retry": "Réessayer",
+  "close": "Fermer",
+  "done": "Terminé",
+  "yes": "Oui",
+  "no": "Non",
+  
+  "songs": "Chansons",
+  "playlists": "Playlists",
+  "albums": "Albums",
+  "artists": "Artistes",
+  "folders": "Dossiers",
+  "settings": "Réglages",
+  "nowPlaying": "En cours",
+  "yourPlaylists": "Vos playlists",
+  "favorites": "Favoris",
+  "recentlyAdded": "Ajoutés récemment",
+  "recentlyPlayed": "Lus récemment",
+  "mostPlayed": "Les plus écoutés",
+  
+  "settingsTitle": "Réglages",
+  "appearance": "Apparence",
+  "audio": "Audio",
+  "library": "Bibliothèque",
+  "about": "À propos",
+  
+  "theme": "Thème",
+  "themeDescription": "Thème de l'application",
+  "themeSystem": "Système",
+  "themeSystemDesc": "Suit le thème du téléphone",
+  "themeLight": "Clair",
+  "themeLightDesc": "Toujours clair",
+  "themeDark": "Sombre",
+  "themeDarkDesc": "Toujours sombre",
+  
+  "language": "Langue",
+  "languageDescription": "Langue de l'application",
+  "currentLanguage": "Français",
+  "languageAlreadySelected": "Français déjà sélectionné",
+  "languageComingSoon": "Bientôt disponible",
+  "languageChanged": "Langue changée",
+  "languageNeedsRestart": "Redémarrage nécessaire pour appliquer la langue",
+  "restartNow": "Redémarrer maintenant",
+  "restartLater": "Plus tard",
+  
+  "equalizer": "Égaliseur",
+  "equalizerDesc": "Régler les basses et les aigus",
+  "equalizerEnabled": "Égaliseur activé",
+  "equalizerDisabled": "Égaliseur désactivé",
+  "noEqualizerFound": "Aucun égaliseur trouvé sur cet appareil",
+  
+  "background": "Arrière-plan",
+  "backgroundDesc": "Personnaliser l'arrière-plan de l'app",
+  "backgroundNone": "Aucun",
+  "backgroundGradientMusical": "Dégradé musical",
+  "backgroundGradientDark": "Dégradé sombre",
+  "backgroundParticles": "Particules",
+  "backgroundWaves": "Ondes sonores",
+  "backgroundNeonCity": "Ville néon",
+  "backgroundVinylSunset": "Coucher de soleil vinyle",
+  "backgroundAuroraRhythm": "Aurore boréale",
+  
+  "backgroundPlayback": "Lecture en arrière-plan",
+  "backgroundPlaybackDesc": "Désactiver l'optimisation batterie pour une lecture fluide",
+  "batteryOptimizationTitle": "Arrêter optimisation utilisation batterie ?",
+  "batteryOptimizationMessage": "Music Box pourra être exécutée en arrière-plan. L'utilisation de sa batterie ne sera pas limitée.",
+  "batteryOptimizationEnabled": "✓ Optimisation batterie désactivée",
+  "batteryOptimizationDisabled": "⚠️ Optimisation batterie activée (peut causer des coupures)",
+  
+  "notifications": "Notifications",
+  "notificationsDesc": "Paramètres de notification",
+  "cannotOpenSettings": "Impossible d'ouvrir les paramètres",
+  "androidOnly": "Disponible uniquement sur Android",
+  
+  "scanMusic": "Scanner la musique",
+  "scanMusicDesc": "Détecter les titres manquants",
+  "hiddenFolders": "Dossiers masqués",
+  "hiddenFoldersDesc": "Gérer les dossiers cachés",
+  
+  "version": "Version {version}",
+  
+  "privacyPolicy": "Politique de confidentialité",
+  "privacyPolicyDesc": "Voir notre politique de confidentialité",
+  "contact": "Contact",
+  "contactDesc": "synergydevv@gmail.com",
+  "cannotOpenPrivacyPolicy": "Impossible d'ouvrir la politique de confidentialité",
+  "cannotOpenEmail": "Impossible d'ouvrir l'application mail",
+  "@version": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "play": "Lire",
+  "pause": "Pause",
+  "next": "Suivant",
+  "previous": "Précédent",
+  "shuffle": "Aléatoire",
+  "repeat": "Répéter",
+  "playNext": "Lire ensuite",
+  "playAll": "Tout lire",
+  "addToQueue": "Ajouter à la file",
+  "addToQueueFull": "Ajouter à la file d'attente",
+  "addToPlaylist": "Ajouter à une playlist",
+  "addToMyPlaylists": "Ajouter à MES playlists",
+  "removeFromPlaylist": "Retirer de la playlist",
+  "removeFromHistory": "Retirer de l'historique",
+  "addToFavorites": "Ajouter aux favoris",
+  "removeFromFavorites": "Retirer des favoris",
+  "goToAlbum": "Aller à l'album",
+  "goToArtist": "Aller à l'artiste",
+  "setAsRingtone": "Définir comme sonnerie",
+  "songDetails": "Détails du morceau",
+  "editMetadata": "Modifier les métadonnées",
+  "selectAll": "Tout sélectionner",
+  "deleteSong": "Supprimer la chanson",
+  "confirmDeleteSong": "Êtes-vous sûr de vouloir supprimer ce fichier ?",
+  "songAdded": "Chanson ajoutée",
+  "createPlaylist": "Créer une playlist",
+  "playlistNameHint": "Nom de la playlist",
+  "allSongs": "Toutes les chansons",
+  "sortBy": "Trier par",
+  "sortAscending": "Croissant",
+  "sortDescending": "Décroissant",
+  "title": "Titre",
+  "artist": "Artiste",
+  "album": "Album",
+  "duration": "Durée",
+  "sortByDateAdded": "Date d'ajout",
+  "noSongs": "Aucune chanson",
+  "grantPermission": "Autoriser l'accès",
+  "openSettings": "Ouvrir les paramètres",
+  "permissionRequired": "Permission requise",
+  "permissionDenied": "Permission refusée",
+  "permissionPermanentlyDenied": "Permission refusée définitivement. Veuillez l'activer dans les paramètres.",
+  "storagePermissionRequired": "L'accès au stockage est requis pour lire vos musiques.",
+  "changeCover": "Changer la pochette",
+
+  "showLyrics": "Afficher les paroles",
+  "hideLyrics": "Masquer les paroles",
+  
+  "unknownArtist": "Artiste inconnu",
+  "unknownAlbum": "Album inconnu",
+  "unknownTitle": "Titre inconnu",
+
+  "noAlbums": "Aucun album",
+  "noArtists": "Aucun artiste",
+  "noPlaylists": "Aucune playlist",
+  "noFolders": "Aucun dossier",
+  
+  "songCount": "{count, plural, =0{Aucune chanson} =1{1 chanson} other{{count} chansons}}",
+  "@songCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "albumCount": "{count, plural, =0{Aucun album} =1{1 album} other{{count} albums}}",
+  "@albumCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "createPlaylist": "Créer une playlist",
+  "playlistName": "Nom de la playlist",
+  "playlistNameHint": "Ma playlist",
+  "renamePlaylist": "Renommer",
+  "deletePlaylist": "Supprimer la playlist",
+  "confirmDeletePlaylist": "Voulez-vous vraiment supprimer cette playlist ?",
+  "emptyPlaylist": "Playlist vide",
+  "addSongs": "Ajouter des chansons",
+  "addSongsToPlaylistDesc": "Ajoutez des chansons pour commencer l'écoute",
+  "playlistCreated": "Playlist créée",
+  "playlistDeleted": "Playlist supprimée",
+  "playlistRenamed": "Playlist renommée",
+  "songAdded": "Chanson ajoutée",
+  "songAddedToPlaylist": "Ajouté à la playlist",
+  "songRemoved": "Chanson retirée",
+  "selectPlaylist": "Sélectionner une playlist",
+  "noPlaylistsCreateOne": "Aucune playlist. Créez-en une.",
+  "newPlaylist": "Nouvelle playlist",
+  "newPlaylistEllipsis": "Nouvelle playlist…",
+  "create": "Créer",
+  "scheduledNext": "Programmée en lecture suivante",
+  "addedToQueue": "Ajoutée à la file d'attente",
+  "removedFromHistory": "Retirée de l'historique",
+  
+  "favorites": "Favoris",
+  "noFavorites": "Aucun favori",
+  "addedToFavorites": "Ajouté aux favoris",
+  "removedFromFavorites": "Retiré des favoris",
+  
+  "queue": "File d'attente",
+  "clearQueue": "Vider la file",
+  "queueEmpty": "File d'attente vide",
+  "addedToQueue": "Ajouté à la file",
+  "confirmClearQueue": "Voulez-vous vraiment vider la file d'attente ?",
+  "swipeToRemove": "Glisser pour supprimer",
+  "clearHistory": "Vider l'historique",
+  "historyCleared": "Historique vidé",
+  "options": "Options",
+  
+  "lyrics": "Paroles",
+  "lyricsFound": "Paroles trouvées",
+  "noLyrics": "Aucune parole disponible",
+  "searchingLyrics": "Recherche des paroles...",
+  "lyricsNotFound": "Aucune parole trouvée pour cette chanson",
+  "lyricsError": "Erreur lors de la recherche",
+  "retryLyrics": "Réessayer",
+  "lyricsDisplay": "Affichage des paroles",
+  "blurBackground": "Fond artistique flou",
+  "blurBackgroundDesc": "Utiliser la pochette en arrière-plan avec un léger flou",
+  "alignment": "Alignement",
+  "alignLeft": "Gauche",
+  "alignCenter": "Centré",
+  "textSize": "Taille du texte",
+  "lineHeight": "Interligne",
+  "reset": "Réinitialiser",
+  "copiedText": "Texte copié détecté",
+  "useAsLyrics": "Utiliser comme paroles",
+  "webSearch": "Rechercher sur le Web",
+  "tip": "Astuce",
+  "copyTip": "Sélectionnez et copiez les paroles sur la page. Elles seront proposées automatiquement ici.",
+  "lyricsCopied": "Paroles copiées",
+  
+  "scanningMusic": "Analyse en cours...",
+  "scanComplete": "Analyse terminée",
+  "scanFailed": "Échec de l'analyse",
+  "foundSongs": "{count} chansons trouvées",
+  "@foundSongs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "metadata": "Métadonnées",
+  "title": "Titre",
+  "artist": "Artiste",
+  "album": "Album",
+  "genre": "Genre",
+  "year": "Année",
+  "track": "Piste",
+  "duration": "Durée",
+  "path": "Chemin",
+  "size": "Taille",
+  "format": "Format",
+  "bitrate": "Débit",
+  "sampleRate": "Fréquence d'échantillonnage",
+  "metadataSaved": "Métadonnées enregistrées",
+  "metadataFailed": "Échec de l'enregistrement",
+  "coverSaved": "Pochette enregistrée",
+  "coverFailed": "Échec de l'enregistrement",
+  "confirmDelete": "Confirmer la suppression",
+  "confirmDeleteSong": "Voulez-vous vraiment supprimer ce morceau ?",
+  "fileDeleted": "Fichier supprimé",
+  "fileDeletionFailed": "Échec de la suppression",
+  "crop": "Recadrer",
+  "requiresAndroid10": "Cette fonctionnalité nécessite Android 10+",
+  "errorOpeningFolder": "Erreur lors de l'ouverture du dossier",
+  "imageUpdated": "Image mise à jour",
+  "androidOnly": "Disponible uniquement sur Android",
+  "ringtoneSet": "Défini comme sonnerie d'appel",
+  
+  "permissionRequired": "Permission requise",
+  "storagePermissionRequired": "Permission de stockage requise pour lire la musique",
+  "grantPermission": "Accorder",
+  "permissionDenied": "Permission refusée",
+  "permissionPermanentlyDenied": "Vous avez refusé les permissions. Veuillez activer manuellement les permissions dans les paramètres de l'application.",
+  "openSettings": "Ouvrir les paramètres",
+  
+  "recentlyPlayed": "Récemment joués",
+  "recentlyAdded": "Récemment ajoutés",
+  "mostPlayed": "Les plus joués",
+  
+  "allSongs": "Toutes les chansons",
+  "sortBy": "Trier par",
+  "sortByName": "Nom",
+  "sortByArtist": "Artiste",
+  "sortByAlbum": "Album",
+  "sortByDuration": "Durée",
+  "sortByDateAdded": "Date d'ajout",
+  "sortByPlayCount": "Nombre de lectures",
+  "sortAscending": "Croissant",
+  "sortDescending": "Décroissant",
+  "shuffleAll": "Tout lire aléatoirement",
+  
+  "allow": "Autoriser",
+  "filterDuration": "Ignorer les durées inférieures à",
+  "filterSize": "Ignorer les tailles inférieures à",
+  "duration30s": "30 s",
+  "duration60s": "60 s",
+  "size50kb": "50 KB",
+  "size100kb": "100 KB",
+  "startScan": "DÉMARRER L'ANALYSE",
+  "scanningInProgress": "Analyse en cours...",
+  
+  "hideFolder": "Masquer le dossier",
+  "folderHidden": "Dossier masqué",
+  "unhideFolder": "Démasquer",
+  "folderUnhidden": "Dossier démasqué",
+  "folderProperties": "Propriétés du dossier",
+  "openLocation": "Ouvrir l'emplacement",
+  "viewHiddenFolders": "Voir dossiers masqués",
+  "open": "Ouvrir",
+  "copyPath": "Copier chemin",
+  "pathCopied": "Chemin copié",
+  
+  "imageUpdated": "Image mise à jour",
+  "uriNotFound": "URI du fichier introuvable",
+  "ringtoneTitle": "Sonnerie d'appel",
+  "setRingtoneConfirm": "Définir \"{title}\" comme sonnerie d'appel ?",
+  "@setRingtoneConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "confirm": "Confirmer",
+  "ringtoneSetSuccess": "✓ Défini comme sonnerie d'appel",
+  "changesSaved": "Modifications enregistrées",
+  "fileDeletedPermanently": "Fichier supprimé définitivement",
+  
+  "editArtistInfo": "Modifier les infos de l'artiste",
+  "optional": "Facultatif",
+  "genreOptional": "Genre (Facultatif)",
+  "yearOptional": "Année (Facultatif)",
+  
+  "deletePermanently": "Supprimer définitivement ?",
+  "deleteWarningMessage": "Cette action est irréversible et supprimera :",
+  "deleteStorageWarning": "⚠️ Le fichier sera supprimé du stockage de votre téléphone",
+  
+  "folderLabel": "Dossier : {name}",
+  "@folderLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "android10Required": "❌ Cette fonctionnalité nécessite Android 10+",
+  "errorWithDetails": "❌ Erreur : {error}",
+  "@errorWithDetails": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "errorPermissionDenied": "Permission refusée. Vérifiez les paramètres de l'application",
+  "errorFileNotFound": "Fichier introuvable",
+  "errorInsufficientStorage": "Espace de stockage insuffisant",
+  "errorNetworkProblem": "Problème de connexion",
+  "errorCorruptFile": "Fichier corrompu ou format invalide",
+  "errorGeneric": "Une erreur est survenue",
+  
+  "sleepTimer": "Minuteur de sommeil",
+  "sleepTimerSet": "Minuteur réglé sur {duration}",
+  "@sleepTimerSet": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelTimer": "Annuler le minuteur",
+  "customTimer": "Minuteur personnalisé",
+  "customize": "Personnaliser",
+  "setTimer": "Définir",
+  "hours": "Heures",
+  "minutes": "Minutes",
+  "invalidDuration": "Veuillez définir une durée valide",
+  "stopMusicAfter": "Arrêter la musique après",
+  "start": "Début",
+  "min5": "5 min",
+  "min15": "15 min",
+  "min30": "30 min",
+  "min45": "45 min",
+  "hour1": "1 heure",
+  "hours2": "2 heures",
+  "upNext": "À suivre",
+  "undo": "Annuler",
+
+  "permissionAudioTitle": "Accès Audio",
+  "permissionAudioDesc": "Pour lire vos fichiers musicaux locaux",
+  "permissionNotificationTitle": "Notifications",
+  "permissionNotificationDesc": "Pour les contrôles de lecture",
+  "permissionBatteryTitle": "Lecture en arrière-plan",
+  "permissionBatteryDesc": "Évite les coupures quand l'écran est éteint",
+  "permissionRequired": "Permission Requise",
+  "permissionIntro": "Pour vous offrir la meilleure expérience musicale, Music Box a besoin de quelques autorisations.",
+  "grant": "Autoriser",
+  "enable": "Activer",
+  "accessApp": "Accéder à Music Box",
+  "openSettings": "Réglages"
+}

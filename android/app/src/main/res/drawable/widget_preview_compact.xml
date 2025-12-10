@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background -->
+    <item>
+        <shape>
+            <solid android:color="#1A1A1A"/>
+            <corners android:radius="16dp"/>
+        </shape>
+    </item>
+    
+    <!-- Content -->
+    <item android:left="8dp" android:right="8dp" android:top="8dp" android:bottom="8dp">
+        <bitmap
+            android:src="@drawable/ic_widget_music_default"
+            android:gravity="left|center_vertical" />
+    </item>
+</layer-list>

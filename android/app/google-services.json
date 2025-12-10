@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "768055684191",
+    "project_id": "flutter-project-24faf",
+    "storage_bucket": "flutter-project-24faf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:768055684191:android:15386579028d4247407fea",
+        "android_client_info": {
+          "package_name": "com.synergydev.music_box"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbRib1iKO-zvcg5lQCgsa2FBgtNcimmpM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
