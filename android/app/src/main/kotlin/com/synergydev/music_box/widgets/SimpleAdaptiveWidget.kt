@@ -8,8 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.media.session.MediaController
-import android.media.session.MediaSessionManager
 import android.os.Bundle
 import android.widget.RemoteViews
 import com.synergydev.music_box.MainActivity
@@ -34,94 +32,49 @@ class SimpleAdaptiveWidget : AppWidgetProvider() {
         when (intent.action) {
             "com.synergydev.music_box.PLAY_PAUSE" -> {
                 android.util.Log.d("SimpleAdaptiveWidget", "Play/Pause button clicked")
-                sendMediaCommand(context, "play_pause")
+                sendCommand(context, "play_pause")
             }
             "com.synergydev.music_box.NEXT" -> {
                 android.util.Log.d("SimpleAdaptiveWidget", "Next button clicked")
-                sendMediaCommand(context, "next")
+                sendCommand(context, "next")
             }
             "com.synergydev.music_box.PREVIOUS" -> {
                 android.util.Log.d("SimpleAdaptiveWidget", "Previous button clicked")
-                sendMediaCommand(context, "previous")
+                sendCommand(context, "previous")
             }
             "com.synergydev.music_box.FAVORITE" -> {
                 android.util.Log.d("SimpleAdaptiveWidget", "Favorite button clicked")
-                sendBroadcastCommand(context, "favorite")
+                sendCommand(context, "favorite")
             }
             "com.synergydev.music_box.SHUFFLE" -> {
                 android.util.Log.d("SimpleAdaptiveWidget", "Shuffle button clicked")
-                sendBroadcastCommand(context, "shuffle")
+                sendCommand(context, "shuffle")
             }
             "com.synergydev.music_box.REPEAT" -> {
                 android.util.Log.d("SimpleAdaptiveWidget", "Repeat button clicked")
-                sendBroadcastCommand(context, "repeat")
+                sendCommand(context, "repeat")
             }
             "com.synergydev.music_box.UPDATE_WIDGET" -> {
-                updateAllWidgets(context)
-            }
-        }
-    }
-    
-    /**
-     * Send media command using MediaSession for reliability (play/pause, next, previous).
-     * Falls back to broadcast if MediaSession is unavailable.
-     */
-    private fun sendMediaCommand(context: Context, command: String) {
-        val controller = getActiveMediaController(context)
-        
-        if (controller != null) {
-            android.util.Log.d("SimpleAdaptiveWidget", "Using MediaSession for: $command")
-            when (command) {
-                "play_pause" -> {
-                    val state = controller.playbackState
-                    if (state != null && state.state == android.media.session.PlaybackState.STATE_PLAYING) {
-                        controller.transportControls.pause()
-                    } else {
-                        controller.transportControls.play()
-                    }
+                // Throttle updates to prevent OOM from rapid-fire updates
+                val now = System.currentTimeMillis()
+                if (now - lastUpdateTime > UPDATE_THROTTLE_MS) {
+                    lastUpdateTime = now
+                    updateAllWidgets(context)
                 }
-                "next" -> controller.transportControls.skipToNext()
-                "previous" -> controller.transportControls.skipToPrevious()
             }
-        } else {
-            sendBroadcastCommand(context, command)
-            // Don't launch app - just send the broadcast silently
         }
     }
     
     /**
-     * Send command via broadcast (for favorite, shuffle, repeat which require Flutter).
+     * Send command via broadcast to Flutter
      */
-    private fun sendBroadcastCommand(context: Context, command: String) {
-        android.util.Log.d("SimpleAdaptiveWidget", "Sending broadcast for: $command")
+    private fun sendCommand(context: Context, command: String) {
+        android.util.Log.d("SimpleAdaptiveWidget", "Sending command: $command")
         val flutterIntent = Intent("com.synergydev.music_box.WIDGET_COMMAND").apply {
             putExtra("command", command)
             setPackage(context.packageName)
         }
         context.sendBroadcast(flutterIntent)
-    }
-    
-    private fun getActiveMediaController(context: Context): MediaController? {
-        return try {
-            val sessionManager = context.getSystemService(Context.MEDIA_SESSION_SERVICE) as? MediaSessionManager
-            val controllers = sessionManager?.getActiveSessions(null)
-            controllers?.firstOrNull { it.packageName == context.packageName }
-        } catch (e: Exception) {
-            android.util.Log.w("SimpleAdaptiveWidget", "Could not get MediaController: ${e.message}")
-            null
-        }
-    }
-    
-    private fun launchAppIfNeeded(context: Context) {
-        try {
-            val intent = Intent(context, MainActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            }
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            android.util.Log.w("SimpleAdaptiveWidget", "Could not launch app: ${e.message}")
-        }
     }
     
     private fun updateAllWidgets(context: Context) {
@@ -145,6 +98,8 @@ class SimpleAdaptiveWidget : AppWidgetProvider() {
     }
 
     companion object {
+        private const val UPDATE_THROTTLE_MS = 2000L // 2 seconds minimum between updates
+        private var lastUpdateTime = 0L
         private fun getWidgetSize(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int): Int {
             val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
             val minHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
@@ -288,40 +243,34 @@ class SimpleAdaptiveWidget : AppWidgetProvider() {
                 // time_text not in this layout
             }
             
-            // Set album art (crisp) and background overlay (smooth blur)
+            // Set album art (simplified - no blur to save memory)
             if (artPath != null && File(artPath).exists()) {
                 try {
                     val opts = BitmapFactory.Options().apply {
-                        inPreferredConfig = Bitmap.Config.ARGB_8888
-                        inDither = false
-                        inScaled = false
+                        inPreferredConfig = Bitmap.Config.RGB_565 // Use less memory than ARGB_8888
+                        inSampleSize = 2 // Downsample for faster loading
                     }
                     val bitmap = BitmapFactory.decodeFile(artPath, opts)
                     if (bitmap != null) {
-                        val minDim = kotlin.math.min(bitmap.width, bitmap.height)
-                        val artBitmap = if (minDim > albumTargetPx) {
-                            Bitmap.createScaledBitmap(bitmap, albumTargetPx, albumTargetPx, true)
+                        // Simple scaled bitmap for album art
+                        val artBitmap = if (bitmap.width > albumTargetPx || bitmap.height > albumTargetPx) {
+                            Bitmap.createScaledBitmap(bitmap, albumTargetPx, albumTargetPx, false)
                         } else {
                             bitmap
                         }
                         views.setImageViewBitmap(R.id.album_art, artBitmap)
-                        // Background overlay: scale towards widget size but keep under binder limit, then blur
-                        try {
-                            val base = Bitmap.createScaledBitmap(bitmap, bgW, bgH, true)
-                            val blurred = boxBlur(base, 10)
-                            views.setImageViewBitmap(R.id.bg_overlay, blurred)
-                        } catch (e: Exception) {
-                            // bg_overlay not present in this layout
+                        // Clean up original if different
+                        if (artBitmap !== bitmap) {
+                            bitmap.recycle()
                         }
-                        // No recycle here to avoid recycling if reused above
+                    } else {
+                        views.setImageViewResource(R.id.album_art, R.drawable.ic_widget_music_default)
                     }
                 } catch (e: Exception) {
                     views.setImageViewResource(R.id.album_art, R.drawable.ic_widget_music_default)
-                    try { views.setImageViewResource(R.id.bg_overlay, R.drawable.ic_widget_music_default) } catch (_: Exception) {}
                 }
             } else {
                 views.setImageViewResource(R.id.album_art, R.drawable.ic_widget_music_default)
-                try { views.setImageViewResource(R.id.bg_overlay, R.drawable.ic_widget_music_default) } catch (_: Exception) {}
             }
 
             // Set click intents (inside function)

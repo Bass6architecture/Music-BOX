@@ -589,40 +589,44 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
 
     // Listen for native widget control actions
     _nativeChannel.setMethodCallHandler((call) async {
-      switch (call.method) {
-        case 'widgetPlayPause':
-          if (player.playing) {
-            await player.pause();
-          } else {
-            await player.play();
-          }
-          break;
-        case 'widgetNext':
-          await next();
-          break;
-        case 'widgetPrevious':
-          await previous();
-          break;
-        case 'widgetFavorite':
-          await toggleFavorite();
-          break;
-        case 'widgetShuffle':
-          await toggleShuffle();
-          break;
-        case 'widgetRepeat':
-          await cycleRepeatMode();
-          break;
-        case 'toggleShuffle':
-          await toggleShuffle();
-          break;
-        case 'cycleRepeat':
-          await cycleRepeatMode();
-          break;
-        case 'toggleFavorite':
-          await toggleFavorite();
-          break;
-        default:
-          break;
+      try {
+        switch (call.method) {
+          case 'widgetPlayPause':
+            if (player.playing) {
+              await player.pause();
+            } else {
+              await player.play();
+            }
+            break;
+          case 'widgetNext':
+            await next();
+            break;
+          case 'widgetPrevious':
+            await previous();
+            break;
+          case 'widgetFavorite':
+            await toggleFavorite();
+            break;
+          case 'widgetShuffle':
+            await toggleShuffle();
+            break;
+          case 'widgetRepeat':
+            await cycleRepeatMode();
+            break;
+          case 'toggleShuffle':
+            await toggleShuffle();
+            break;
+          case 'cycleRepeat':
+            await cycleRepeatMode();
+            break;
+          case 'toggleFavorite':
+            await toggleFavorite();
+            break;
+          default:
+            break;
+        }
+      } catch (e, stack) {
+        debugPrint('Widget command error: $e\n$stack');
       }
     });
     

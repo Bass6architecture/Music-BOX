@@ -116,31 +116,43 @@ class MainActivity : AudioServiceActivity() {
       override fun onReceive(context: Context?, intent: Intent?) {
         val command = intent?.getStringExtra("command")
         android.util.Log.d("MainActivity", "Widget command received: $command")
-        when (command) {
-          "play_pause" -> {
-            android.util.Log.d("MainActivity", "Sending widgetPlayPause to Flutter")
-            methodChannel?.invokeMethod("widgetPlayPause", null)
+        
+        // Check if methodChannel is ready before sending commands
+        val channel = methodChannel
+        if (channel == null) {
+          android.util.Log.w("MainActivity", "MethodChannel not ready, ignoring widget command: $command")
+          return
+        }
+        
+        try {
+          when (command) {
+            "play_pause" -> {
+              android.util.Log.d("MainActivity", "Sending widgetPlayPause to Flutter")
+              channel.invokeMethod("widgetPlayPause", null)
+            }
+            "next" -> {
+              android.util.Log.d("MainActivity", "Sending widgetNext to Flutter")
+              channel.invokeMethod("widgetNext", null)
+            }
+            "previous" -> {
+              android.util.Log.d("MainActivity", "Sending widgetPrevious to Flutter")
+              channel.invokeMethod("widgetPrevious", null)
+            }
+            "favorite" -> {
+              android.util.Log.d("MainActivity", "Sending widgetFavorite to Flutter")
+              channel.invokeMethod("widgetFavorite", null)
+            }
+            "shuffle" -> {
+              android.util.Log.d("MainActivity", "Sending widgetShuffle to Flutter")
+              channel.invokeMethod("widgetShuffle", null)
+            }
+            "repeat" -> {
+              android.util.Log.d("MainActivity", "Sending widgetRepeat to Flutter")
+              channel.invokeMethod("widgetRepeat", null)
+            }
           }
-          "next" -> {
-            android.util.Log.d("MainActivity", "Sending widgetNext to Flutter")
-            methodChannel?.invokeMethod("widgetNext", null)
-          }
-          "previous" -> {
-            android.util.Log.d("MainActivity", "Sending widgetPrevious to Flutter")
-            methodChannel?.invokeMethod("widgetPrevious", null)
-          }
-          "favorite" -> {
-            android.util.Log.d("MainActivity", "Sending widgetFavorite to Flutter")
-            methodChannel?.invokeMethod("widgetFavorite", null)
-          }
-          "shuffle" -> {
-            android.util.Log.d("MainActivity", "Sending widgetShuffle to Flutter")
-            methodChannel?.invokeMethod("widgetShuffle", null)
-          }
-          "repeat" -> {
-            android.util.Log.d("MainActivity", "Sending widgetRepeat to Flutter")
-            methodChannel?.invokeMethod("widgetRepeat", null)
-          }
+        } catch (e: Exception) {
+          android.util.Log.e("MainActivity", "Error invoking widget command: $command", e)
         }
       }
     }
