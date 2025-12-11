@@ -8,6 +8,8 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.session.MediaController
+import android.media.session.MediaSessionManager
 import android.os.Bundle
 import android.widget.RemoteViews
 import com.synergydev.music_box.MainActivity
@@ -32,61 +34,93 @@ class SimpleAdaptiveWidget : AppWidgetProvider() {
         when (intent.action) {
             "com.synergydev.music_box.PLAY_PAUSE" -> {
                 android.util.Log.d("SimpleAdaptiveWidget", "Play/Pause button clicked")
-                val flutterIntent = Intent("com.synergydev.music_box.WIDGET_COMMAND").apply {
-                    putExtra("command", "play_pause")
-                    setPackage(context.packageName)
-                }
-                context.sendBroadcast(flutterIntent)
-                // Removed updateAllWidgets(context) - Flutter will update widgets when needed
+                sendMediaCommand(context, "play_pause")
             }
             "com.synergydev.music_box.NEXT" -> {
                 android.util.Log.d("SimpleAdaptiveWidget", "Next button clicked")
-                val flutterIntent = Intent("com.synergydev.music_box.WIDGET_COMMAND").apply {
-                    putExtra("command", "next")
-                    setPackage(context.packageName)
-                }
-                context.sendBroadcast(flutterIntent)
-                // Removed updateAllWidgets(context) - Flutter will update widgets when needed
+                sendMediaCommand(context, "next")
             }
             "com.synergydev.music_box.PREVIOUS" -> {
                 android.util.Log.d("SimpleAdaptiveWidget", "Previous button clicked")
-                val flutterIntent = Intent("com.synergydev.music_box.WIDGET_COMMAND").apply {
-                    putExtra("command", "previous")
-                    setPackage(context.packageName)
-                }
-                context.sendBroadcast(flutterIntent)
-                // Removed updateAllWidgets(context) - Flutter will update widgets when needed
+                sendMediaCommand(context, "previous")
             }
             "com.synergydev.music_box.FAVORITE" -> {
                 android.util.Log.d("SimpleAdaptiveWidget", "Favorite button clicked")
-                val flutterIntent = Intent("com.synergydev.music_box.WIDGET_COMMAND").apply {
-                    putExtra("command", "favorite")
-                    setPackage(context.packageName)
-                }
-                context.sendBroadcast(flutterIntent)
-                // Removed updateAllWidgets(context) - Flutter will update widgets when needed
+                sendBroadcastCommand(context, "favorite")
             }
             "com.synergydev.music_box.SHUFFLE" -> {
                 android.util.Log.d("SimpleAdaptiveWidget", "Shuffle button clicked")
-                val flutterIntent = Intent("com.synergydev.music_box.WIDGET_COMMAND").apply {
-                    putExtra("command", "shuffle")
-                    setPackage(context.packageName)
-                }
-                context.sendBroadcast(flutterIntent)
-                // Removed updateAllWidgets(context) - Flutter will update widgets when needed
+                sendBroadcastCommand(context, "shuffle")
             }
             "com.synergydev.music_box.REPEAT" -> {
                 android.util.Log.d("SimpleAdaptiveWidget", "Repeat button clicked")
-                val flutterIntent = Intent("com.synergydev.music_box.WIDGET_COMMAND").apply {
-                    putExtra("command", "repeat")
-                    setPackage(context.packageName)
-                }
-                context.sendBroadcast(flutterIntent)
-                // Removed updateAllWidgets(context) - Flutter will update widgets when needed
+                sendBroadcastCommand(context, "repeat")
             }
             "com.synergydev.music_box.UPDATE_WIDGET" -> {
                 updateAllWidgets(context)
             }
+        }
+    }
+    
+    /**
+     * Send media command using MediaSession for reliability (play/pause, next, previous).
+     * Falls back to broadcast if MediaSession is unavailable.
+     */
+    private fun sendMediaCommand(context: Context, command: String) {
+        val controller = getActiveMediaController(context)
+        
+        if (controller != null) {
+            android.util.Log.d("SimpleAdaptiveWidget", "Using MediaSession for: $command")
+            when (command) {
+                "play_pause" -> {
+                    val state = controller.playbackState
+                    if (state != null && state.state == android.media.session.PlaybackState.STATE_PLAYING) {
+                        controller.transportControls.pause()
+                    } else {
+                        controller.transportControls.play()
+                    }
+                }
+                "next" -> controller.transportControls.skipToNext()
+                "previous" -> controller.transportControls.skipToPrevious()
+            }
+        } else {
+            sendBroadcastCommand(context, command)
+            // Don't launch app - just send the broadcast silently
+        }
+    }
+    
+    /**
+     * Send command via broadcast (for favorite, shuffle, repeat which require Flutter).
+     */
+    private fun sendBroadcastCommand(context: Context, command: String) {
+        android.util.Log.d("SimpleAdaptiveWidget", "Sending broadcast for: $command")
+        val flutterIntent = Intent("com.synergydev.music_box.WIDGET_COMMAND").apply {
+            putExtra("command", command)
+            setPackage(context.packageName)
+        }
+        context.sendBroadcast(flutterIntent)
+    }
+    
+    private fun getActiveMediaController(context: Context): MediaController? {
+        return try {
+            val sessionManager = context.getSystemService(Context.MEDIA_SESSION_SERVICE) as? MediaSessionManager
+            val controllers = sessionManager?.getActiveSessions(null)
+            controllers?.firstOrNull { it.packageName == context.packageName }
+        } catch (e: Exception) {
+            android.util.Log.w("SimpleAdaptiveWidget", "Could not get MediaController: ${e.message}")
+            null
+        }
+    }
+    
+    private fun launchAppIfNeeded(context: Context) {
+        try {
+            val intent = Intent(context, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            }
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            android.util.Log.w("SimpleAdaptiveWidget", "Could not launch app: ${e.message}")
         }
     }
     
