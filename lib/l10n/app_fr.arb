@@ -483,5 +483,9 @@
       }
     }
   },
-  "contactSubject": "Support Music Box"
+  "contactSubject": "Support Music Box",
+  "sortNewest": "Récent",
+  "sortOldest": "Ancien",
+  "sortShortest": "Court",
+  "sortLongest": "Long"
 }

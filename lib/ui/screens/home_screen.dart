@@ -11,6 +11,7 @@ import '../playlists_page.dart';
 import '../albums_page.dart';
 import '../artists_page.dart';
 import '../settings_page.dart';
+import '../search_page.dart';
 // import '../now_playing_page.dart'; // replaced by immersive sheet
 import '../now_playing_next_gen.dart';
 import '../folders_page.dart';
@@ -169,6 +170,17 @@ class HomeScreenState extends State<HomeScreen>
                         ),
                         const Spacer(),
                         
+                        // Search Button
+                         _buildActionButton(
+                          icon: Icons.search_rounded,
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const SearchPage()),
+                          ),
+                          tooltip: AppLocalizations.of(context)!.search,
+                        ),
+                        const SizedBox(width: 8),
+
                         // Actions (search removed)
                         if (hasCurrentSong) ...[
                           const SizedBox(width: 8),

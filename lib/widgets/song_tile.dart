@@ -135,12 +135,15 @@ class SongTile extends StatelessWidget {
           child: Stack(
             children: [
               Positioned.fill(
-                child: OptimizedArtwork.square(
-                  id: song.id,
-                  type: ArtworkType.AUDIO,
-                  size: artSize,
-                  fit: BoxFit.cover,
-                  borderRadius: BorderRadius.circular(radius), // ✅ Pass radius directly
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(radius),
+                  child: OptimizedArtwork.square(
+                    id: song.id,
+                    type: ArtworkType.AUDIO,
+                    size: artSize,
+                    fit: BoxFit.cover,
+                    borderRadius: BorderRadius.circular(radius),
+                  ),
                 ),
               ),
               // Darken artwork a bit when active so the EQ is always visible

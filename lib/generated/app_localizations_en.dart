@@ -1041,4 +1041,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get contactSubject => 'Music Box Support';
+
+  @override
+  String get sortNewest => 'Newest';
+
+  @override
+  String get sortOldest => 'Oldest';
+
+  @override
+  String get sortShortest => 'Shortest';
+
+  @override
+  String get sortLongest => 'Longest';
 }

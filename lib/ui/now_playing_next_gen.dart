@@ -823,10 +823,8 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                                         },
                                         child: Container(
                                           padding: const EdgeInsets.all(12),
-                                          decoration: BoxDecoration(
-                                            color: isOn
-                                                ? _activeButtonColor.withValues(alpha: 0.2)
-                                                : Colors.transparent,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.transparent,
                                             shape: BoxShape.circle,
                                           ),
                                           child: Icon(

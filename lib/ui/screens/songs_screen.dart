@@ -1,4 +1,5 @@
 
+import 'dart:async'; // Fix for Timer
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -241,6 +242,17 @@ class _SongsScreenState extends State<SongsScreen>
     });
   }
 
+  String _getSortSuffix() {
+    final l10n = AppLocalizations.of(context)!;
+    if (_sortType == _SortType.date) {
+      return _sortAscending ? " (${l10n.sortOldest})" : " (${l10n.sortNewest})";
+    }
+    if (_sortType == _SortType.duration) {
+      return _sortAscending ? " (${l10n.sortShortest})" : " (${l10n.sortLongest})";
+    }
+    return _sortAscending ? " (A-Z)" : " (Z-A)";
+  }
+
   void _sortSongs(_SortType type) {
     setState(() {
       if (_sortType == type) {
@@ -301,7 +313,8 @@ class _SongsScreenState extends State<SongsScreen>
     } else if (_filteredSongs.isEmpty) {
       content = _buildEmptyState();
     } else {
-      final itemsToShow = _filteredSongs.take(_currentMaxItems).toList();
+      // Use full list for proper scrollbar behavior
+      final itemsToShow = _filteredSongs;
 
       final scaffold = Scaffold(
         backgroundColor: Colors.transparent,
@@ -340,152 +353,123 @@ class _SongsScreenState extends State<SongsScreen>
                    ),
 
                  Expanded(
-                   child: RefreshIndicator(
-                     onRefresh: _loadSongs,
-                     child: CustomScrollView(
+                     child: Scrollbar(
                        controller: _scrollController,
-                       slivers: [
-                         // Standard Header (Only if NOT in selection mode)
-                         if (!_isSelectionMode)
-                           SliverToBoxAdapter(
-                             child: Container(
-                               padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                               child: Column(
-                                 children: [
-                                   // Note: This matches the standard header content you previously had
-                                   // I am simplified it here to just validity, you might want to restore full header
-                                   // But based on previous edits, the standard header was lost in the bad replace.
-                                   // I will restore the stats row implementation.
-                                   Row(
-                                      children: [
-                                       Text(
-                                          AppLocalizations.of(context)!.songCount(_songs.length),
-                                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                       ),
-                                       const Spacer(),
-                                       IconButton.filledTonal(
-                                         onPressed: () => Navigator.push(
-                                           context,
-                                           MaterialPageRoute(builder: (_) => const SearchPage()),
-                                         ),
-                                         icon: const Icon(Icons.search_rounded),
-                                         tooltip: AppLocalizations.of(context)!.search,
-                                       ),
-                                     ],
-                                   ),
-                                   const SizedBox(height: 16),
-                                   SingleChildScrollView(
-                                     scrollDirection: Axis.horizontal,
-                                     child: Row(
-                                       children: [
-                                          ActionChip(
-                                            avatar: const Icon(Icons.access_time_rounded, size: 18),
-                                            label: Text(AppLocalizations.of(context)!.allSongs),
-                                            onPressed: () {},
-                                          ),
-                                          const SizedBox(width: 8),
-                                          FilterChip(
-                                            avatar: const Icon(Icons.shuffle_rounded, size: 18),
-                                            label: Text(AppLocalizations.of(context)!.shuffle),
-                                            onSelected: (_) {
-                                              if (_filteredSongs.isNotEmpty) {
-                                                final idx = math.Random().nextInt(_filteredSongs.length);
-                                                playerCubit.setQueueAndPlay(_filteredSongs, idx);
+                       thumbVisibility: true,
+                       interactive: true,
+                       thickness: 10, // Plus épais pour une meilleure prise en main
+                       radius: const Radius.circular(8),
+                     child: RefreshIndicator(
+                       onRefresh: _loadSongs,
+                       child: CustomScrollView(
+                         controller: _scrollController,
+                         slivers: [
+                           // Standard Header (Only if NOT in selection mode)
+                           if (!_isSelectionMode)
+                             SliverToBoxAdapter(
+                               child: Container(
+                                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                                 child: SingleChildScrollView(
+                                   scrollDirection: Axis.horizontal,
+                                   child: Row(
+                                   children: [
+                                      FilterChip(
+                                        avatar: const Icon(Icons.shuffle_rounded, size: 18),
+                                        label: Text(AppLocalizations.of(context)!.shuffle),
+                                        onSelected: (_) {
+                                          if (_filteredSongs.isNotEmpty) {
+                                            final idx = math.Random().nextInt(_filteredSongs.length);
+                                            playerCubit.setQueueAndPlay(_filteredSongs, idx);
+                                          }
+                                        },
+                                      ),
+                                      const SizedBox(width: 8),
+                                      MenuAnchor(
+                                        builder: (context, controller, child) {
+                                          return ActionChip(
+                                            avatar: const Icon(Icons.sort_rounded, size: 18),
+                                            label: Text('${_getSortLabel(_sortType)}${_getSortSuffix()}'),
+                                            onPressed: () {
+                                              if (controller.isOpen) {
+                                                controller.close();
+                                              } else {
+                                                controller.open();
                                               }
                                             },
-                                          ),
-                                          const SizedBox(width: 8),
-                                          MenuAnchor(
-                                            builder: (context, controller, child) {
-                                              return ActionChip(
-                                                avatar: const Icon(Icons.sort_rounded, size: 18),
-                                                label: Text(_getSortLabel(_sortType)),
-                                                onPressed: () {
-                                                  if (controller.isOpen) {
-                                                    controller.close();
-                                                  } else {
-                                                    controller.open();
-                                                  }
-                                                },
-                                              );
-                                            },
-                                            menuChildren: _SortType.values.map((type) {
-                                              return MenuItemButton(
-                                                leadingIcon: Icon(_getSortIcon(type)),
-                                                child: Text(_getSortLabel(type)),
-                                                onPressed: () => _sortSongs(type),
-                                              );
-                                            }).toList(),
-                                          ),
-                                       ],
-                                     ),
+                                          );
+                                        },
+                                        menuChildren: _SortType.values.map((type) {
+                                          return MenuItemButton(
+                                            leadingIcon: Icon(_getSortIcon(type)),
+                                            child: Text(_getSortLabel(type)),
+                                            onPressed: () => _sortSongs(type),
+                                          );
+                                        }).toList(),
+                                      ),
+
+                                      const SizedBox(width: 16),
+                                      
+                                      // Song Count (Discret)
+                                      Text(
+                                        AppLocalizations.of(context)!.songCount(_filteredSongs.length),
+                                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                          color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                                        ),
+                                      ),
+                                    ],
                                    ),
-                                 ],
+                                 ),
+                                 ),
                                ),
+
+
+                           SliverList(
+                             delegate: SliverChildBuilderDelegate(
+                               (context, index) {
+                                 if (index >= itemsToShow.length) {
+                                    return const SizedBox(height: 100); 
+                                 }
+ 
+                                 final song = itemsToShow[index];
+                                 return SongTile(
+                                   song: song,
+                                   isSelectionMode: _isSelectionMode,
+                                   isSelected: _selectedIds.contains(song.id),
+                                   onTap: () {
+                                     if (_isSelectionMode) {
+                                       _toggleSelection(song.id);
+                                     } else {
+                                       playerCubit.setQueueAndPlay(itemsToShow, index);
+                                     }
+                                   },
+                                   onLongPress: () {
+                                     if (!_isSelectionMode) {
+                                       context.findAncestorStateOfType<HomeScreenState>()?.toggleSelectionMode(true);
+                                       _toggleSelection(song.id);
+                                     }
+                                   },
+                                   onMorePressed: _isSelectionMode ? null : () => openSongActionsSheet(context, song),
+                                 );
+                               },
+                               childCount: itemsToShow.length + 1,
                              ),
                            ),
-
-                         SliverList(
-                           delegate: SliverChildBuilderDelegate(
-                             (context, index) {
-                               if (index >= itemsToShow.length) {
-                                 if (_currentMaxItems < _filteredSongs.length) {
-                                   return const Padding(
-                                     padding: EdgeInsets.all(16.0),
-                                     child: Center(child: CircularProgressIndicator()),
-                                   );
-                                 } else {
-                                   return const SizedBox(height: 100); 
-                                 }
-                               }
-
-                               final song = itemsToShow[index];
-                               // Fix: SongTile does not have isPlaying param. 
-                               // It likely highlights based on internal check or we need to rely on highlightActive=true (default)
-                               // If highlightActive is true, SongTile checks `currentSong.id == song.id` internally?
-                               // Let's assume standard behavior. If not, I'll pass generic `isActive` if available.
-                               // Based on error `No named parameter isPlaying`, I remove it.
-                               return SongTile(
-                                 song: song,
-                                 // isPlaying param removed
-                                 isSelectionMode: _isSelectionMode,
-                                 isSelected: _selectedIds.contains(song.id),
-                                 onTap: () {
-                                   if (_isSelectionMode) {
-                                     _toggleSelection(song.id);
-                                   } else {
-                                     playerCubit.setQueueAndPlay(_filteredSongs, index);
-                                   }
-                                 },
-                                 onLongPress: () {
-                                   if (!_isSelectionMode) {
-                                     context.findAncestorStateOfType<HomeScreenState>()?.toggleSelectionMode(true);
-                                     _toggleSelection(song.id);
-                                   }
-                                 },
-                                 onMorePressed: _isSelectionMode ? null : () => openSongActionsSheet(context, song),
-                               );
-                             },
-                             childCount: itemsToShow.length + 1,
-                           ),
-                         ),
-                       ],
+                         ],
+                       ),
                      ),
                    ),
                  ),
                ],
              ),
 
-            // Bottom Bar (Selection Actions)
-            if (_isSelectionMode)
-              Positioned(
-                left: 0, 
-                right: 0,
-                bottom: 0,
-                child: _buildSelectionBottomBar(context),
-              ),
+             // Bottom Bar (Selection Actions)
+             if (_isSelectionMode)
+               Positioned(
+                 left: 0, 
+                 right: 0,
+                 bottom: 0,
+                 child: _buildSelectionBottomBar(context),
+               ),
           ],
         ),
       );
@@ -859,3 +843,153 @@ class _SongsScreenState extends State<SongsScreen>
 }
 
 enum _SortType { title, artist, album, duration, date }
+
+class _AlphabetScroll extends StatefulWidget {
+  final List<SongModel> songs;
+  final ScrollController controller;
+  final double itemHeight;
+
+  const _AlphabetScroll({
+    required this.songs,
+    required this.controller,
+    this.itemHeight = 62.0,
+  });
+
+  @override
+  State<_AlphabetScroll> createState() => _AlphabetScrollState();
+}
+
+class _AlphabetScrollState extends State<_AlphabetScroll> {
+  final List<String> _alphabet = [
+    '#', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 
+    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+  ];
+  String? _bubbleLetter;
+  Timer? _hideTimer;
+
+  void _scrollTo(String letter) {
+    setState(() {
+      _bubbleLetter = letter;
+    });
+    
+    _hideTimer?.cancel();
+    _hideTimer = Timer(const Duration(seconds: 1, milliseconds: 500), () {
+      if (mounted) setState(() => _bubbleLetter = null);
+    });
+
+    if (widget.songs.isEmpty) return;
+
+    int index = -1;
+    if (letter == '#') {
+      index = 0;
+    } else {
+      index = widget.songs.indexWhere((s) {
+        final title = (s.title).toUpperCase().trim();
+        if (title.isEmpty) return false;
+        return title.startsWith(letter);
+      });
+    }
+
+    if (index != -1) {
+      final headerOffset = 60.0; 
+      final offset = (index * widget.itemHeight) + headerOffset;
+      final maxScroll = widget.controller.position.maxScrollExtent;
+      final target = offset.clamp(0.0, maxScroll);
+      widget.controller.jumpTo(target);
+    }
+  }
+
+  @override
+  void dispose() {
+    _hideTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return Stack(
+      children: [
+        // 1. Central Bubble Overlay
+        if (_bubbleLetter != null)
+          Align(
+            alignment: Alignment.center,
+            child: Container(
+              width: 80, 
+              height: 80,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary, // Blue/Primary bubble
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  _bubbleLetter!,
+                  style: theme.textTheme.headlineLarge?.copyWith(
+                    color: theme.colorScheme.onPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+        // 2. Sidebar with Dots
+        Align(
+          alignment: Alignment.centerRight,
+          child: Container(
+            width: 40, // Wider touch area
+            color: Colors.transparent, // Capture taps
+            padding: const EdgeInsets.only(top: 60, bottom: 80),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onVerticalDragStart: (details) => _handleDrag(details.localPosition, context),
+              onVerticalDragUpdate: (details) => _handleDrag(details.localPosition, context),
+              onTapDown: (details) => _handleDrag(details.localPosition, context),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: _alphabet.map((letter) {
+                  return Expanded(
+                    child: Center(
+                      child: Text(
+                        '•', // Dots instead of letters
+                        style: TextStyle(
+                          fontSize: 12, 
+                          fontWeight: FontWeight.bold, 
+                          color: theme.colorScheme.onSurface.withOpacity(0.5) // Subtle dots
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _handleDrag(Offset localPosition, BuildContext context) {
+    // We need the height of the column, not the screen
+    // Since we are inside LayoutBuilder or strict constraints within the Column
+    // We can use context.size if available
+    final box = context.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    
+    final height = box.size.height;
+    final step = height / _alphabet.length;
+    
+    int index = (localPosition.dy / step).floor();
+    index = index.clamp(0, _alphabet.length - 1);
+    
+    _scrollTo(_alphabet[index]);
+  }
+}

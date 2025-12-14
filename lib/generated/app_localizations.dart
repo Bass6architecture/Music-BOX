@@ -2069,6 +2069,30 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Support Music Box'**
   String get contactSubject;
+
+  /// No description provided for @sortNewest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Récent'**
+  String get sortNewest;
+
+  /// No description provided for @sortOldest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ancien'**
+  String get sortOldest;
+
+  /// No description provided for @sortShortest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Court'**
+  String get sortShortest;
+
+  /// No description provided for @sortLongest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Long'**
+  String get sortLongest;
 }
 
 class _AppLocalizationsDelegate

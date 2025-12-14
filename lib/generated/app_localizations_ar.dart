@@ -1038,4 +1038,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get contactSubject => 'Support Music Box';
+
+  @override
+  String get sortNewest => 'Récent';
+
+  @override
+  String get sortOldest => 'Ancien';
+
+  @override
+  String get sortShortest => 'Court';
+
+  @override
+  String get sortLongest => 'Long';
 }

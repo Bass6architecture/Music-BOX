@@ -338,6 +338,10 @@ class _DetailedSongCard extends StatelessWidget {
     final theme = Theme.of(context);
     final size = 140.0;
     
+    // Check active state
+    final isActive = context.select((PlayerCubit c) => c.state.currentSongId == song.id);
+    final isPlaying = context.select((PlayerCubit c) => c.state.isPlaying);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -366,6 +370,18 @@ class _DetailedSongCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (isActive)
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Center(
+                          child: _MiniEq(animate: isPlaying, color: Colors.white),
+                        ),
+                      ),
+                    ),
                   if (rank != null)
                     Positioned(
                       top: 8,
@@ -397,7 +413,8 @@ class _DetailedSongCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.bold,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.bold,
+                color: isActive ? theme.colorScheme.primary : null,
               ),
             ),
             const SizedBox(height: 2),
@@ -406,7 +423,7 @@ class _DetailedSongCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+                color: isActive ? theme.colorScheme.primary.withValues(alpha: 0.8) : theme.colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -488,23 +505,8 @@ class _CompactSongRow extends StatelessWidget {
                 ],
               ),
             ),
-            // New Badge
-            if (!isActive) // Hide badge if playing to avoid clutter
-            Container(
-               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-               decoration: BoxDecoration(
-                 border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.3)),
-                 borderRadius: BorderRadius.circular(4),
-               ),
-               child: Text(
-                 'NEW', 
-                 style: theme.textTheme.labelSmall?.copyWith(
-                   color: theme.colorScheme.primary, 
-                   fontSize: 8,
-                   fontWeight: FontWeight.bold,
-                 ),
-               ),
-            ),
+            // Badge removed per user request
+            const SizedBox.shrink(),
           ],
         ),
       ),

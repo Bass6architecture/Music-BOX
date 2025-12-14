@@ -454,5 +454,9 @@
       }
     }
   },
-  "contactSubject": "Music Box Support"
+  "contactSubject": "Music Box Support",
+  "sortNewest": "Newest",
+  "sortOldest": "Oldest",
+  "sortShortest": "Shortest",
+  "sortLongest": "Longest"
 }
