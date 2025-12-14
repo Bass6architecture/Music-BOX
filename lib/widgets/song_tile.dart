@@ -91,19 +91,24 @@ class SongTile extends StatelessWidget {
         ? context.select((PlayerCubit c) => c.state.isPlaying)
         : false;
 
-    final artSize = compact ? 52.0 : 60.0; // ✅ Increased size
-    final radius = 12.0; // ✅ Increased radius
-    final baseTitleStyle = (compact ? theme.textTheme.bodyLarge : theme.textTheme.titleMedium) ?? const TextStyle();
+    final artSize = 56.0; // ✅ Aligned with For You
+    final radius = 8.0;   // ✅ Reduced radius
+    
+    // Slim text styles
+    final baseTitleStyle = theme.textTheme.bodyMedium ?? const TextStyle();
     final titleStyle = baseTitleStyle.copyWith(
-      color: isActive ? theme.colorScheme.primary : baseTitleStyle.color,
-      fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+      color: isActive ? theme.colorScheme.primary : theme.colorScheme.onSurface,
+      fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+      fontSize: 14, // Explicitly control size
     );
+    
     final subtitleText = subtitle?.trim().isNotEmpty == true
         ? subtitle!.trim()
         : _defaultSubtitleFor(overrideSong);
-    final subStyle = theme.textTheme.bodyMedium?.copyWith(
-      color: theme.colorScheme.onSurfaceVariant,
-      fontWeight: FontWeight.w400,
+        
+    final subStyle = theme.textTheme.bodySmall?.copyWith(
+      color: isActive ? theme.colorScheme.primary.withValues(alpha: 0.8) : theme.colorScheme.onSurfaceVariant,
+      fontSize: 12,
     );
 
     final row = Row(
@@ -165,18 +170,18 @@ class SongTile extends StatelessWidget {
                     ),
                   ),
                 ),
-              if (isActive)
-                Positioned(
-                  right: 4,
-                  bottom: 4,
-                  child: _EqIndicator(
-                    color: Colors.white,
-                    barCount: 3,
-                    width: 16,
-                    height: 12,
-                    animate: isPlaying,
+                if (isActive)
+                  Positioned.fill(
+                    child: Center(
+                      child: _EqIndicator(
+                        color: Colors.white,
+                        barCount: 3,
+                        width: 16,
+                        height: 12,
+                        animate: isPlaying,
+                      ),
+                    ),
                   ),
-                ),
             ],
           ),
         ),
@@ -261,11 +266,9 @@ class SongTile extends StatelessWidget {
     // Background logic
     Color? backgroundColor;
     if (isSelected) {
-      backgroundColor = theme.colorScheme.primary.withValues(alpha: 0.25);
-    } else if (isActive) {
-      backgroundColor = theme.colorScheme.primary.withValues(alpha: 0.35);
+      backgroundColor = theme.colorScheme.primary.withValues(alpha: 0.15); // Subtle selection
     } else {
-      backgroundColor = Colors.transparent;
+      backgroundColor = Colors.transparent; // No active background
     }
 
     return Material(
@@ -274,9 +277,9 @@ class SongTile extends StatelessWidget {
         onTap: onTap,
         onLongPress: onLongPress,
         child: Padding(
-          padding: EdgeInsets.symmetric(
+          padding: const EdgeInsets.symmetric(
             horizontal: 16,
-            vertical: compact ? 8 : 10,
+            vertical: 6,
           ),
           child: row,
         ),

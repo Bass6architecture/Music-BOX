@@ -96,6 +96,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mostPlayed => 'Most played';
 
   @override
+  String get forYou => 'For You';
+
+  @override
+  String get quickPlay => 'Quick Play';
+
+  @override
+  String get listeningHabits => 'On Repeat';
+
+  @override
+  String get forgottenGems => 'Forgotten Gems';
+
+  @override
+  String get allTimeHits => 'Timeless';
+
+  @override
+  String get explore => 'Explore';
+
+  @override
   String get settingsTitle => 'Settings';
 
   @override

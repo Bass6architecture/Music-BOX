@@ -96,6 +96,24 @@ class AppLocalizationsAr extends AppLocalizations {
   String get mostPlayed => 'الأكثر تشغيلاً';
 
   @override
+  String get forYou => 'Pour Vous';
+
+  @override
+  String get quickPlay => 'Lecture Rapide';
+
+  @override
+  String get listeningHabits => 'En Boucle';
+
+  @override
+  String get forgottenGems => 'Pépites Oubliées';
+
+  @override
+  String get allTimeHits => 'Intemporel';
+
+  @override
+  String get explore => 'Explorer';
+
+  @override
   String get settingsTitle => 'الإعدادات';
 
   @override

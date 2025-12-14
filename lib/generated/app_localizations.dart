@@ -276,6 +276,42 @@ abstract class AppLocalizations {
   /// **'Les plus joués'**
   String get mostPlayed;
 
+  /// No description provided for @forYou.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pour Vous'**
+  String get forYou;
+
+  /// No description provided for @quickPlay.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lecture Rapide'**
+  String get quickPlay;
+
+  /// No description provided for @listeningHabits.
+  ///
+  /// In fr, this message translates to:
+  /// **'En Boucle'**
+  String get listeningHabits;
+
+  /// No description provided for @forgottenGems.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pépites Oubliées'**
+  String get forgottenGems;
+
+  /// No description provided for @allTimeHits.
+  ///
+  /// In fr, this message translates to:
+  /// **'Intemporel'**
+  String get allTimeHits;
+
+  /// No description provided for @explore.
+  ///
+  /// In fr, this message translates to:
+  /// **'Explorer'**
+  String get explore;
+
   /// No description provided for @settingsTitle.
   ///
   /// In fr, this message translates to:

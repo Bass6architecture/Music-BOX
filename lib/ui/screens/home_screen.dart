@@ -15,6 +15,7 @@ import '../settings_page.dart';
 import '../now_playing_next_gen.dart';
 import '../folders_page.dart';
 import 'songs_screen.dart';
+import 'for_you_page.dart';
 import '../widgets/music_box_scaffold.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -59,6 +60,12 @@ class HomeScreenState extends State<HomeScreen>
   List<_NavigationItem> _getNavigationItems(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return [
+      _NavigationItem(
+        icon: Icons.auto_awesome_outlined,
+        selectedIcon: Icons.auto_awesome,
+        label: l10n.forYou,
+        page: const ForYouPage(),
+      ),
       _NavigationItem(
         icon: Icons.music_note_outlined,
         selectedIcon: Icons.music_note_rounded,

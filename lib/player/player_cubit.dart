@@ -1924,7 +1924,18 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
   Future<void> _loadUserPlaylists() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString('user_playlists');
+      // Try new key first, then fall back to old key for migration
+      var raw = prefs.getString('user_playlists_v2');
+      if (raw == null || raw.isEmpty) {
+        // Migration: try old key
+        raw = prefs.getString('user_playlists');
+        if (raw != null && raw.isNotEmpty) {
+          // Migrate to new key
+          await prefs.setString('user_playlists_v2', raw);
+          debugPrint('[Playlists] Migrated from old key to user_playlists_v2');
+        }
+      }
+      
       if (raw != null && raw.isNotEmpty) {
         final decoded = json.decode(raw);
         if (decoded is List) {
@@ -1937,17 +1948,25 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
             }
           }
           emit(state.copyWith(userPlaylists: list));
+          debugPrint('[Playlists] Loaded ${list.length} playlists');
         }
+      } else {
+        debugPrint('[Playlists] No playlists found in storage');
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[Playlists] Error loading: $e');
+    }
   }
 
   Future<void> _persistUserPlaylists() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final list = state.userPlaylists.map((p) => p.toJson()).toList();
-      await prefs.setString('user_playlists', json.encode(list));
-    } catch (_) {}
+      await prefs.setString('user_playlists_v2', json.encode(list));
+      debugPrint('[Playlists] Persisted ${list.length} playlists');
+    } catch (e) {
+      debugPrint('[Playlists] Error persisting: $e');
+    }
   }
 
   String createUserPlaylist(String name) {
@@ -2627,36 +2646,44 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       if (data['metadata_overrides'] != null) await prefs.setString('metadata_overrides', data['metadata_overrides']);
       if (data['hide_meta_warning'] != null) await prefs.setBool('hide_meta_warning', data['hide_meta_warning']);
 
+      debugPrint('[Restore] Backup keys: ${data.keys.toList()}');
+      debugPrint('[Restore] allSongs count: ${state.allSongs.length}');
+      debugPrint('[Restore] user_playlists in backup: ${data['user_playlists'] != null ? 'YES' : 'NO'}');
+      debugPrint('[Restore] favorites in backup: ${data['favorites']?.length ?? 0}');
+
       // 2. Load "Smart Metadata Cache" for migration
       final metadataCache = data['song_metadata_cache'] as Map<String, dynamic>? ?? {};
       
       // Map OldID -> NewID
       final idMap = <String, int>{};
       
-      if (metadataCache.isNotEmpty) {
+      if (metadataCache.isNotEmpty && state.allSongs.isNotEmpty) {
         for (final entry in metadataCache.entries) {
           final oldId = entry.key;
           final meta = entry.value;
           if (meta is Map) {
-             final title = meta['t'] as String? ?? '';
-             final artist = meta['a'] as String? ?? '';
-             // Search in current library (match by title and artist)
-             try {
-               final match = state.allSongs.firstWhere(
-                 (s) => s.title == title && (s.artist == artist),
-               );
-               idMap[oldId] = match.id;
-             } catch (_) {
-               // No match found
+             final title = (meta['t'] as String? ?? '').toLowerCase().trim();
+             final artist = (meta['a'] as String? ?? '').toLowerCase().trim();
+             // Search in current library (match by title and artist, case-insensitive)
+             for (final s in state.allSongs) {
+               final sTitle = s.title.toLowerCase().trim();
+               final sArtist = (s.artist ?? '').toLowerCase().trim();
+               if (sTitle == title && sArtist == artist) {
+                 idMap[oldId] = s.id;
+                 break;
+               }
              }
           }
         }
+        debugPrint('[Restore] idMap created with ${idMap.length} mappings');
       }
 
       // 3. Migrate Favorites
       if (data['favorites'] != null) {
         final List<dynamic> oldFavs = data['favorites'];
         final newFavs = <String>[];
+        debugPrint('[Restore] Processing ${oldFavs.length} favorites');
+        
         for (final oldId in oldFavs) {
            final oldIdStr = oldId.toString();
            // Try mapped ID first (smart migration)
@@ -2670,6 +2697,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
              }
            }
         }
+        debugPrint('[Restore] Restored ${newFavs.length} favorites');
         await prefs.setStringList('favorites_ids', newFavs);
       }
 
@@ -2699,12 +2727,14 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
                     
                     item['songIds'] = newSongIds;
                     migratedPlaylists.add(item);
+                    debugPrint('[Restore] Playlist "${item['name']}": ${oldIds.length} -> ${newSongIds.length} songs');
                  }
               }
               await prefs.setString('user_playlists_v2', jsonEncode(migratedPlaylists));
+              debugPrint('[Restore] Saved ${migratedPlaylists.length} playlists');
            }
          } catch (e) {
-           print('Error migrating playlists: $e');
+           debugPrint('[Restore] Error migrating playlists: $e');
          }
       }
 
@@ -2715,8 +2745,10 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       await _loadCustomArtworkPaths();
       await _loadHideMetadataSaveWarning();
       
+      debugPrint('[Restore] Data restoration complete!');
+      
     } catch (e) {
-      print('Error restoring data: $e');
+      debugPrint('[Restore] Error restoring data: $e');
     }
   }
 }

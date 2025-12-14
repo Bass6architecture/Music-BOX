@@ -32,6 +32,12 @@
   "recentlyAdded": "Recently Added",
   "recentlyPlayed": "Recently Played",
   "mostPlayed": "Most Played",
+  "forYou": "For You",
+  "quickPlay": "Quick Play",
+  "listeningHabits": "On Repeat",
+  "forgottenGems": "Forgotten Gems",
+  "allTimeHits": "Timeless",
+  "explore": "Explore",
   
   "settingsTitle": "Settings",
   "appearance": "Appearance",

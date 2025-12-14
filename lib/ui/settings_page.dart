@@ -319,8 +319,6 @@ class _SettingsPageState extends State<SettingsPage> {
                           TextButton(
                             onPressed: () {
                               Navigator.pop(ctx);
-                              // Force restart/reset to home to apply changes cleanly
-                              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
                             }, 
                             child: Text(l10n.ok)
                           ),
