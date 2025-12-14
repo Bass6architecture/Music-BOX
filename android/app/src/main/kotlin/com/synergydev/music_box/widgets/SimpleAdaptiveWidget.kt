@@ -174,7 +174,9 @@ class SimpleAdaptiveWidget : AppWidgetProvider() {
             // Get saved data
             val prefs = context.getSharedPreferences("widget_data", Context.MODE_PRIVATE)
             val title = prefs.getString("title", "Music Box") ?: "Music Box"
-            val artist = prefs.getString("artist", "Artist") ?: "Artist"
+            // Use "Appuyez pour ouvrir" if artist is missing/default to encourage interaction
+            val artistRaw = prefs.getString("artist", null)
+            val artist = if (artistRaw == "Artist" || artistRaw.isNullOrEmpty()) "Appuyez pour ouvrir" else artistRaw
             val isPlaying = prefs.getBoolean("isPlaying", false)
             val isFavorite = prefs.getBoolean("isFavorite", false)
             val artPath = prefs.getString("artPath", null)
@@ -375,6 +377,13 @@ class SimpleAdaptiveWidget : AppWidgetProvider() {
                 Intent(context, MainActivity::class.java),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
+            // Set listener on the correct root layout
+            val rootId = if (layoutId == R.layout.widget_compact_simple) 
+                R.id.widget_root_compact 
+            else 
+                R.id.widget_root_adaptive
+            
+            views.setOnClickPendingIntent(rootId, appIntent)
             views.setOnClickPendingIntent(R.id.album_art, appIntent)
 
             // Apply update

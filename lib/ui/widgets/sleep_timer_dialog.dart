@@ -200,7 +200,8 @@ class SleepTimerDialog extends StatelessWidget {
       builder: (ctx) => _CustomTimerPicker(
         onDurationSelected: (duration) {
           context.read<PlayerCubit>().startSleepTimer(duration);
-          Navigator.pop(context); // Close dialog (SettingsPage or NowPlaying)
+          Navigator.pop(ctx); // Close BottomSheet
+          Navigator.pop(context); // Close SleepTimerDialog
           
           final l10n = AppLocalizations.of(context)!;
           final label = '${duration.inHours > 0 ? '${duration.inHours}h ' : ''}${duration.inMinutes % 60}min';

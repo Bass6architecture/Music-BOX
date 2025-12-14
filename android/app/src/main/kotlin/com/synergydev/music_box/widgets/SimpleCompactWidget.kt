@@ -131,7 +131,9 @@ class SimpleCompactWidget : AppWidgetProvider() {
             // Get saved data
             val prefs = context.getSharedPreferences("widget_data", Context.MODE_PRIVATE)
             val title = prefs.getString("title", "Music Box") ?: "Music Box"
-            val artist = prefs.getString("artist", "Artist") ?: "Artist"
+            // Use "Appuyez pour ouvrir" if artist is missing/default to encourage interaction
+            val artistRaw = prefs.getString("artist", null)
+            val artist = if (artistRaw == "Artist" || artistRaw.isNullOrEmpty()) "Appuyez pour ouvrir" else artistRaw
             val isPlaying = prefs.getBoolean("isPlaying", false)
             val artPath = prefs.getString("artPath", null)
             
@@ -204,13 +206,15 @@ class SimpleCompactWidget : AppWidgetProvider() {
             )
             views.setOnClickPendingIntent(R.id.btn_previous, previousIntent)
             
-            // Open app on widget click
+            // Open app on widget click (ANYWHERE)
             val appIntent = PendingIntent.getActivity(
                 context,
                 0,
                 Intent(context, MainActivity::class.java),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
+            views.setOnClickPendingIntent(R.id.widget_root_compact, appIntent)
+            // Keep album_art listener just in case, but root covers it
             views.setOnClickPendingIntent(R.id.album_art, appIntent)
             
             appWidgetManager.updateAppWidget(appWidgetId, views)
