@@ -288,10 +288,13 @@ class _ScanMusicPageState extends State<ScanMusicPage> with SingleTickerProvider
             if (_phase == ScanPhase.idle) ...[
               Container(
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(16),
+                  color: (Theme.of(context).brightness == Brightness.dark 
+                      ? Colors.white 
+                      : Colors.black).withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: theme.colorScheme.outline.withValues(alpha: 0.1),
+                    color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
+                    width: 1,
                   ),
                 ),
                 padding: const EdgeInsets.all(16),

@@ -1183,12 +1183,8 @@ Future<void> _deleteAudioFile(BuildContext context, PlayerCubit cubit, SongModel
     // Utiliser le canal natif pour supprimer via MediaStore
     await _nativeChannel.invokeMethod('deleteAudio', {'audioId': song.id});
     
-    // Retirer de la queue si présent
-    final currentSongs = cubit.state.songs;
-    final indexToRemove = currentSongs.indexWhere((s) => s.id == song.id);
-    if (indexToRemove != -1) {
-      await cubit.removeFromQueue(indexToRemove);
-    }
+    // Retirer de la queue si présent et de la playlist (Robust)
+    await cubit.removeSongsById([song.id]);
     
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

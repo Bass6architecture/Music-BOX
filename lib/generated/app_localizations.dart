@@ -1883,6 +1883,156 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Accéder à Music Box'**
   String get accessApp;
+
+  /// No description provided for @backupAndData.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sauvegarde & Données'**
+  String get backupAndData;
+
+  /// No description provided for @exportData.
+  ///
+  /// In fr, this message translates to:
+  /// **'Exporter les données'**
+  String get exportData;
+
+  /// No description provided for @exportDataDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sauvegarder favoris, playlists et stats'**
+  String get exportDataDesc;
+
+  /// No description provided for @importBackup.
+  ///
+  /// In fr, this message translates to:
+  /// **'Importer une sauvegarde'**
+  String get importBackup;
+
+  /// No description provided for @importBackupDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'Restaurer depuis un fichier .json'**
+  String get importBackupDesc;
+
+  /// No description provided for @attention.
+  ///
+  /// In fr, this message translates to:
+  /// **'Attention'**
+  String get attention;
+
+  /// No description provided for @restoreWarning.
+  ///
+  /// In fr, this message translates to:
+  /// **'La restauration va écraser vos favoris et playlists actuels.\n\nVoulez-vous continuer ?'**
+  String get restoreWarning;
+
+  /// No description provided for @overwriteAndRestore.
+  ///
+  /// In fr, this message translates to:
+  /// **'Écraser et Restaurer'**
+  String get overwriteAndRestore;
+
+  /// No description provided for @restoreSuccessTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Restauration réussie'**
+  String get restoreSuccessTitle;
+
+  /// No description provided for @restoreSuccessMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos données ont été restaurées avec succès.\n\nVeuillez redémarrer l\'application pour que tous les changements prennent effet.'**
+  String get restoreSuccessMessage;
+
+  /// No description provided for @backupReadError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de lire le fichier de sauvegarde.'**
+  String get backupReadError;
+
+  /// No description provided for @sleepTimerTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Minuteur de veille'**
+  String get sleepTimerTitle;
+
+  /// No description provided for @sleepTimerDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'Programmer l\'arrêt de la musique'**
+  String get sleepTimerDesc;
+
+  /// No description provided for @sleepTimerStoppingSoon.
+  ///
+  /// In fr, this message translates to:
+  /// **'Arrêt imminent...'**
+  String get sleepTimerStoppingSoon;
+
+  /// No description provided for @sleepTimerActive.
+  ///
+  /// In fr, this message translates to:
+  /// **'Actif : Arrêt dans {minutes} min'**
+  String sleepTimerActive(int minutes);
+
+  /// No description provided for @sleepTimerStopMusicAfter.
+  ///
+  /// In fr, this message translates to:
+  /// **'Arrêter la musique après...'**
+  String get sleepTimerStopMusicAfter;
+
+  /// No description provided for @sleepTimerActiveRemaining.
+  ///
+  /// In fr, this message translates to:
+  /// **'Actif : {minutes}:{seconds} restants'**
+  String sleepTimerActiveRemaining(int minutes, String seconds);
+
+  /// No description provided for @deactivate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Désactiver'**
+  String get deactivate;
+
+  /// No description provided for @timerSetFor.
+  ///
+  /// In fr, this message translates to:
+  /// **'Minuteur réglé pour {label} 🌙'**
+  String timerSetFor(String label);
+
+  /// No description provided for @oneHour.
+  ///
+  /// In fr, this message translates to:
+  /// **'1 heure'**
+  String get oneHour;
+
+  /// No description provided for @oneHourThirty.
+  ///
+  /// In fr, this message translates to:
+  /// **'1h 30'**
+  String get oneHourThirty;
+
+  /// No description provided for @twoHours.
+  ///
+  /// In fr, this message translates to:
+  /// **'2 heures'**
+  String get twoHours;
+
+  /// No description provided for @backupSubject.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sauvegarde Music Box'**
+  String get backupSubject;
+
+  /// No description provided for @backupBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voici ma sauvegarde Music Box du {date}.'**
+  String backupBody(String date);
+
+  /// No description provided for @contactSubject.
+  ///
+  /// In fr, this message translates to:
+  /// **'Support Music Box'**
+  String get contactSubject;
 }
 
 class _AppLocalizationsDelegate

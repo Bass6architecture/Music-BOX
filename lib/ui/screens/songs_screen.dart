@@ -1,4 +1,4 @@
-import 'dart:io';
+
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,7 +13,7 @@ import '../../core/constants/app_constants.dart';
 
 import '../song_actions_sheet.dart';
 import '../search_page.dart';
-import '../search_page.dart';
+
 import '../../core/utils/music_data_processor.dart';
 import 'home_screen.dart'; // To access toggleSelectionMode
 import 'package:share_plus/share_plus.dart'; // For sharing multiple files
@@ -253,74 +253,7 @@ class _SongsScreenState extends State<SongsScreen>
     });
   }
 
-  void _showSortOptions() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      showDragHandle: false,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppConstants.largeBorderRadius),
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 8),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)!.sortBy,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      icon: Icon(_sortAscending ? Icons.arrow_upward : Icons.arrow_downward),
-                      onPressed: () {
-                        setState(() {
-                          _sortAscending = !_sortAscending;
-                          _applyFilterAndSort();
-                        });
-                        Navigator.pop(context);
-                      },
-                      tooltip: _sortAscending ? AppLocalizations.of(context)!.sortAscending : AppLocalizations.of(context)!.sortDescending,
-                    ),
-                  ],
-                ),
-              ),
-              ..._SortType.values.map((type) => ListTile(
-                leading: Icon(_getSortIcon(type)),
-                title: Text(_getSortLabel(type)),
-                selected: _sortType == type,
-                onTap: () {
-                  setState(() {
-                    _sortType = type;
-                    _applyFilterAndSort();
-                  });
-                  Navigator.pop(context);
-                },
-              )),
-              const SizedBox(height: 16),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+
 
   IconData _getSortIcon(_SortType type) {
     switch (type) {
@@ -355,7 +288,7 @@ class _SongsScreenState extends State<SongsScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final theme = Theme.of(context);
+
     final playerCubit = context.watch<PlayerCubit>();
 
     // Construire un contenu quel que soit l'état, puis l'entourer d'un BlocListener
@@ -659,7 +592,7 @@ class _SongsScreenState extends State<SongsScreen>
           Icon(
             Icons.music_off,
             size: 80,
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 24),
           Text(
@@ -677,14 +610,7 @@ class _SongsScreenState extends State<SongsScreen>
     );
   }
 
-  Widget _buildLoadingIndicator() {
-    return const Padding(
-      padding: EdgeInsets.all(16),
-      child: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
+
   // selection mode UI
   Widget _buildSelectionBottomBar(BuildContext context) {
     final theme = Theme.of(context);

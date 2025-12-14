@@ -416,5 +416,66 @@
   "grant": "Autoriser",
   "enable": "Activer",
   "accessApp": "Accéder à Music Box",
-  "openSettings": "Réglages"
+  "openSettings": "Réglages",
+
+  "backupAndData": "Sauvegarde & Données",
+  "exportData": "Exporter les données",
+  "exportDataDesc": "Sauvegarder favoris, playlists et stats",
+  "importBackup": "Importer une sauvegarde",
+  "importBackupDesc": "Restaurer depuis un fichier .json",
+  "attention": "Attention",
+  "restoreWarning": "La restauration va écraser vos favoris et playlists actuels.\n\nVoulez-vous continuer ?",
+  "overwriteAndRestore": "Écraser et Restaurer",
+  "restoreSuccessTitle": "Restauration réussie",
+  "restoreSuccessMessage": "Vos données ont été restaurées avec succès.\n\nVeuillez redémarrer l'application pour que tous les changements prennent effet.",
+  "backupReadError": "Impossible de lire le fichier de sauvegarde.",
+  "sleepTimerTitle": "Minuteur de veille",
+  "sleepTimerDesc": "Programmer l'arrêt de la musique",
+  "sleepTimerStoppingSoon": "Arrêt imminent...",
+  "sleepTimerActive": "Actif : Arrêt dans {minutes} min",
+  "@sleepTimerActive": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerStopMusicAfter": "Arrêter la musique après...",
+  "sleepTimerActiveRemaining": "Actif : {minutes}:{seconds} restants",
+  "@sleepTimerActiveRemaining": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "deactivate": "Désactiver",
+  "timerSetFor": "Minuteur réglé pour {label} 🌙",
+  "@timerSetFor": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "oneHour": "1 heure",
+  "oneHourThirty": "1h 30",
+  "oneHour": "1 heure",
+  "oneHourThirty": "1h 30",
+  "twoHours": "2 heures",
+  "customize": "Personnaliser",
+
+  "backupSubject": "Sauvegarde Music Box",
+  "backupBody": "Voici ma sauvegarde Music Box du {date}.",
+  "@backupBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "contactSubject": "Support Music Box"
 }

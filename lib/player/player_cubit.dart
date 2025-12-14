@@ -131,6 +131,7 @@ class PlayerStateModel {
     this.deletedSongIds = const <int>{},
     this.hideMetadataSaveWarning = false,
     this.accentPerSong = const <int, int>{},
+    this.sleepTimerEndTime,
   });
 
   final List<SongModel> songs; // Current Queue
@@ -142,6 +143,7 @@ class PlayerStateModel {
   final Map<int, int> playCounts; // songId -> count
   final Map<int, int> lastPlayed; // songId -> timestamp
   final List<UserPlaylist> userPlaylists;
+  // Dossiers masqués
   final List<String> hiddenFolders;
   final bool showHiddenFolders;
   final Map<int, String> customArtworkPaths;
@@ -149,6 +151,12 @@ class PlayerStateModel {
   final Set<int> deletedSongIds;
   final bool hideMetadataSaveWarning;
   final Map<int, int> accentPerSong;
+  
+  // ✅ Sleep Timer State
+  final DateTime? sleepTimerEndTime;
+
+  // Helpers
+  bool get hasSleepTimer => sleepTimerEndTime != null;
 
   PlayerStateModel copyWith({
     List<SongModel>? songs,
@@ -167,6 +175,8 @@ class PlayerStateModel {
     Set<int>? deletedSongIds,
     bool? hideMetadataSaveWarning,
     Map<int, int>? accentPerSong,
+    DateTime? sleepTimerEndTime,
+    bool clearSleepTimer = false,
   }) {
     return PlayerStateModel(
       songs: songs ?? this.songs,
@@ -185,6 +195,7 @@ class PlayerStateModel {
       deletedSongIds: deletedSongIds ?? this.deletedSongIds,
       hideMetadataSaveWarning: hideMetadataSaveWarning ?? this.hideMetadataSaveWarning,
       accentPerSong: accentPerSong ?? this.accentPerSong,
+      sleepTimerEndTime: clearSleepTimer ? null : (sleepTimerEndTime ?? this.sleepTimerEndTime),
     );
   }
 }
@@ -254,7 +265,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         if (await defaultCover.exists()) await defaultCover.delete(); // Recréer à chaque fois
       } catch (_) {}
       
-      // Toujours recréer pour cette version
+      // Toujours recréer pour cette version pour appliquer le nouveau style gris
       if (true) {
         // ✅ Créer la pochette par défaut avec l'icône Material (comme dans l'app)
         final recorder = ui.PictureRecorder();
@@ -262,28 +273,14 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         final size = 512.0;
         
         // Fond avec dégradé
-        final bgPaint = Paint()
-          ..shader = ui.Gradient.linear(
-            const Offset(0, 0),
-            Offset(size, size),
-            [
-              const Color(0xFF2a2a3e),
-              const Color(0xFF1a1a2e),
-            ],
-          );
+        // ✅ Fond neutre (Gris #212121) pour matcher le widget "Clean Glass"
+        final bgPaint = Paint()..color = const Color(0xFF212121);
         canvas.drawRect(Rect.fromLTWH(0, 0, size, size), bgPaint);
         
-        // Cercle central avec dégradé
-        final circlePaint = Paint()
-          ..shader = ui.Gradient.radial(
-            Offset(size / 2, size / 2),
-            size * 0.35,
-            [
-              const Color(0xFF4a9fff).withValues(alpha: 0.3),
-              const Color(0xFF2a2a3e).withValues(alpha: 0.1),
-            ],
-          );
-        canvas.drawCircle(Offset(size / 2, size / 2), size * 0.35, circlePaint);
+        // Cercle central discret (optionnel, ou juste l'icône)
+        // On le retire pour être 100% "flat" comme le widget
+        // final circlePaint = Paint()..color = Colors.white.withOpacity(0.05);
+        // canvas.drawCircle(Offset(size / 2, size / 2), size * 0.35, circlePaint);
         
         // ✅ Dessiner l'icône Material Icons.music_note_rounded
         final iconSize = size * 0.35;
@@ -698,9 +695,9 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
 
   void _debounceWidgetUpdate() {
     _widgetUpdateTimer?.cancel();
-    _widgetUpdateTimer = Timer(const Duration(milliseconds: 500), () {
-      _pushWidgetUpdate();
-    });
+    // ✅ ZERO DELAY: Update immediately for "instant" feel
+    // Using microtask to allow current stack frame to finish (e.g. state emission)
+    Future.microtask(_pushWidgetUpdate);
   }
 
   Future<void> _pushWidgetUpdate() async {
@@ -813,28 +810,77 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     } catch (_) {}
   }
 
-  /// Remove multiple songs from the queue and allSongs by their IDs
-  void removeSongsById(List<int> ids) {
+  /// Remove multiple songs from the queue AND the player
+  Future<void> removeSongsById(List<int> ids) async {
     if (ids.isEmpty) return;
     final idsSet = ids.toSet();
+    
+    // 1. Filter lists for UI state
+    final currentSongs = List<SongModel>.from(state.songs);
+    // Find indices to remove (descending order to safe remove)
+    final indicesToRemove = <int>[];
+    for (int i = 0; i < currentSongs.length; i++) {
+        if (idsSet.contains(currentSongs[i].id)) {
+            indicesToRemove.add(i);
+        }
+    }
+    // Sort descending
+    indicesToRemove.sort((a, b) => b.compareTo(a));
+
+    // 2. Remove from player source (ConcatenatingAudioSource)
+    if (_playlist != null) {
+        try {
+            for (final idx in indicesToRemove) {
+                if (idx < _playlist!.length) {
+                    await _playlist!.removeAt(idx);
+                }
+            }
+        } catch (e) {
+            debugPrint("Error removing from playlist: $e");
+        }
+    }
+
+    // 3. Remove from UI Model
     final newSongs = state.songs.where((s) => !idsSet.contains(s.id)).toList();
     final newAllSongs = state.allSongs.where((s) => !idsSet.contains(s.id)).toList();
     
-    // Adjust currentIndex if the current song was removed
-    int? newIndex = state.currentIndex;
-    if (newIndex != null && state.currentSongId != null && idsSet.contains(state.currentSongId!)) {
-      // Current song was deleted, reset to null or first available
-      newIndex = newSongs.isNotEmpty ? 0 : null;
-    } else if (newIndex != null && newIndex >= newSongs.length) {
-      newIndex = newSongs.isNotEmpty ? newSongs.length - 1 : null;
+    // 4. Recalculate Index
+    // If the playlist was modified correctly by removeAt, just_audio generally keeps the current index
+    // stable unless the current item itself was removed.
+    // If current item removed, just_audio moves to next.
+    // We just need to sync our state index with just_audio's new index.
+    int? newIndex = player.currentIndex; 
+    
+    // Safety check if empty
+    if (newSongs.isEmpty) {
+        newIndex = null;
+        await player.stop();
     }
+    
+    // 5. Update state
+    final currentSongId = (newIndex != null && newIndex < newSongs.length) ? newSongs[newIndex].id : null;
     
     emit(state.copyWith(
       songs: newSongs, 
       allSongs: newAllSongs,
       currentIndex: newIndex,
-      currentSongId: newIndex != null && newSongs.isNotEmpty ? newSongs[newIndex].id : null,
+      currentSongId: currentSongId,
     ));
+    
+    // 6. Update AudioHandler Queue
+    if (_audioHandler != null) {
+        final mediaItems = newSongs.map((s) {
+            final overridden = applyOverrides(s);
+            return MediaItem(
+              id: s.uri ?? '',
+              title: overridden.title,
+              artist: overridden.artist ?? 'Unknown',
+              album: overridden.album ?? '',
+              extras: {'songId': s.id},
+            );
+        }).toList();
+        _audioHandler!.setQueueItems(mediaItems);
+    }
   }
 
   // -----------------------------
@@ -954,7 +1000,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     if (idx != -1) {
       final base = state.songs[idx];
       // Extraire les valeurs en sécurité (les getters peuvent crasher si null)
-      final titleValue = merged.title ?? base.title ?? 'Unknown';
+      final titleValue = merged.title ?? base.title;
       final artistValue = merged.artist ?? base.artist ?? 'Unknown';
       final albumValue = merged.album ?? base.album ?? '';
       
@@ -1398,7 +1444,29 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     }
     emit(state.copyWith(favorites: next));
     // Defer persistence to avoid blocking UI.
-    Future.microtask(_persistFavorites);
+  }
+
+  // -----------------------------
+  // Sleep Timer
+  // -----------------------------
+  void startSleepTimer(Duration duration) {
+    _sleepTimer?.cancel();
+    _sleepEndTime = DateTime.now().add(duration);
+    
+    // Broadcast state update so UI knows timer is active
+    emit(state.copyWith(sleepTimerEndTime: _sleepEndTime));
+    
+    _sleepTimer = Timer(duration, () async {
+      await player.pause();
+      cancelSleepTimer(); // Cleanup
+    });
+  }
+
+  void cancelSleepTimer() {
+    _sleepTimer?.cancel();
+    _sleepTimer = null;
+    _sleepEndTime = null;
+    emit(state.copyWith(clearSleepTimer: true));
   }
 
   // -----------------------------
@@ -1669,7 +1737,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       try {
         // Accessing .data might throw if it's null but typed as String
         // ignore: unnecessary_null_comparison
-        if (song.data == null) return false;
+        // if (song.data == null) return false;
         return !isPathInHiddenFolder(song.data);
       } catch (e) {
         return false;
@@ -2447,21 +2515,9 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
   }
 
   // ✅ Sleep Timer - Démarrer le minuteur
-  void startSleepTimer(Duration duration) {
-    cancelSleepTimer();
-    _sleepEndTime = DateTime.now().add(duration);
-    _sleepTimer = Timer(duration, () {
-      player.pause();
-      _sleepEndTime = null;
-    });
-  }
 
-  // ✅ Sleep Timer - Annuler le minuteur
-  void cancelSleepTimer() {
-    _sleepTimer?.cancel();
-    _sleepTimer = null;
-    _sleepEndTime = null;
-  }
+
+
 
   // ✅ Sleep Timer - Temps restant
   Duration? get sleepTimeRemaining {
@@ -2554,5 +2610,113 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     _widgetUpdateTimer?.cancel();
     await player.dispose();
     return super.close();
+  }
+  // -----------------------------
+  // Data Restore & Smart Migration
+  // -----------------------------
+  Future<void> restoreData(Map<String, dynamic> data) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // 1. Restore Simple Preferences directly
+      if (data['play_counts'] != null) await prefs.setString('play_counts', data['play_counts']);
+      if (data['last_played'] != null) await prefs.setString('last_played', data['last_played']);
+      if (data['hidden_folders'] != null) await prefs.setString('hidden_folders', data['hidden_folders']);
+      if (data['show_hidden_folders'] != null) await prefs.setBool('show_hidden_folders', data['show_hidden_folders']);
+      if (data['custom_artwork_paths'] != null) await prefs.setString('custom_artwork_paths', data['custom_artwork_paths']);
+      if (data['metadata_overrides'] != null) await prefs.setString('metadata_overrides', data['metadata_overrides']);
+      if (data['hide_meta_warning'] != null) await prefs.setBool('hide_meta_warning', data['hide_meta_warning']);
+
+      // 2. Load "Smart Metadata Cache" for migration
+      final metadataCache = data['song_metadata_cache'] as Map<String, dynamic>? ?? {};
+      
+      // Map OldID -> NewID
+      final idMap = <String, int>{};
+      
+      if (metadataCache.isNotEmpty) {
+        for (final entry in metadataCache.entries) {
+          final oldId = entry.key;
+          final meta = entry.value;
+          if (meta is Map) {
+             final title = meta['t'] as String? ?? '';
+             final artist = meta['a'] as String? ?? '';
+             // Search in current library (match by title and artist)
+             try {
+               final match = state.allSongs.firstWhere(
+                 (s) => s.title == title && (s.artist == artist),
+               );
+               idMap[oldId] = match.id;
+             } catch (_) {
+               // No match found
+             }
+          }
+        }
+      }
+
+      // 3. Migrate Favorites
+      if (data['favorites'] != null) {
+        final List<dynamic> oldFavs = data['favorites'];
+        final newFavs = <String>[];
+        for (final oldId in oldFavs) {
+           final oldIdStr = oldId.toString();
+           // Try mapped ID first (smart migration)
+           if (idMap.containsKey(oldIdStr)) {
+             newFavs.add(idMap[oldIdStr].toString());
+           } else {
+             // Fallback: If ID exists in current library (same device), keep it
+             final oldInt = int.tryParse(oldIdStr);
+             if (oldInt != null && state.allSongs.any((s) => s.id == oldInt)) {
+               newFavs.add(oldIdStr);
+             }
+           }
+        }
+        await prefs.setStringList('favorites_ids', newFavs);
+      }
+
+      // 4. Migrate Playlists
+      if (data['user_playlists'] != null) {
+         final rawPlaylists = data['user_playlists'] as String;
+         try {
+           final decoded = jsonDecode(rawPlaylists);
+           if (decoded is List) {
+              final migratedPlaylists = <Map<String, dynamic>>[];
+              for (final item in decoded) {
+                 if (item is Map<String, dynamic>) {
+                    final oldIds = (item['songIds'] as List?) ?? [];
+                    final newSongIds = <int>[];
+                    
+                    for (final oid in oldIds) {
+                       final oidStr = oid.toString();
+                       if (idMap.containsKey(oidStr)) {
+                         newSongIds.add(idMap[oidStr]!);
+                       } else {
+                          final oldInt = int.tryParse(oidStr);
+                          if (oldInt != null && state.allSongs.any((s) => s.id == oldInt)) {
+                             newSongIds.add(oldInt);
+                          }
+                       }
+                    }
+                    
+                    item['songIds'] = newSongIds;
+                    migratedPlaylists.add(item);
+                 }
+              }
+              await prefs.setString('user_playlists_v2', jsonEncode(migratedPlaylists));
+           }
+         } catch (e) {
+           print('Error migrating playlists: $e');
+         }
+      }
+
+      // 5. Reload State
+      await _loadFavorites();
+      await _loadUserPlaylists();
+      await _loadPlayStats();
+      await _loadCustomArtworkPaths();
+      await _loadHideMetadataSaveWarning();
+      
+    } catch (e) {
+      print('Error restoring data: $e');
+    }
   }
 }

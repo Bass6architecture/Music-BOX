@@ -44,7 +44,9 @@ Future<void> main() async {
   await Firebase.initializeApp();
   
   // Initialisation AdMob
-  await AdService().initialize();
+  // Initialisation AdMob supprimée ici pour éviter crash en background (WebView)
+  // Déplacée dans _InitialRoute
+
   
   runApp(const MusicBoxApp());
 }
@@ -130,6 +132,10 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
     _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _fadeController.forward();
     
+    
+    // Initialiser AdMob ici seulement (quand UI visible) pour éviter crash background
+    AdService().initialize();
+
     _checkAndNavigate();
   }
 

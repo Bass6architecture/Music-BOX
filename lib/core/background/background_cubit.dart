@@ -31,8 +31,10 @@ class BackgroundCubit extends Cubit<BackgroundType> {
     await prefs.setInt(_keyBackground, background.index);
   }
 
-  String? get assetPath {
-    switch (state) {
+  String? get assetPath => getAssetPathForType(state);
+
+  static String? getAssetPathForType(BackgroundType type) {
+    switch (type) {
       case BackgroundType.none:
         return null;
       case BackgroundType.gradientMusical:

@@ -61,6 +61,7 @@ dependencies:
   firebase_core: ^3.8.1
   firebase_analytics: ^11.3.4
   url_launcher: ^6.3.1
+  file_picker: ^10.3.7
 
 dependency_overrides:
   on_audio_query_android:

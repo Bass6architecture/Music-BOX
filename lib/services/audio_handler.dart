@@ -32,7 +32,7 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
 
     // ✅ Écouter les changements de séquence pour mettre à jour les métadonnées IMMÉDIATEMENT
     _player.sequenceStateStream.listen((sequenceState) {
-      if (sequenceState == null) return;
+      // if (sequenceState == null) return; // Analyzer says sequenceState is never null
       final currentItem = sequenceState.currentSource;
       if (currentItem is UriAudioSource && currentItem.tag is MediaItem) {
         final item = currentItem.tag as MediaItem;
@@ -198,8 +198,18 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
     debugPrint('   PlaybackState: playing=${playbackState.value.playing}, controls=${playbackState.value.controls.length}');
   }
 
-  /// Mettre à jour la liste des chansons
+  /// Mettre à jour la file d'attente (pour les notifications/wearables)
   void setQueueItems(List<MediaItem> items) {
     queue.add(items);
   }
+
+  @override
+  Future<void> onTaskRemoved() async {
+    debugPrint('🎵 AudioHandler.onTaskRemoved - Arrêt du service');
+    await stop();
+  }
+
+  // Les événements headset/bluetooth (click, double click) sont mappés par Android en
+  // MediaAction.play/pause/skipToNext...
+  // audio_service gère le mapping "Double Click -> skipToNext" automatiquement sur Android.
 }

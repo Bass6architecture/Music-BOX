@@ -938,4 +938,89 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accessApp => 'Access Music Box';
+
+  @override
+  String get backupAndData => 'Backup & Data';
+
+  @override
+  String get exportData => 'Export Data';
+
+  @override
+  String get exportDataDesc => 'Save favorites, playlists, and stats';
+
+  @override
+  String get importBackup => 'Import Backup';
+
+  @override
+  String get importBackupDesc => 'Restore from a .json file';
+
+  @override
+  String get attention => 'Warning';
+
+  @override
+  String get restoreWarning =>
+      'Restore will overwrite your current favorites and playlists.\n\nDo you want to continue?';
+
+  @override
+  String get overwriteAndRestore => 'Overwrite and Restore';
+
+  @override
+  String get restoreSuccessTitle => 'Restoration Successful';
+
+  @override
+  String get restoreSuccessMessage =>
+      'Your data has been successfully restored.\n\nPlease restart the app for all changes to take effect.';
+
+  @override
+  String get backupReadError => 'Unable to read the backup file.';
+
+  @override
+  String get sleepTimerTitle => 'Sleep Timer';
+
+  @override
+  String get sleepTimerDesc => 'Schedule music stop';
+
+  @override
+  String get sleepTimerStoppingSoon => 'Stopping soon...';
+
+  @override
+  String sleepTimerActive(int minutes) {
+    return 'Active: Stops in $minutes min';
+  }
+
+  @override
+  String get sleepTimerStopMusicAfter => 'Stop music after...';
+
+  @override
+  String sleepTimerActiveRemaining(int minutes, String seconds) {
+    return 'Active: $minutes:$seconds remaining';
+  }
+
+  @override
+  String get deactivate => 'Deactivate';
+
+  @override
+  String timerSetFor(String label) {
+    return 'Timer set to $label 🌙';
+  }
+
+  @override
+  String get oneHour => '1 hour';
+
+  @override
+  String get oneHourThirty => '1h 30';
+
+  @override
+  String get twoHours => '2 hours';
+
+  @override
+  String get backupSubject => 'Music Box Backup';
+
+  @override
+  String backupBody(String date) {
+    return 'Here is my Music Box backup from $date.';
+  }
+
+  @override
+  String get contactSubject => 'Music Box Support';
 }

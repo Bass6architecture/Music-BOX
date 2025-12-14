@@ -387,5 +387,66 @@
   "grant": "Grant",
   "enable": "Enable",
   "accessApp": "Access Music Box",
-  "openSettings": "Settings"
+  "openSettings": "Settings",
+
+  "backupAndData": "Backup & Data",
+  "exportData": "Export Data",
+  "exportDataDesc": "Save favorites, playlists, and stats",
+  "importBackup": "Import Backup",
+  "importBackupDesc": "Restore from a .json file",
+  "attention": "Warning",
+  "restoreWarning": "Restore will overwrite your current favorites and playlists.\n\nDo you want to continue?",
+  "overwriteAndRestore": "Overwrite and Restore",
+  "restoreSuccessTitle": "Restoration Successful",
+  "restoreSuccessMessage": "Your data has been successfully restored.\n\nPlease restart the app for all changes to take effect.",
+  "backupReadError": "Unable to read the backup file.",
+  "sleepTimerTitle": "Sleep Timer",
+  "sleepTimerDesc": "Schedule music stop",
+  "sleepTimerStoppingSoon": "Stopping soon...",
+  "sleepTimerActive": "Active: Stops in {minutes} min",
+  "@sleepTimerActive": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerStopMusicAfter": "Stop music after...",
+  "sleepTimerActiveRemaining": "Active: {minutes}:{seconds} remaining",
+  "@sleepTimerActiveRemaining": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "deactivate": "Deactivate",
+  "timerSetFor": "Timer set to {label} 🌙",
+  "@timerSetFor": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "oneHour": "1 hour",
+  "oneHourThirty": "1h 30",
+  "oneHour": "1 hour",
+  "oneHourThirty": "1h 30",
+  "twoHours": "2 hours",
+  "customize": "Customize",
+
+  "backupSubject": "Music Box Backup",
+  "backupBody": "Here is my Music Box backup from {date}.",
+  "@backupBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "contactSubject": "Music Box Support"
 }

@@ -55,13 +55,40 @@ class SimpleCompactWidget : AppWidgetProvider() {
     /**
      * Send command via broadcast to Flutter
      */
+    /**
+     * Send command via standard MediaButton intent for Play/Pause, Next, Previous.
+     * Use custom broadcast for others.
+     */
     private fun sendCommand(context: Context, command: String) {
         android.util.Log.d("SimpleCompactWidget", "Sending command: $command")
-        val flutterIntent = Intent("com.synergydev.music_box.WIDGET_COMMAND").apply {
-            putExtra("command", command)
-            setPackage(context.packageName)
+        
+        val keycode = when (command) {
+            "play_pause" -> android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE
+            "next" -> android.view.KeyEvent.KEYCODE_MEDIA_NEXT
+            "previous" -> android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS
+            else -> 0
         }
-        context.sendBroadcast(flutterIntent)
+        
+        if (keycode != 0) {
+            // Send standard MediaButton intent to audio_service
+            val intent = Intent(Intent.ACTION_MEDIA_BUTTON)
+            intent.component = ComponentName(context, "com.ryanheise.audioservice.MediaButtonReceiver")
+            intent.putExtra(Intent.EXTRA_KEY_EVENT, android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, keycode))
+            context.sendBroadcast(intent)
+            
+            // Also send ACTION_UP for completeness, though many receivers trigger on DOWN
+            val upIntent = Intent(Intent.ACTION_MEDIA_BUTTON)
+            upIntent.component = ComponentName(context, "com.ryanheise.audioservice.MediaButtonReceiver")
+            upIntent.putExtra(Intent.EXTRA_KEY_EVENT, android.view.KeyEvent(android.view.KeyEvent.ACTION_UP, keycode))
+            context.sendBroadcast(upIntent)
+        } else {
+            // Fallback for custom commands (Favorite, Shuffle, Repeat)
+            val flutterIntent = Intent("com.synergydev.music_box.WIDGET_COMMAND").apply {
+                putExtra("command", command)
+                setPackage(context.packageName)
+            }
+            context.sendBroadcast(flutterIntent)
+        }
     }
     
     private fun updateAllWidgets(context: Context) {
@@ -76,7 +103,8 @@ class SimpleCompactWidget : AppWidgetProvider() {
 
 
     companion object {
-        private const val UPDATE_THROTTLE_MS = 2000L // 2 seconds minimum between updates
+        // ✅ 50ms throttle for instant responsiveness
+        private const val UPDATE_THROTTLE_MS = 50L 
         private var lastUpdateTime = 0L
         
         fun updateAppWidget(

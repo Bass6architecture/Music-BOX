@@ -5,14 +5,20 @@
     android:viewportWidth="56"
     android:viewportHeight="56">
     
-    <!-- Background rounded square - navy blue (matching notification) -->
+    <!-- Background rounded square - Neutral Dark Grey (Standard System Style) -->
     <path
         android:pathData="M6,10C6,7.24 8.24,5 11,5H45C47.76,5 50,7.24 50,10V46C50,48.76 47.76,51 45,51H11C8.24,51 6,48.76 6,46V10Z"
-        android:fillColor="#1a2744"/>
+        android:fillColor="#212121"/>
     
-    <!-- Single music note icon - white -->
-    <path
-        android:pathData="M36,16v16c0,0.1 0,0.2 -0.01,0.3c-0.23,2.51 -2.4,4.5 -5.04,4.5c-2.8,0 -5.07,-2.26 -5.07,-5.05c0,-2.79 2.27,-5.05 5.07,-5.05c0.89,0 1.73,0.23 2.45,0.64V19.6h6.6V16H36z"
-        android:fillColor="#FFFFFF"/>
+    <!-- Standard Notification Music Note Icon (Matches ic_notification) -->
+    <group
+        android:scaleX="1.5"
+        android:scaleY="1.5"
+        android:translateX="10"
+        android:translateY="10">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M12,3v9.28c-0.47,-0.17 -0.97,-0.28 -1.5,-0.28C8.01,12 6,14.01 6,16.5S8.01,21 10.5,21c2.31,0 4.2,-1.75 4.45,-4H15V6h4V3H12z"/>
+    </group>
         
 </vector>

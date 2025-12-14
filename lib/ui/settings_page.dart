@@ -15,7 +15,9 @@ import '../core/l10n/locale_cubit.dart';
 import '../core/background/background_cubit.dart';
 import '../player/player_cubit.dart';
 import '../services/battery_optimization_service.dart';
+import '../services/data_backup_service.dart';
 import 'widgets/music_box_scaffold.dart';
+import 'widgets/sleep_timer_dialog.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key, this.embedded = false});
@@ -125,9 +127,38 @@ class _SettingsPageState extends State<SettingsPage> {
         
         const SizedBox(height: 24),
 
+
         // Section: Audio
         _buildSectionHeader(context, l10n.audio),
         _buildSection(context, [
+          // ✅ Sleep Timer Tile
+          BlocBuilder<PlayerCubit, PlayerStateModel>(
+            builder: (context, state) {
+              String subtitle = l10n.sleepTimerDesc;
+              if (state.sleepTimerEndTime != null) {
+                final remaining = state.sleepTimerEndTime!.difference(DateTime.now());
+                if (remaining.isNegative) {
+                   subtitle = l10n.sleepTimerStoppingSoon;
+                } else {
+                   final min = remaining.inMinutes;
+                   subtitle = l10n.sleepTimerActive(min + 1);
+                }
+              }
+              
+              return _buildSettingTile(
+                context,
+                icon: Icons.timer_rounded,
+                title: l10n.sleepTimerTitle,
+                subtitle: subtitle,
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const SleepTimerDialog(),
+                  );
+                },
+              );
+            },
+          ),
            _buildSettingTile(
             context,
             icon: Icons.equalizer_rounded,
@@ -224,6 +255,92 @@ class _SettingsPageState extends State<SettingsPage> {
         
         const SizedBox(height: 24),
 
+        const SizedBox(height: 24),
+
+        // Section: Sauvegarde
+        _buildSectionHeader(context, l10n.backupAndData),
+        _buildSection(context, [
+          _buildSettingTile(
+            context,
+            icon: Icons.save_alt_rounded,
+            title: l10n.exportData,
+            subtitle: l10n.exportDataDesc,
+            onTap: () async {
+              final success = await DataBackupService.createBackup(context);
+              if (context.mounted && !success) {
+                 // Share API might return "dismissed" as not success on some Android versions, 
+                 // but typically it doesn't crash.
+                 // We rely on the system share sheet.
+              }
+            },
+          ),
+          _buildSettingTile(
+            context,
+            icon: Icons.restore_rounded,
+            title: l10n.importBackup,
+            subtitle: l10n.importBackupDesc,
+            onTap: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: Text(l10n.attention),
+                  content: Text(
+                    l10n.restoreWarning
+                  ),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+                    TextButton(
+                      style: TextButton.styleFrom(foregroundColor: Colors.red),
+                      onPressed: () => Navigator.pop(ctx, true), 
+                      child: Text(l10n.overwriteAndRestore),
+                    ),
+                  ],
+                ),
+              );
+              
+              if (confirm == true && context.mounted) {
+                // Return data without writing to prefs yet (we delegate to Cubit)
+                final data = await DataBackupService.pickBackupFile();
+                
+                if (data != null && context.mounted) {
+                  // Perform Smart Restore & Migration
+                  await context.read<PlayerCubit>().restoreData(data);
+                  
+                  if (context.mounted) {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (ctx) => AlertDialog(
+                        title: Text(l10n.restoreSuccessTitle),
+                        content: Text(
+                          l10n.restoreSuccessMessage,
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              // Force restart/reset to home to apply changes cleanly
+                              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                            }, 
+                            child: Text(l10n.ok)
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                } else if (context.mounted) {
+                   ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(l10n.backupReadError)),
+                   );
+                }
+              }
+            },
+            showDivider: false,
+          ),
+        ]),
+        
+        const SizedBox(height: 24),
+
         // Section: Bibliothèque
         _buildSectionHeader(context, l10n.library),
         _buildSection(context, [
@@ -300,7 +417,7 @@ class _SettingsPageState extends State<SettingsPage> {
             title: l10n.contact,
             subtitle: 'synergydevv@gmail.com',
             onTap: () async {
-              final emailUri = Uri.parse('mailto:synergydevv@gmail.com?subject=${Uri.encodeComponent('Music Box Support')}');
+              final emailUri = Uri.parse('mailto:synergydevv@gmail.com?subject=${Uri.encodeComponent(l10n.contactSubject)}');
               try {
                 await launchUrl(emailUri);
               } catch (e) {

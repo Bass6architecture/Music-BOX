@@ -11,7 +11,7 @@ import '../player/player_cubit.dart';
 import '../player/mini_player.dart';
 import 'song_picker_page.dart';
 import 'now_playing_next_gen.dart';
-import 'widgets/music_box_scaffold.dart';
+
 
 class UserPlaylistPage extends StatefulWidget {
   const UserPlaylistPage({super.key, required this.playlistId, required this.playlistName});

@@ -944,4 +944,89 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get accessApp => 'Accéder à Music Box';
+
+  @override
+  String get backupAndData => 'Sauvegarde & Données';
+
+  @override
+  String get exportData => 'Exporter les données';
+
+  @override
+  String get exportDataDesc => 'Sauvegarder favoris, playlists et stats';
+
+  @override
+  String get importBackup => 'Importer une sauvegarde';
+
+  @override
+  String get importBackupDesc => 'Restaurer depuis un fichier .json';
+
+  @override
+  String get attention => 'Attention';
+
+  @override
+  String get restoreWarning =>
+      'La restauration va écraser vos favoris et playlists actuels.\n\nVoulez-vous continuer ?';
+
+  @override
+  String get overwriteAndRestore => 'Écraser et Restaurer';
+
+  @override
+  String get restoreSuccessTitle => 'Restauration réussie';
+
+  @override
+  String get restoreSuccessMessage =>
+      'Vos données ont été restaurées avec succès.\n\nVeuillez redémarrer l\'application pour que tous les changements prennent effet.';
+
+  @override
+  String get backupReadError => 'Impossible de lire le fichier de sauvegarde.';
+
+  @override
+  String get sleepTimerTitle => 'Minuteur de veille';
+
+  @override
+  String get sleepTimerDesc => 'Programmer l\'arrêt de la musique';
+
+  @override
+  String get sleepTimerStoppingSoon => 'Arrêt imminent...';
+
+  @override
+  String sleepTimerActive(int minutes) {
+    return 'Actif : Arrêt dans $minutes min';
+  }
+
+  @override
+  String get sleepTimerStopMusicAfter => 'Arrêter la musique après...';
+
+  @override
+  String sleepTimerActiveRemaining(int minutes, String seconds) {
+    return 'Actif : $minutes:$seconds restants';
+  }
+
+  @override
+  String get deactivate => 'Désactiver';
+
+  @override
+  String timerSetFor(String label) {
+    return 'Minuteur réglé pour $label 🌙';
+  }
+
+  @override
+  String get oneHour => '1 heure';
+
+  @override
+  String get oneHourThirty => '1h 30';
+
+  @override
+  String get twoHours => '2 heures';
+
+  @override
+  String get backupSubject => 'Sauvegarde Music Box';
+
+  @override
+  String backupBody(String date) {
+    return 'Voici ma sauvegarde Music Box du $date.';
+  }
+
+  @override
+  String get contactSubject => 'Support Music Box';
 }

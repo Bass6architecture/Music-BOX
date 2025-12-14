@@ -101,13 +101,8 @@ class _BackgroundTile extends StatelessWidget {
     final cubit = context.read<BackgroundCubit>();
 
     // Get asset path for preview
-    String? previewImage;
-    if (backgroundType != BackgroundType.none) {
-      final tempState = cubit.state;
-      cubit.emit(backgroundType);
-      previewImage = cubit.assetPath;
-      cubit.emit(tempState);
-    }
+    String? previewImage = BackgroundCubit.getAssetPathForType(backgroundType);
+
 
     return GestureDetector(
       onTap: onTap,
