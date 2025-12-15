@@ -433,6 +433,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hideLyrics => 'Hide lyrics';
 
   @override
+  String get lyricsEdit => 'Edit Lyrics';
+
+  @override
+  String get lyricsDelete => 'Delete Lyrics';
+
+  @override
+  String get lyricsDeleteConfirm => 'Delete lyrics for this song?';
+
+  @override
+  String get lyricsImportUrl => 'Import from URL';
+
+  @override
+  String get lyricsImportClipboard => 'Paste from Clipboard';
+
+  @override
+  String get lyricsSaved => 'Lyrics saved';
+
+  @override
+  String get lyricsDeleted => 'Lyrics deleted';
+
+  @override
+  String get lyricsPasteHint => 'Paste or write lyrics here...';
+
+  @override
   String get unknownArtist => 'Unknown artist';
 
   @override

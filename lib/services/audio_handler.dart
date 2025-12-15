@@ -58,6 +58,7 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
         MediaAction.seek,
         MediaAction.seekForward,
         MediaAction.seekBackward,
+        MediaAction.stop, // ✅ Allow stopping handling
       },
       androidCompactActionIndices: const [0, 2, 3],
       updatePosition: Duration.zero,
@@ -84,6 +85,7 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
         MediaAction.seek,
         MediaAction.seekForward,
         MediaAction.seekBackward,
+        MediaAction.stop,
       },
       androidCompactActionIndices: const [0, 2, 3],
       updatePosition: position,

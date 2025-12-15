@@ -27,7 +27,7 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
   LyricsMode _mode = LyricsMode.loading;
   String? _lyrics;
   Timer? _timeoutTimer;
-  WebViewController? _webController;
+
   bool _notifiedFound = false;
   int? _lastSongId;
   Timer? _copyDebounce;
@@ -734,7 +734,7 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
         ),
         borderRadius: BorderRadius.circular(12),
       ),
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      padding: const EdgeInsets.fromLTRB(12, 12, 4, 12), // Reduced padding right for icon
       child: Row(
         children: [
           if (s.id != null)
@@ -779,6 +779,49 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
                   ),
               ],
             ),
+          ),
+          
+          // Edit Button (Direct Access)
+          IconButton(
+            icon: const Icon(Icons.edit_note_rounded),
+            tooltip: AppLocalizations.of(context)!.lyricsEdit,
+            onPressed: () => _openEditor(),
+          ),
+
+          // Menu (More Options)
+          MenuAnchor(
+            builder: (context, controller, child) {
+              return IconButton(
+                icon: const Icon(Icons.more_vert_rounded),
+                onPressed: () {
+                   if (controller.isOpen) controller.close(); else controller.open();
+                },
+              );
+            },
+            menuChildren: [
+              MenuItemButton(
+                leadingIcon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+                child: Text(AppLocalizations.of(context)!.lyricsDelete, style: const TextStyle(color: Colors.red)),
+                onPressed: () => _showDeleteConfirmation(),
+              ),
+              MenuItemButton(
+                leadingIcon: const Icon(Icons.link_rounded),
+                child: Text(AppLocalizations.of(context)!.lyricsImportUrl),
+                onPressed: () => _showImportUrlDialog(),
+              ),
+              MenuItemButton(
+                leadingIcon: const Icon(Icons.paste_rounded),
+                child: Text(AppLocalizations.of(context)!.lyricsImportClipboard),
+                onPressed: () async {
+                   final data = await Clipboard.getData(Clipboard.kTextPlain);
+                   if (data?.text != null && data!.text!.isNotEmpty) {
+                     _openEditor(initialText: data.text!);
+                   } else {
+                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Clipboard empty')));
+                   }
+                },
+              ),
+            ],
           ),
         ],
       ),
@@ -1035,6 +1078,117 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
       ),
     );
   }
+  void _showDeleteConfirmation() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.lyricsDelete),
+        content: Text(AppLocalizations.of(context)!.lyricsDeleteConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _deleteLyrics();
+            },
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: Text(AppLocalizations.of(context)!.delete),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteLyrics() async {
+    final key = _lyricsCacheKey;
+    if (key != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(key);
+    }
+    if (mounted) {
+      setState(() {
+        _lyrics = null;
+        _mode = LyricsMode.options; // Revenir aux options
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.lyricsDeleted)),
+      );
+    }
+  }
+
+  void _showImportUrlDialog() {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.lyricsImportUrl),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'https://...',
+            border: OutlineInputBorder(),
+          ),
+          keyboardType: TextInputType.url,
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              if (controller.text.isNotEmpty) {
+                 Navigator.push(
+                    context, 
+                    MaterialPageRoute(
+                      builder: (_) => _LyricsWebSearchPage(
+                        searchQuery: controller.text,
+                        onCopiedText: (text) {
+                           _handleCopiedText(text);
+                           Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                 );
+              }
+            },
+            child: Text(AppLocalizations.of(context)!.search),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openEditor({String? initialText}) async {
+    final result = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _LyricsEditor(
+          initialText: initialText ?? _lyrics ?? '',
+          songTitle: _song?.title ?? '',
+        ),
+      ),
+    );
+
+    if (result != null && mounted) {
+      final cleaned = _cleanupLyrics(result);
+      if (cleaned.isNotEmpty) {
+        setState(() {
+           _lyrics = cleaned;
+           _mode = LyricsMode.found;
+           _lyricsSavedAt = DateTime.now().millisecondsSinceEpoch;
+        });
+        await _saveLyricsToCache(cleaned);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.lyricsSaved)));
+      }
+    }
+  }
+
 }
 
 // Page plein écran pour la recherche web de paroles
@@ -1088,8 +1242,15 @@ class _LyricsWebSearchPageState extends State<_LyricsWebSearchPage> {
     );
   }
 
+
+
   void _initWebView() {
-    final url = Uri.parse('https://www.google.com/search?q=${Uri.encodeComponent(widget.searchQuery)}');
+
+    final urlStr = widget.searchQuery.startsWith('http') 
+        ? widget.searchQuery 
+        : 'https://www.google.com/search?q=${Uri.encodeComponent(widget.searchQuery)}';
+
+    final url = Uri.parse(urlStr);
 
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -1146,31 +1307,81 @@ class _LyricsWebSearchPageState extends State<_LyricsWebSearchPage> {
           ),
           IconButton(
             icon: const Icon(Icons.help_outline),
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                builder: (ctx) => SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(AppLocalizations.of(context)!.tip, style: const TextStyle(fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 8),
-                        Text(AppLocalizations.of(context)!.copyTip),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
+            onPressed: () => _showTipBottomSheet(),
           ),
         ],
       ),
-      body: _controller == null
-          ? const Center(child: CircularProgressIndicator())
-          : WebViewWidget(controller: _controller!),
+      body: WebViewWidget(controller: _controller!),
     );
   }
+}
+
+class _LyricsEditor extends StatefulWidget {
+  final String initialText;
+  final String songTitle;
+
+  const _LyricsEditor({required this.initialText, required this.songTitle});
+
+  @override
+  State<_LyricsEditor> createState() => _LyricsEditorState();
+}
+
+class _LyricsEditorState extends State<_LyricsEditor> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialText);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.lyricsEdit),
+        actions: [
+          TextButton(
+            onPressed: () {
+               Navigator.pop(context, _controller.text);
+            },
+            child: Text(AppLocalizations.of(context)!.save, style: const TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+             if (widget.songTitle.isNotEmpty)
+               Padding(
+                 padding: const EdgeInsets.only(bottom: 12),
+                 child: Text(widget.songTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+               ),
+             Expanded(
+               child: TextField(
+                 controller: _controller,
+                 maxLines: null,
+                 expands: true,
+                 textAlignVertical: TextAlignVertical.top,
+                 decoration: InputDecoration(
+                   hintText: AppLocalizations.of(context)!.lyricsPasteHint,
+                   border: const OutlineInputBorder(),
+                   filled: true,
+                 ),
+                 style: const TextStyle(fontFamily: 'monospace', fontSize: 14),
+               ),
+             ),
+          ],
+        ),
+      ),
+    );
+  }
+
 }

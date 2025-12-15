@@ -936,6 +936,54 @@ abstract class AppLocalizations {
   /// **'Masquer les paroles'**
   String get hideLyrics;
 
+  /// No description provided for @lyricsEdit.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier les paroles'**
+  String get lyricsEdit;
+
+  /// No description provided for @lyricsDelete.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer les paroles'**
+  String get lyricsDelete;
+
+  /// No description provided for @lyricsDeleteConfirm.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer les paroles pour cette chanson ?'**
+  String get lyricsDeleteConfirm;
+
+  /// No description provided for @lyricsImportUrl.
+  ///
+  /// In fr, this message translates to:
+  /// **'Importer depuis URL'**
+  String get lyricsImportUrl;
+
+  /// No description provided for @lyricsImportClipboard.
+  ///
+  /// In fr, this message translates to:
+  /// **'Coller depuis le presse-papier'**
+  String get lyricsImportClipboard;
+
+  /// No description provided for @lyricsSaved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Paroles enregistrées'**
+  String get lyricsSaved;
+
+  /// No description provided for @lyricsDeleted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Paroles supprimées'**
+  String get lyricsDeleted;
+
+  /// No description provided for @lyricsPasteHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Collez ou écrivez les paroles ici...'**
+  String get lyricsPasteHint;
+
   /// No description provided for @unknownArtist.
   ///
   /// In fr, this message translates to:

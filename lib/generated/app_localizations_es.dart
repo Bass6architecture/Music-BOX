@@ -437,6 +437,31 @@ class AppLocalizationsEs extends AppLocalizations {
   String get hideLyrics => 'Ocultar letra';
 
   @override
+  String get lyricsEdit => 'Modifier les paroles';
+
+  @override
+  String get lyricsDelete => 'Supprimer les paroles';
+
+  @override
+  String get lyricsDeleteConfirm =>
+      'Supprimer les paroles pour cette chanson ?';
+
+  @override
+  String get lyricsImportUrl => 'Importer depuis URL';
+
+  @override
+  String get lyricsImportClipboard => 'Coller depuis le presse-papier';
+
+  @override
+  String get lyricsSaved => 'Paroles enregistrées';
+
+  @override
+  String get lyricsDeleted => 'Paroles supprimées';
+
+  @override
+  String get lyricsPasteHint => 'Collez ou écrivez les paroles ici...';
+
+  @override
   String get unknownArtist => 'Artista desconocido';
 
   @override

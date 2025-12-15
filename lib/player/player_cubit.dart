@@ -360,9 +360,9 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       final sourceWidth = frame.image.width;
       final sourceHeight = frame.image.height;
       
-      // ✅ TOUJOURS redimensionner à exactement 512x512 pour garantir la netteté
-      // Calculer le ratio pour remplir 512x512 en gardant les proportions
-      final targetSize = 512;
+      // ✅ TOUJOURS redimensionner pour garantir la netteté et la performance
+      // Augmenté à 1024 pour un affichage "Naturel" haute qualité
+      final targetSize = 1024;
       final widthRatio = targetSize / sourceWidth;
       final heightRatio = targetSize / sourceHeight;
       final scale = widthRatio > heightRatio ? widthRatio : heightRatio;
@@ -434,12 +434,12 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       debugPrint('🎵 Initialisation AudioService...');
       _audioHandler = await AudioService.init(
         builder: () => MusicBoxAudioHandler(player),
-        config: const AudioServiceConfig(
+        config: AudioServiceConfig(
           androidNotificationChannelId: 'com.synergydev.music_box.audio',
           androidNotificationChannelName: 'Lecture Audio',
           androidNotificationChannelDescription: 'Contrôles de lecture musicale',
-          androidNotificationOngoing: false,
-          androidStopForegroundOnPause: true,  // ✅ Standard behavior: notification dismissible on pause
+          androidNotificationOngoing: true, // ✅ Garder la notif active pour éviter que l'OS ne tue le service
+          androidStopForegroundOnPause: false, // ✅ NE PAS arrêter le service en pause pour permettre la reprise
           androidNotificationIcon: 'drawable/ic_notification',
           androidNotificationClickStartsActivity: true,
           androidShowNotificationBadge: true,

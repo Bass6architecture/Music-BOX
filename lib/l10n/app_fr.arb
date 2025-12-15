@@ -160,6 +160,17 @@
 
   "showLyrics": "Afficher les paroles",
   "hideLyrics": "Masquer les paroles",
+  "lyricsEdit": "Modifier les paroles",
+  "lyricsDelete": "Supprimer les paroles",
+  "lyricsDeleteConfirm": "Supprimer les paroles pour cette chanson ?",
+  "lyricsImportUrl": "Importer depuis URL",
+  "lyricsImportClipboard": "Coller depuis le presse-papier",
+  "lyricsSaved": "Paroles enregistrées",
+  "lyricsDeleted": "Paroles supprimées",
+  "lyricsPasteHint": "Collez ou écrivez les paroles ici...",
+  "cancel": "Annuler",
+  "save": "Enregistrer",
+  "delete": "Supprimer",
   
   "unknownArtist": "Artiste inconnu",
   "unknownAlbum": "Album inconnu",
