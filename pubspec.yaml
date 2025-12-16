@@ -62,7 +62,7 @@ dependencies:
   firebase_analytics: ^11.3.4
   url_launcher: ^6.3.1
   file_picker: ^10.3.7
-  scrollable_positioned_list: ^0.3.8
+
 
 dependency_overrides:
   on_audio_query_android:

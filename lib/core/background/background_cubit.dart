@@ -37,20 +37,14 @@ class BackgroundCubit extends Cubit<BackgroundType> {
     switch (type) {
       case BackgroundType.none:
         return null;
-      case BackgroundType.gradientMusical:
-        return 'assets/backgrounds/bg_gradient_musical.png';
-      case BackgroundType.gradientDark:
-        return 'assets/backgrounds/bg_gradient_dark.png';
-      case BackgroundType.particles:
-        return 'assets/backgrounds/bg_particles.png';
-      case BackgroundType.waves:
-        return 'assets/backgrounds/bg_waves.png';
-      case BackgroundType.vinylSunset:
-        return 'assets/backgrounds/bg_vinyl_sunset.png';
-      case BackgroundType.glassMorphism:
-        return 'assets/backgrounds/bg_glass_morphism.png';
       case BackgroundType.abstractDark:
         return 'assets/backgrounds/bg_abstract_dark.png';
+      case BackgroundType.glassMorphism:
+        return 'assets/backgrounds/bg_glass_morphism.png';
+      case BackgroundType.cosmicBeats:
+        return 'assets/backgrounds/bg_cosmic_beats.png';
+      case BackgroundType.vinylSunset:
+        return 'assets/backgrounds/bg_vinyl_sunset.png';
     }
   }
 }

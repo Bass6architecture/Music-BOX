@@ -500,6 +500,25 @@ class MainActivity : AudioServiceActivity() {
                   result.success(false)
                 }
             }
+          } catch (e: RecoverableSecurityException) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+               try {
+                 pendingWriteData = Pair(audioUri.toString(), imagePath)
+                 startIntentSenderForResult(
+                   e.userAction.actionIntent.intentSender,
+                   REQ_WRITE,
+                   null,
+                   0,
+                   0,
+                   0
+                 )
+                 result.success(null)
+               } catch (ex: Exception) {
+                 result.success(false)
+               }
+            } else {
+               result.success(false)
+            }
           } catch (e: Exception) {
             result.error("WRITE_ERROR", e.message, null)
           }
@@ -557,6 +576,25 @@ class MainActivity : AudioServiceActivity() {
                 } else {
                   result.success(false)
                 }
+            }
+          } catch (e: RecoverableSecurityException) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+               try {
+                 pendingMetadataData = Pair(audioUri.toString(), metadata)
+                 startIntentSenderForResult(
+                   e.userAction.actionIntent.intentSender,
+                   REQ_WRITE_METADATA,
+                   null,
+                   0,
+                   0,
+                   0
+                 )
+                 result.success(null)
+               } catch (ex: Exception) {
+                 result.success(false)
+               }
+            } else {
+               result.success(false)
             }
           } catch (e: Exception) {
             result.error("WRITE_ERROR", e.message, null)

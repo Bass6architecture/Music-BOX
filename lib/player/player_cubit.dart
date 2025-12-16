@@ -2503,10 +2503,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         }
         
         // 3. Fallback to standard album art URI if no cache
-        if (artUri == null && s.albumId != null) {
-          // ✅ Use albumId for standard artwork URI (often better quality/reliability)
-          artUri = Uri.parse('content://media/external/audio/albumart/${s.albumId}');
-        } else if (artUri == null && _defaultCoverPath != null) {
+        if (artUri == null && _defaultCoverPath != null) {
           // ✅ Fallback to generated default cover if no albumId
           artUri = Uri.file(_defaultCoverPath!);
         }

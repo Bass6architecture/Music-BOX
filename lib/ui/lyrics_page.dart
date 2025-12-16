@@ -12,7 +12,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:music_box/generated/app_localizations.dart';
 import '../widgets/optimized_artwork.dart';
 
@@ -50,10 +49,11 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
   
   // Synced Lyrics State
   List<LyricLine> _parsedLyrics = [];
-  final ItemScrollController _itemScrollController = ItemScrollController();
-  final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
-  bool _isAutoScrolling = true;
-  Timer? _resumeAutoScrollTimer;
+  final ScrollController _scrollController = ScrollController();
+  // final ItemScrollController _itemScrollController = ItemScrollController();
+  // final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
+  // bool _isAutoScrolling = true;
+  // Timer? _resumeAutoScrollTimer;
   int _currentIndex = -1;
   StreamSubscription? _positionSub;
 
@@ -78,11 +78,6 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
         _syncLyrics(pos);
       }
     });
-
-    // Also need a periodic ticker for smooth updates if audioHandler doesn't emit often enough?
-    // PlayerCubit has a position stream based on AudioPlayer? 
-    // Usually AudioHandler emits frequently, but we can also use a ticker if needed.
-    // For now, rely on AudioService state updates or add a periodic generic timer if smoother sync needed.
   }
 
   void _syncLyrics(int position) {
@@ -102,22 +97,11 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
     if (newIndex != _currentIndex) {
       if (mounted) {
         setState(() => _currentIndex = newIndex);
-        if (_isAutoScrolling && newIndex != -1) {
-          _scrollToIndex(newIndex);
-        }
       }
     }
   }
 
-  void _scrollToIndex(int index) {
-    if (!_itemScrollController.isAttached) return;
-    _itemScrollController.scrollTo(
-      index: index,
-      duration: const Duration(milliseconds: 600),
-      curve: Curves.easeInOut,
-      alignment: 0.5,
-    );
-  }
+  // void _scrollToIndex(int index) { ... removed ... }
 
   void _parseLrc(String raw) {
     _parsedLyrics.clear();
@@ -149,8 +133,8 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
   @override
   void dispose() {
     _positionSub?.cancel();
-    _resumeAutoScrollTimer?.cancel();
     _scrollController.dispose();
+
     _timeoutTimer?.cancel();
     _copyDebounce?.cancel();
     _pulseController.dispose();
@@ -1017,67 +1001,46 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
       case LyricsMode.found:
         // Check if we have synced lyrics
         if (_parsedLyrics.isNotEmpty) {
-          return NotificationListener<UserScrollNotification>(
-            onNotification: (notification) {
-              if (notification.direction != ScrollDirection.idle) {
-                // User is scrolling
-                if (_isAutoScrolling) {
-                  setState(() => _isAutoScrolling = false);
-                }
-                _resumeAutoScrollTimer?.cancel();
-              } else {
-                // Scroll stopped, schedule resume
-                _resumeAutoScrollTimer?.cancel();
-                _resumeAutoScrollTimer = Timer(const Duration(seconds: 3), () {
-                  if (mounted) {
-                    setState(() => _isAutoScrolling = true);
-                    if (_currentIndex != -1) _scrollToIndex(_currentIndex);
-                  }
-                });
-              }
-              return false;
-            },
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(vertical: 120, horizontal: 16),
-              itemCount: _parsedLyrics.length,
-              itemBuilder: (context, index) {
-                final line = _parsedLyrics[index];
-                final bool isActive = index == _currentIndex;
-                final bool isPast = index < _currentIndex;
-                
-                return GestureDetector(
-                   onTap: () {
-                     // Optional: Seek to timestamp
-                     // _cubit.audioHandler?.seek(Duration(milliseconds: line.timestamp));
-                   },
-                   child: AnimatedContainer(
-                     duration: const Duration(milliseconds: 300),
-                     curve: Curves.easeInOut,
-                     margin: const EdgeInsets.symmetric(vertical: 8),
-                     padding: EdgeInsets.symmetric(vertical: 8, horizontal: _alignCenter ? 12 : 0),
-                     decoration: BoxDecoration(
-                       borderRadius: BorderRadius.circular(8),
+          return ListView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.symmetric(vertical: 120, horizontal: 16),
+            itemCount: _parsedLyrics.length,
+            itemBuilder: (context, index) {
+              final line = _parsedLyrics[index];
+              final bool isActive = index == _currentIndex;
+              final bool isPast = index < _currentIndex;
+              
+              return GestureDetector(
+                 onTap: () {
+                   // Optional: Seek to timestamp
+                   // _cubit.audioHandler?.seek(Duration(milliseconds: line.timestamp));
+                 },
+                 child: AnimatedContainer(
+                   duration: const Duration(milliseconds: 300),
+                   curve: Curves.easeInOut,
+                   margin: const EdgeInsets.symmetric(vertical: 8),
+                   padding: EdgeInsets.symmetric(vertical: 8, horizontal: _alignCenter ? 12 : 0),
+                   decoration: BoxDecoration(
+                     borderRadius: BorderRadius.circular(8),
+                     color: isActive 
+                         ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3) 
+                         : Colors.transparent,
+                   ),
+                   child: Text(
+                     line.text,
+                     textAlign: _alignCenter ? TextAlign.center : TextAlign.left,
+                     style: TextStyle(
+                       fontSize: isActive ? _fontSize * 1.1 : _fontSize,
+                       height: _lineHeight,
+                       fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
                        color: isActive 
-                           ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3) 
-                           : Colors.transparent,
-                     ),
-                     child: Text(
-                       line.text,
-                       textAlign: _alignCenter ? TextAlign.center : TextAlign.left,
-                       style: TextStyle(
-                         fontSize: isActive ? _fontSize * 1.1 : _fontSize,
-                         height: _lineHeight,
-                         fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                         color: isActive 
-                             ? Theme.of(context).colorScheme.primary 
-                             : Theme.of(context).colorScheme.onSurface.withValues(alpha: isPast ? 0.5 : 0.8),
-                       ),
+                           ? Theme.of(context).colorScheme.primary 
+                           : Theme.of(context).colorScheme.onSurface.withValues(alpha: isPast ? 0.5 : 0.8),
                      ),
                    ),
-                );
-              },
-            ),
+                 ),
+              );
+            },
           );
         }
 

@@ -320,17 +320,7 @@ Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
                           title: AppLocalizations.of(context)!.editMetadata,
                           onTap: () async {
                             Navigator.pop(ctx);
-                            // Pre-request permission (Android 10+)
-                            if (Platform.isAndroid) {
-                              try {
-                                await _nativeChannel.invokeMethod('requestWritePermission', {'audioId': song.id});
-                                // If we don't await the result from native properly (if strict await implemented),
-                                // we might want to delay slightly or just proceed.
-                                // Current impl returns immediately, so this is "fire and forget" or "fire and hope it blocks".
-                                // To block, I need to update MainActivity.kt first.
-                                // For now, I'll add the call.
-                              } catch (_) {}
-                            }
+
                             await _editMetadata(context, cubit, song);
                           },
                         ),
@@ -587,12 +577,7 @@ Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel son
     if (sourcePath == null) return; // No image selected
     if (!context.mounted) return;
 
-    // Pre-request permission (Android 10+)
-    if (Platform.isAndroid) {
-       try {
-         await _nativeChannel.invokeMethod('requestWritePermission', {'audioId': song.id});
-       } catch (_) {}
-    }
+
 
     // Laisser l'utilisateur recadrer en 1:1 (UI native), pas d'autres ratios
     CroppedFile? cropped;
