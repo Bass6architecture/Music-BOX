@@ -6,9 +6,20 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_ar.dart';
+import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
 import 'app_localizations_es.dart';
 import 'app_localizations_fr.dart';
+import 'app_localizations_hi.dart';
+import 'app_localizations_id.dart';
+import 'app_localizations_it.dart';
+import 'app_localizations_ja.dart';
+import 'app_localizations_ko.dart';
+import 'app_localizations_pl.dart';
+import 'app_localizations_pt.dart';
+import 'app_localizations_ru.dart';
+import 'app_localizations_tr.dart';
+import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
 
@@ -97,9 +108,20 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('ar'),
+    Locale('de'),
     Locale('en'),
     Locale('es'),
     Locale('fr'),
+    Locale('hi'),
+    Locale('id'),
+    Locale('it'),
+    Locale('ja'),
+    Locale('ko'),
+    Locale('pl'),
+    Locale('pt'),
+    Locale('ru'),
+    Locale('tr'),
+    Locale('zh'),
   ];
 
   /// No description provided for @appName.
@@ -407,6 +429,18 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Français'**
   String get currentLanguage;
+
+  /// No description provided for @languageSystem.
+  ///
+  /// In fr, this message translates to:
+  /// **'Langue du système'**
+  String get languageSystem;
+
+  /// No description provided for @languageSystemDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'Suit la langue du téléphone'**
+  String get languageSystemDesc;
 
   /// No description provided for @languageAlreadySelected.
   ///
@@ -957,7 +991,7 @@ abstract class AppLocalizations {
   /// No description provided for @lyricsImportUrl.
   ///
   /// In fr, this message translates to:
-  /// **'Importer depuis URL'**
+  /// **'Importer depuis fichier'**
   String get lyricsImportUrl;
 
   /// No description provided for @lyricsImportClipboard.
@@ -2141,6 +2175,48 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Long'**
   String get sortLongest;
+
+  /// No description provided for @noConnectionMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Veuillez vérifier votre connexion et réessayer'**
+  String get noConnectionMessage;
+
+  /// No description provided for @selectSource.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélectionner la source'**
+  String get selectSource;
+
+  /// No description provided for @localGallery.
+  ///
+  /// In fr, this message translates to:
+  /// **'Galerie'**
+  String get localGallery;
+
+  /// No description provided for @preview.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aperçu'**
+  String get preview;
+
+  /// No description provided for @useThisImageQuestion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utiliser cette image ?'**
+  String get useThisImageQuestion;
+
+  /// No description provided for @useImage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utiliser l\'image'**
+  String get useImage;
+
+  /// No description provided for @searchOnInternet.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rechercher sur Internet'**
+  String get searchOnInternet;
 }
 
 class _AppLocalizationsDelegate
@@ -2153,8 +2229,23 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['ar', 'en', 'es', 'fr'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+    'ar',
+    'de',
+    'en',
+    'es',
+    'fr',
+    'hi',
+    'id',
+    'it',
+    'ja',
+    'ko',
+    'pl',
+    'pt',
+    'ru',
+    'tr',
+    'zh',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -2165,12 +2256,34 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'ar':
       return AppLocalizationsAr();
+    case 'de':
+      return AppLocalizationsDe();
     case 'en':
       return AppLocalizationsEn();
     case 'es':
       return AppLocalizationsEs();
     case 'fr':
       return AppLocalizationsFr();
+    case 'hi':
+      return AppLocalizationsHi();
+    case 'id':
+      return AppLocalizationsId();
+    case 'it':
+      return AppLocalizationsIt();
+    case 'ja':
+      return AppLocalizationsJa();
+    case 'ko':
+      return AppLocalizationsKo();
+    case 'pl':
+      return AppLocalizationsPl();
+    case 'pt':
+      return AppLocalizationsPt();
+    case 'ru':
+      return AppLocalizationsRu();
+    case 'tr':
+      return AppLocalizationsTr();
+    case 'zh':
+      return AppLocalizationsZh();
   }
 
   throw FlutterError(

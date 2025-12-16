@@ -162,6 +162,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get currentLanguage => 'Français';
 
   @override
+  String get languageSystem => 'Langue du système';
+
+  @override
+  String get languageSystemDesc => 'Suit la langue du téléphone';
+
+  @override
   String get languageAlreadySelected => 'Français déjà sélectionné';
 
   @override
@@ -446,7 +452,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Supprimer les paroles pour cette chanson ?';
 
   @override
-  String get lyricsImportUrl => 'Importer depuis URL';
+  String get lyricsImportUrl => 'Importer depuis fichier';
 
   @override
   String get lyricsImportClipboard => 'Coller depuis le presse-papier';
@@ -1087,4 +1093,26 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get sortLongest => 'Long';
+
+  @override
+  String get noConnectionMessage =>
+      'Veuillez vérifier votre connexion et réessayer';
+
+  @override
+  String get selectSource => 'Sélectionner la source';
+
+  @override
+  String get localGallery => 'Galerie';
+
+  @override
+  String get preview => 'Aperçu';
+
+  @override
+  String get useThisImageQuestion => 'Utiliser cette image ?';
+
+  @override
+  String get useImage => 'Utiliser l\'image';
+
+  @override
+  String get searchOnInternet => 'Rechercher sur Internet';
 }

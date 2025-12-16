@@ -444,9 +444,9 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
           androidNotificationClickStartsActivity: true,
           androidShowNotificationBadge: true,
           preloadArtwork: true,
-          // ✅ Désactiver downscale car déjà fait par _optimizeArtworkForNotification
-          // artDownscaleWidth: null,
-          // artDownscaleHeight: null,
+          // ✅ Disable downscaling to keep high quality (we optimize manually to 1024px)
+          artDownscaleWidth: null,
+          artDownscaleHeight: null,
         ),
       );
       
@@ -527,21 +527,13 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       // ✅ Toujours émettre currentSongId avec currentIndex
       emit(state.copyWith(currentIndex: i, currentSongId: s.id, playCounts: counts, lastPlayed: last));
       
+      
       // ✅ Save state when song changes
       _savePlayerState();
 
-      // Mettre à jour l'AudioHandler avec le nouveau MediaItem
-      if (_audioHandler != null) {
-        final audioSource = player.audioSource;
-        if (audioSource is ConcatenatingAudioSource && i < audioSource.length) {
-          final source = audioSource.children[i];
-          if (source is UriAudioSource && source.tag is MediaItem) {
-            final mediaItem = source.tag as MediaItem;
-            final isLiked = state.favorites.contains(s.id);
-            _audioHandler!.setMediaItemWithLikedState(mediaItem, isLiked);
-          }
-        }
-      }
+      // ⚠️ SUPPRIMÉ : Mise à jour basée sur audioSource.tag (source de conflits)
+      // Nous utilisons maintenant le listener plus bas (ligne ~660) qui utilise state.songs
+      // et _refreshCurrentArtworkIfNeeded pour garantir que les métadonnées sont à jour.
       
       // Defer persistence to avoid blocking UI
       Future.microtask(_persistPlayStats);
@@ -551,6 +543,11 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         ensureAccentForSong(s.id);
         // Refresh notification artwork in background if needed
         Future.microtask(_refreshCurrentArtworkIfNeeded);
+        // ✅ Pre-cache next songs to ensure sharp artwork in notification queue
+        // Delayed to avoid blocking UI during transition
+        Future.delayed(const Duration(seconds: 2), () {
+          _preCacheArtworkForNextSongs();
+        });
       }
     });
     // ✅ Periodic position updates -> throttle widget updates (≈1s pour temps réel)
@@ -634,6 +631,58 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     
     player.loopModeStream.listen((mode) {
       _debounceWidgetUpdate();
+    });
+
+    // ✅ Listen for duration changes to update notification progress bar
+    // This supports files where duration is unknown until playback starts
+    player.durationStream.listen((duration) {
+      if (duration != null && duration.inMilliseconds > 0 && _audioHandler != null) {
+        final item = _audioHandler!.mediaItem.value;
+        if (item != null && (item.duration == null || item.duration!.inMilliseconds == 0)) {
+          debugPrint('🎵 Mise à jour durée notification: ${duration.inMilliseconds}ms');
+          final newItem = item.copyWith(duration: duration);
+          _audioHandler!.mediaItem.add(newItem);
+          // Force refresh state to ensure seek bar appears
+          _audioHandler!.playbackState.add(_audioHandler!.playbackState.value.copyWith(
+            updatePosition: player.position,
+          ));
+        }
+      }
+    });
+
+    // ✅ CRITICAL FIX: Listen to track changes from notification buttons
+    // This ensures artwork, liked state, and progress bar are updated when user
+    // presses Next/Previous in the notification
+    player.currentIndexStream.listen((index) async {
+      if (index == null) return;
+      
+      // ✅ Skip if we just changed the track from within the app (prevents visual jump)
+      if (_ignoreIndexChangesUntil != null && DateTime.now().isBefore(_ignoreIndexChangesUntil!)) {
+        debugPrint('🎵 Ignoring index change (from app, not notification)');
+        return;
+      }
+      
+      // Only update if the index actually changed
+      if (state.currentIndex != index && index < state.songs.length) {
+        final newSong = state.songs[index];
+        debugPrint('🎵 Track changed from notification: ${newSong.title}');
+        
+        // Update state
+        emit(state.copyWith(currentIndex: index, currentSongId: newSong.id));
+        
+        // ✅ Immediately refresh notification with proper artwork and liked state
+        if (_audioHandler != null) {
+          // Refresh artwork in background (will call setMediaItemWithLikedState when ready)
+          Future.microtask(() async {
+            await _refreshCurrentArtworkIfNeeded();
+            _debounceWidgetUpdate();
+          });
+        }
+        
+        // Update stats
+        _savePlayerState();
+        Future.microtask(_persistPlayStats);
+      }
     });
 
     // Push an initial widget update so title/artist/artwork are shown even before playback resumes
@@ -742,6 +791,11 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
                 artPath = f.path;
               }
             } catch (_) {}
+          }
+          
+          // ✅ CRITICAL FIX: Fallback to default cover if still no artwork
+          if (artPath == null && _defaultCoverPath != null && _defaultCoverPath!.isNotEmpty) {
+            artPath = _defaultCoverPath;
           }
           
           // Update cache
@@ -869,16 +923,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     
     // 6. Update AudioHandler Queue
     if (_audioHandler != null) {
-        final mediaItems = newSongs.map((s) {
-            final overridden = applyOverrides(s);
-            return MediaItem(
-              id: s.uri ?? '',
-              title: overridden.title,
-              artist: overridden.artist ?? 'Unknown',
-              album: overridden.album ?? '',
-              extras: {'songId': s.id},
-            );
-        }).toList();
+        final mediaItems = newSongs.map((s) => _createMediaItemWithArtwork(s)).toList();
         _audioHandler!.setQueueItems(mediaItems);
     }
   }
@@ -1121,14 +1166,6 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         final uri = s.uri;
         if (uri == null || uri.isEmpty) continue;
 
-        // Attach artwork pour TOUTES les chansons
-        Uri? artUri;
-        final customPath = state.customArtworkPaths[sOver.id];
-        if (customPath != null && customPath.isNotEmpty) {
-          artUri = Uri.file(customPath);
-        }
-        // La pochette sera mise à jour en arrière-plan par _refreshCurrentArtworkIfNeeded
-
         if (filtered.length == targetUiIndex) {
           // Note: this relies on traversal matching the UI ordering
           targetPlIndex = filtered.length;
@@ -1138,17 +1175,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         sources.add(
           AudioSource.uri(
             Uri.parse(uri),
-            tag: MediaItem(
-              id: uri,
-              title: sOver.title,
-              artist: sOver.artist ?? 'Artiste inconnu',
-              album: sOver.album ?? 'Album inconnu',
-              artUri: artUri,
-              duration: Duration(milliseconds: sOver.duration ?? 0),
-              extras: <String, dynamic>{
-                'songId': sOver.id,
-              },
-            ),
+            tag: _createMediaItemWithArtwork(s), // ✅ Use helper for consistent metadata
           ),
         );
       }
@@ -1274,6 +1301,46 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
   // -----------------------------
   // Queue maintenance
   // -----------------------------
+
+  /// ✅ Helper: Create MediaItem with artwork fallback to default cover
+  /// This ensures notifications ALWAYS show an image, even for songs without embedded artwork
+  MediaItem _createMediaItemWithArtwork(SongModel song) {
+    final overridden = applyOverrides(song);
+    
+    // Try to get custom artwork first
+    Uri? artUri;
+    final customPath = state.customArtworkPaths[song.id];
+    if (customPath != null && customPath.isNotEmpty) {
+      artUri = Uri.file(customPath);
+    }
+    
+    // Fallback to default cover if no custom artwork
+    if (artUri == null) {
+       // Check cache first (sync check ok for single item? No, keep it fast)
+       // We rely on pre-caching or _updateQueue to have set this correctly in logical flow,
+       // but here we are creating item from scratch.
+       
+       if (song.albumId != null) {
+          // ✅ Use modern Album URI which is often higher res than albumart/ folder
+          artUri = Uri.parse('content://media/external/audio/albums/${song.albumId}');
+       } else if (_defaultCoverPath != null && _defaultCoverPath!.isNotEmpty) {
+          artUri = Uri.file(_defaultCoverPath!);
+       }
+    }
+    
+    return MediaItem(
+      id: song.uri ?? '',
+      title: overridden.title,
+      artist: overridden.artist ?? 'Artiste inconnu',
+      album: overridden.album ?? 'Album inconnu',
+      artUri: artUri,
+      duration: Duration(milliseconds: song.duration ?? 0),
+      extras: {
+        'songId': song.id,
+        'isLiked': state.favorites.contains(song.id),
+      },
+    );
+  }
 
   /// Ensure the current track has an artwork file and update notification in background if needed.
   Future<void> _refreshCurrentArtworkIfNeeded() async {
@@ -1414,17 +1481,8 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     
     // Update AudioHandler queue
     if (_audioHandler != null) {
-       final mediaItems = current.map((s) {
-        final overridden = applyOverrides(s);
-        return MediaItem(
-          id: s.uri ?? '',
-          title: overridden.title,
-          artist: overridden.artist ?? 'Unknown',
-          album: overridden.album ?? '',
-          extras: {'songId': s.id},
-        );
-      }).toList();
-      _audioHandler!.setQueueItems(mediaItems);
+       final mediaItems = current.map((s) => _createMediaItemWithArtwork(s)).toList();
+       _audioHandler!.setQueueItems(mediaItems);
     }
   }
 
@@ -2115,22 +2173,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
           
           // Mettre à jour les MediaItems dans l'AudioHandler
           if (_audioHandler != null) {
-            final allMediaItems = newSongs.map((s) {
-              Uri? artUri;
-              final customPath = state.customArtworkPaths[s.id];
-              if (customPath != null && customPath.isNotEmpty) {
-                artUri = Uri.file(customPath);
-              }
-              return MediaItem(
-                id: s.uri!,
-                title: s.title,
-                artist: s.artist ?? 'Artiste inconnu',
-                album: s.album ?? 'Album inconnu',
-                artUri: artUri,
-                duration: Duration(milliseconds: s.duration ?? 0),
-                extras: <String, dynamic>{'songId': s.id},
-              );
-            }).toList();
+            final allMediaItems = newSongs.map((s) => _createMediaItemWithArtwork(s)).toList();
             _audioHandler!.setQueueItems(allMediaItems);
           }
           return;
@@ -2402,23 +2445,8 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         
         // Update AudioHandler
         if (_audioHandler != null) {
-          final mediaItems = current.map((s) {
-             Uri? artUri;
-             final customPath = state.customArtworkPaths[s.id];
-             if (customPath != null && customPath.isNotEmpty) {
-               artUri = Uri.file(customPath);
-             }
-             return MediaItem(
-               id: s.uri ?? '',
-               title: s.title,
-               artist: s.artist ?? 'Unknown',
-               album: s.album ?? '',
-               artUri: artUri,
-               duration: Duration(milliseconds: s.duration ?? 0),
-               extras: {'songId': s.id},
-             );
-           }).toList();
-           _audioHandler!.setQueueItems(mediaItems);
+          final mediaItems = current.map((s) => _createMediaItemWithArtwork(s)).toList();
+          _audioHandler!.setQueueItems(mediaItems);
         }
         return;
       } catch (e) {
@@ -2446,20 +2474,39 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     // Créer les sources audio avec pochettes pour TOUTES les chansons
     final sources = <AudioSource>[];
     
+    // ✅ Cache directory path for reuse
+    String? coversDirPath;
+    try {
+      final docs = await getApplicationDocumentsDirectory();
+      coversDirPath = path.join(docs.path, 'covers');
+    } catch (_) {}
+
     // ✅ Optimisation : Charger uniquement les pochettes custom déjà vérifiées
     for (var idx = 0; idx < newSongs.length; idx++) {
       final s = newSongs[idx];
       if (s.uri != null && s.uri!.isNotEmpty) {
         Uri? artUri;
         
-        // ✅ Uniquement les pochettes custom (pas de File.exists bloquant)
+        // 1. Uniquement les pochettes custom (pas de File.exists bloquant)
         final customPath = state.customArtworkPaths[s.id];
         if (customPath != null && customPath.isNotEmpty) {
           artUri = Uri.file(customPath);
-        } else if (s.albumId != null) {
+        } else {
+          // 2. Check for cached high-res artwork (File.exists is fast enough for <100 items usually, 
+          // but we can optimize if needed. For now, it's safer to check.)
+          if (coversDirPath != null) {
+            final cachedFile = File(path.join(coversDirPath, '${s.id}.jpg'));
+            if (await cachedFile.exists()) {
+               artUri = Uri.file(cachedFile.path);
+            }
+          }
+        }
+        
+        // 3. Fallback to standard album art URI if no cache
+        if (artUri == null && s.albumId != null) {
           // ✅ Use albumId for standard artwork URI (often better quality/reliability)
           artUri = Uri.parse('content://media/external/audio/albumart/${s.albumId}');
-        } else if (_defaultCoverPath != null) {
+        } else if (artUri == null && _defaultCoverPath != null) {
           // ✅ Fallback to generated default cover if no albumId
           artUri = Uri.file(_defaultCoverPath!);
         }
@@ -2531,8 +2578,81 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         player.play();
       }
     }
+    
+    // Trigger background pre-caching for upcoming tracks
+    Future.microtask(_preCacheArtworkForNextSongs);
   }
 
+  // ✅ Smart Pre-caching for Next Songs
+  // Fetches high-res artwork for the next few songs in the queue to ensure
+  // notifications show sharp images when user skips tracks.
+  Future<void> _preCacheArtworkForNextSongs() async {
+    try {
+      if (state.songs.isEmpty) return;
+      
+      final currentIndex = state.currentIndex ?? 0;
+      // Pre-cache next 3 songs
+      final songsToCache = <SongModel>[];
+      for (int i = 1; i <= 3; i++) {
+        final nextIndex = (currentIndex + i) % state.songs.length;
+        songsToCache.add(state.songs[nextIndex]);
+      }
+      
+      final docs = await getApplicationDocumentsDirectory();
+      final coversDir = Directory(path.join(docs.path, 'covers'));
+      if (!await coversDir.exists()) {
+        await coversDir.create(recursive: true);
+      }
+
+      bool newCacheCreated = false;
+
+      for (final s in songsToCache) {
+        // Skip if custom art exists
+        if (state.customArtworkPaths.containsKey(s.id)) continue;
+
+        try {
+          final cachedFile = File(path.join(coversDir.path, '${s.id}.jpg'));
+          if (!await cachedFile.exists()) {
+             // Cache miss - Fetch High-Res
+             final art = await OnAudioQuery().queryArtwork(
+               s.id,
+               ArtworkType.AUDIO,
+               size: 1024,
+               quality: 100,
+               format: ArtworkFormat.PNG, // Force PNG for quality
+             );
+             
+             if (art != null && art.isNotEmpty) {
+               await cachedFile.writeAsBytes(art, flush: true);
+               
+               // Optimize for notification usage immediately
+               final optimized = await _optimizeArtworkForNotification(cachedFile.path);
+               if (optimized != null && optimized != cachedFile.path) {
+                 // Replace original with optimized if different? 
+                 // Actually _optimize... creates a new file. 
+                 // Let's just keep the original as master cache.
+               }
+               
+               newCacheCreated = true;
+             }
+          }
+        } catch (_) {}
+      }
+      
+      // If we cached new artwork, update the audio handler queue silenttly 
+      // so it picks up the new high-res file URIs
+      if (newCacheCreated && _audioHandler != null) {
+        // Re-generate media items with the newly cached files
+        final mediaItems = <MediaItem>[];
+        for (final s in state.songs) {
+           mediaItems.add(_createMediaItemWithArtwork(s));
+        }
+        _audioHandler!.setQueueItems(mediaItems);
+      }
+      
+    } catch (_) {}
+  }
+  
   // ✅ Sleep Timer - Démarrer le minuteur
 
 
@@ -2608,6 +2728,17 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
               artUri: Uri.parse('content://media/external/audio/media/${s.id}/albumart'),
             ),
           )).toList();
+
+          // ✅ OPTIMIZATION: Emit state IMMEDIATELY for instant UI feedback
+          // This makes the MiniPlayer show the song "as if we never left"
+          // while the heavy audio player initializes in the background.
+          emit(state.copyWith(
+            currentIndex: index,
+            currentSongId: lastSongId,
+          ));
+          
+          // Trigger artwork load in background
+          Future.microtask(_refreshCurrentArtworkIfNeeded);
 
           await player.setAudioSource(
             ConcatenatingAudioSource(children: sources),

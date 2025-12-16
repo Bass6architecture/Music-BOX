@@ -137,6 +137,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                 width: 56,
                                 height: 56,
                                 child: OptimizedArtwork.square(
+                                  key: ValueKey(safeSong.id),
                                   id: safeSong.id,
                                   type: ArtworkType.AUDIO,
                                   size: 56,

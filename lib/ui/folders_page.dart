@@ -328,6 +328,48 @@ class _FoldersPageState extends State<FoldersPage> {
                         ),
                       ),
                     ),
+                  // ✅ Barre visible vers dossiers masqués (toujours affichée)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const HiddenFoldersPage()),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: theme.colorScheme.outline.withValues(alpha: 0.1),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.visibility_off_outlined, 
+                                   size: 20, 
+                                   color: theme.colorScheme.onSurfaceVariant),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  AppLocalizations.of(context)!.hiddenFolders,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                              Icon(Icons.chevron_right_rounded,
+                                   color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   SliverPadding(
                     padding: const EdgeInsets.all(16),
                     sliver: SliverList(

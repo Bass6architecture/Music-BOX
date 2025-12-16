@@ -491,29 +491,96 @@ Future<void> _openAddToPlaylist(BuildContext context, PlayerCubit cubit, SongMod
   );
 }
 
+import 'package:path_provider/path_provider.dart';
+import 'cover_art_search_page.dart';
+
 Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel song) async {
   // Initialiser les callbacks en premier
   _ensureCoverCallbacks(context);
   
   try {
-    // Cache theme before async gaps to avoid use_build_context_synchronously
+    // Cache theme before async gaps
     final theme = Theme.of(context);
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 4096, maxHeight: 4096, imageQuality: 95);
-    if (picked == null) return;
+    final l10n = AppLocalizations.of(context)!;
+
+    // 1. Ask for source: Gallery or Web
+    final source = await showModalBottomSheet<int>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: theme.colorScheme.surface,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                l10n.selectSource,
+                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_rounded),
+              title: Text(l10n.localGallery),
+              onTap: () => Navigator.pop(ctx, 0), // 0 = Gallery
+            ),
+            ListTile(
+              leading: const Icon(Icons.public_rounded),
+              title: Text(l10n.searchOnInternet),
+              onTap: () => Navigator.pop(ctx, 1), // 1 = Web
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null) return; // Cancelled
+
+    String? sourcePath;
+
+    if (source == 0) {
+      // Gallery
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 4096, maxHeight: 4096, imageQuality: 95);
+      if (picked != null) sourcePath = picked.path;
+    } else {
+      // Web Search
+      if (context.mounted) {
+        final imageBytes = await Navigator.push<Uint8List>(
+          context, 
+          MaterialPageRoute(
+            builder: (_) => CoverArtSearchPage(
+              artist: song.artist ?? '',
+              title: song.title,
+            ),
+          ),
+        );
+
+        if (imageBytes != null) {
+          // Write to temp file
+          final temp = await getTemporaryDirectory();
+          final file = File('${temp.path}/web_cover_${DateTime.now().millisecondsSinceEpoch}.jpg');
+          await file.writeAsBytes(imageBytes);
+          sourcePath = file.path;
+        }
+      }
+    }
+
+    if (sourcePath == null) return; // No image selected
     if (!context.mounted) return;
 
     // Laisser l'utilisateur recadrer en 1:1 (UI native), pas d'autres ratios
     CroppedFile? cropped;
     try {
       cropped = await ImageCropper().cropImage(
-        sourcePath: picked.path,
+        sourcePath: sourcePath,
         aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
         compressFormat: ImageCompressFormat.jpg,
         compressQuality: 92,
         uiSettings: [
           AndroidUiSettings(
-            toolbarTitle: AppLocalizations.of(context)!.crop,
+            toolbarTitle: l10n.crop,
             toolbarColor: theme.colorScheme.surface,
             toolbarWidgetColor: theme.colorScheme.primary,
             lockAspectRatio: true,
@@ -523,7 +590,7 @@ Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel son
       );
     } catch (_) {}
 
-    final path = (cropped?.path ?? picked.path);
+    final path = (cropped?.path ?? sourcePath);
     final bytes = await File(path).readAsBytes();
 
     // D'abord appliquer localement dans l'app
@@ -550,7 +617,7 @@ Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel son
         if (context.mounted && success == false) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.requiresAndroid10),
+              content: Text(l10n.requiresAndroid10),
               backgroundColor: Colors.orange,
             ),
           );
@@ -561,7 +628,7 @@ Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel son
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${AppLocalizations.of(context)!.error}: $e'),
+              content: Text('${l10n.error}: $e'),
               backgroundColor: Colors.red,
             ),
           );
@@ -569,13 +636,13 @@ Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel son
       }
     } else if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.imageUpdated)),
+        SnackBar(content: Text(l10n.imageUpdated)),
       );
     }
   } catch (e) {
     // Silencieux: en local seulement, pas d'erreur intrusive
   }
-}
+} // End _changeCover
 
 // plus de recadrage automatique — l'utilisateur choisit la zone en 1:1 via ImageCropper
 

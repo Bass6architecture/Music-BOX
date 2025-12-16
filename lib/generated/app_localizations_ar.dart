@@ -81,7 +81,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get nowPlaying => 'قيد التشغيل';
 
   @override
-  String get yourPlaylists => 'Vos playlists';
+  String get yourPlaylists => 'قوائم التشغيل الخاصة بك';
 
   @override
   String get favorites => 'المفضلة';
@@ -96,22 +96,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String get mostPlayed => 'الأكثر تشغيلاً';
 
   @override
-  String get forYou => 'Pour Vous';
+  String get forYou => 'لك';
 
   @override
-  String get quickPlay => 'Lecture Rapide';
+  String get quickPlay => 'تشغيل سريع';
 
   @override
-  String get listeningHabits => 'En Boucle';
+  String get listeningHabits => 'عادات الاستماع';
 
   @override
-  String get forgottenGems => 'Pépites Oubliées';
+  String get forgottenGems => 'الجواهر المنسية';
 
   @override
-  String get allTimeHits => 'Intemporel';
+  String get allTimeHits => 'الأغاني الخالدة';
 
   @override
-  String get explore => 'Explorer';
+  String get explore => 'استكشاف';
 
   @override
   String get settingsTitle => 'الإعدادات';
@@ -162,6 +162,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get currentLanguage => 'العربية';
 
   @override
+  String get languageSystem => 'لغة النظام';
+
+  @override
+  String get languageSystemDesc => 'تتبع لغة الهاتف';
+
+  @override
   String get languageAlreadySelected => 'العربية محددة بالفعل';
 
   @override
@@ -186,43 +192,43 @@ class AppLocalizationsAr extends AppLocalizations {
   String get equalizerDesc => 'ضبط الجهير والصوت العالي';
 
   @override
-  String get equalizerEnabled => 'Égaliseur activé';
+  String get equalizerEnabled => 'المعادل مفعل';
 
   @override
-  String get equalizerDisabled => 'Égaliseur désactivé';
+  String get equalizerDisabled => 'المعادل معطل';
 
   @override
   String get noEqualizerFound => 'لم يتم العثور على معادل على هذا الجهاز';
 
   @override
-  String get background => 'Arrière-plan';
+  String get background => 'الخلفية';
 
   @override
-  String get backgroundDesc => 'Personnaliser l\'arrière-plan de l\'app';
+  String get backgroundDesc => 'تخصيص خلفية التطبيق';
 
   @override
-  String get backgroundNone => 'Aucun';
+  String get backgroundNone => 'بلا';
 
   @override
-  String get backgroundGradientMusical => 'Dégradé musical';
+  String get backgroundGradientMusical => 'تدرج موسيقي';
 
   @override
-  String get backgroundGradientDark => 'Dégradé sombre';
+  String get backgroundGradientDark => 'تدرج داكن';
 
   @override
-  String get backgroundParticles => 'Particules';
+  String get backgroundParticles => 'جزيئات';
 
   @override
-  String get backgroundWaves => 'Ondes sonores';
+  String get backgroundWaves => 'موجات صوتية';
 
   @override
-  String get backgroundNeonCity => 'Ville néon';
+  String get backgroundNeonCity => 'مدينة النيون';
 
   @override
-  String get backgroundVinylSunset => 'Coucher de soleil vinyle';
+  String get backgroundVinylSunset => 'غروب الفينيل';
 
   @override
-  String get backgroundAuroraRhythm => 'Aurore boréale';
+  String get backgroundAuroraRhythm => 'إيقاع الشفق';
 
   @override
   String get backgroundPlayback => 'التشغيل في الخلفية';
@@ -263,7 +269,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get scanMusicDesc => 'كشف المقاطع المفقودة';
 
   @override
-  String get hiddenFolders => 'المجلدات المخفية';
+  String get hiddenFolders => 'Hidden folders';
 
   @override
   String get hiddenFoldersDesc => 'إدارة المجلدات المخفية';
@@ -313,7 +319,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get playNext => 'تشغيل التالي';
 
   @override
-  String get playAll => 'Tout lire';
+  String get playAll => 'تشغيل الكل';
 
   @override
   String get addToQueue => 'إضافة إلى القائمة';
@@ -355,7 +361,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get editMetadata => 'تعديل البيانات الوصفية';
 
   @override
-  String get selectAll => 'Tout sélectionner';
+  String get selectAll => 'تحديد الكل';
 
   @override
   String get deleteSong => 'حذف الأغنية';
@@ -406,10 +412,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get grantPermission => 'منح الإذن';
 
   @override
-  String get openSettings => 'فتح الإعدادات';
+  String get openSettings => 'الإعدادات';
 
   @override
-  String get permissionRequired => 'الإذن مطلوب';
+  String get permissionRequired => 'إذن مطلوب';
 
   @override
   String get permissionDenied => 'تم رفض الإذن';
@@ -431,29 +437,28 @@ class AppLocalizationsAr extends AppLocalizations {
   String get hideLyrics => 'إخفاء كلمات الأغاني';
 
   @override
-  String get lyricsEdit => 'Modifier les paroles';
+  String get lyricsEdit => 'تعديل الكلمات';
 
   @override
-  String get lyricsDelete => 'Supprimer les paroles';
+  String get lyricsDelete => 'حذف الكلمات';
 
   @override
-  String get lyricsDeleteConfirm =>
-      'Supprimer les paroles pour cette chanson ?';
+  String get lyricsDeleteConfirm => 'حذف كلمات هذه الأغنية؟';
 
   @override
-  String get lyricsImportUrl => 'Importer depuis URL';
+  String get lyricsImportUrl => 'استيراد من ملف';
 
   @override
-  String get lyricsImportClipboard => 'Coller depuis le presse-papier';
+  String get lyricsImportClipboard => 'لصق من الحافظة';
 
   @override
-  String get lyricsSaved => 'Paroles enregistrées';
+  String get lyricsSaved => 'تم حفظ الكلمات';
 
   @override
-  String get lyricsDeleted => 'Paroles supprimées';
+  String get lyricsDeleted => 'تم حذف الكلمات';
 
   @override
-  String get lyricsPasteHint => 'Collez ou écrivez les paroles ici...';
+  String get lyricsPasteHint => 'الصق أو اكتب الكلمات هنا...';
 
   @override
   String get unknownArtist => 'فنان غير معروف';
@@ -519,8 +524,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get addSongs => 'إضافة أغاني';
 
   @override
-  String get addSongsToPlaylistDesc =>
-      'Ajoutez des chansons pour commencer l\'écoute';
+  String get addSongsToPlaylistDesc => 'أضف أغاني لبدء الاستماع';
 
   @override
   String get playlistCreated => 'تم إنشاء قائمة التشغيل';
@@ -942,137 +946,158 @@ class AppLocalizationsAr extends AppLocalizations {
   String get hours2 => 'ساعتين';
 
   @override
-  String get upNext => 'À suivre';
+  String get upNext => 'الحالي';
 
   @override
-  String get undo => 'Annuler';
+  String get undo => 'تراجع';
 
   @override
-  String get permissionAudioTitle => 'Accès Audio';
+  String get permissionAudioTitle => 'الوصول للصوت';
 
   @override
-  String get permissionAudioDesc => 'Pour lire vos fichiers musicaux locaux';
+  String get permissionAudioDesc => 'لتشغيل ملفات الموسيقى المحلية';
 
   @override
-  String get permissionNotificationTitle => 'Notifications';
+  String get permissionNotificationTitle => 'الإشعارات';
 
   @override
-  String get permissionNotificationDesc => 'Pour les contrôles de lecture';
+  String get permissionNotificationDesc => 'للتحكم في التشغيل';
 
   @override
-  String get permissionBatteryTitle => 'Lecture en arrière-plan';
+  String get permissionBatteryTitle => 'التشغيل في الخلفية';
 
   @override
-  String get permissionBatteryDesc =>
-      'Évite les coupures quand l\'écran est éteint';
+  String get permissionBatteryDesc => 'يمنع التوقف عند إغلاق الشاشة';
 
   @override
   String get permissionIntro =>
-      'Pour vous offrir la meilleure expérience musicale, Music Box a besoin de quelques autorisations.';
+      'لتوفير أفضل تجربة موسيقية، يحتاج صندوق الموسيقى إلى بعض الأذونات.';
 
   @override
-  String get grant => 'Autoriser';
+  String get grant => 'منح';
 
   @override
-  String get enable => 'Activer';
+  String get enable => 'تفعيل';
 
   @override
-  String get accessApp => 'Accéder à Music Box';
+  String get accessApp => 'الوصول للتطبيق';
 
   @override
-  String get backupAndData => 'Sauvegarde & Données';
+  String get backupAndData => 'النسخ الاحتياطي والبيانات';
 
   @override
-  String get exportData => 'Exporter les données';
+  String get exportData => 'تصدير البيانات';
 
   @override
-  String get exportDataDesc => 'Sauvegarder favoris, playlists et stats';
+  String get exportDataDesc => 'حفظ المفضلة وقوائم التشغيل والإحصائيات';
 
   @override
-  String get importBackup => 'Importer une sauvegarde';
+  String get importBackup => 'استيراد نسخة احتياطية';
 
   @override
-  String get importBackupDesc => 'Restaurer depuis un fichier .json';
+  String get importBackupDesc => 'استعادة من ملف .json';
 
   @override
-  String get attention => 'Attention';
+  String get attention => 'انتباه';
 
   @override
   String get restoreWarning =>
-      'La restauration va écraser vos favoris et playlists actuels.\n\nVoulez-vous continuer ?';
+      'الاستعادة ستستبدل المفضلة وقوائم التشغيل الحالية.\n\nهل تريد المتابعة؟';
 
   @override
-  String get overwriteAndRestore => 'Écraser et Restaurer';
+  String get overwriteAndRestore => 'استبدال واستعادة';
 
   @override
-  String get restoreSuccessTitle => 'Restauration réussie';
+  String get restoreSuccessTitle => 'تمت الاستعادة بنجاح';
 
   @override
   String get restoreSuccessMessage =>
-      'Vos données ont été restaurées avec succès.\n\nVeuillez redémarrer l\'application pour que tous les changements prennent effet.';
+      'تمت استعادة بياناتك بنجاح.\n\nيرجى إعادة تشغيل التطبيق لتطبيق التغييرات.';
 
   @override
-  String get backupReadError => 'Impossible de lire le fichier de sauvegarde.';
+  String get backupReadError => 'تعذر قراءة ملف النسخة الاحتياطية.';
 
   @override
-  String get sleepTimerTitle => 'Minuteur de veille';
+  String get sleepTimerTitle => 'مؤقت النوم';
 
   @override
-  String get sleepTimerDesc => 'Programmer l\'arrêt de la musique';
+  String get sleepTimerDesc => 'جدولة إيقاف الموسيقى';
 
   @override
-  String get sleepTimerStoppingSoon => 'Arrêt imminent...';
+  String get sleepTimerStoppingSoon => 'سيتوقف قريباً...';
 
   @override
   String sleepTimerActive(int minutes) {
-    return 'Actif : Arrêt dans $minutes min';
+    return 'نشط: إيقاف خلال $minutes دقيقة';
   }
 
   @override
-  String get sleepTimerStopMusicAfter => 'Arrêter la musique après...';
+  String get sleepTimerStopMusicAfter => 'إيقاف الموسيقى بعد...';
 
   @override
   String sleepTimerActiveRemaining(int minutes, String seconds) {
-    return 'Actif : $minutes:$seconds restants';
+    return 'نشط: $minutes:$seconds متبقية';
   }
 
   @override
-  String get deactivate => 'Désactiver';
+  String get deactivate => 'إلغاء التفعيل';
 
   @override
   String timerSetFor(String label) {
-    return 'Minuteur réglé pour $label 🌙';
+    return 'تم ضبط المؤقت لمدة $label 🌙';
   }
 
   @override
-  String get oneHour => '1 heure';
+  String get oneHour => 'ساعة واحدة';
 
   @override
-  String get oneHourThirty => '1h 30';
+  String get oneHourThirty => 'ساعة ونصف';
 
   @override
-  String get twoHours => '2 heures';
+  String get twoHours => 'ساعتين';
 
   @override
-  String get backupSubject => 'Sauvegarde Music Box';
+  String get backupSubject => 'نسخة احتياطية Music Box';
 
   @override
   String backupBody(String date) {
-    return 'Voici ma sauvegarde Music Box du $date.';
+    return 'هذه نسختي الاحتياطية من Music Box بتاريخ $date.';
   }
 
   @override
-  String get contactSubject => 'Support Music Box';
+  String get contactSubject => 'دعم Music Box';
 
   @override
-  String get sortNewest => 'Récent';
+  String get sortNewest => 'الأحدث';
 
   @override
-  String get sortOldest => 'Ancien';
+  String get sortOldest => 'الأقدم';
 
   @override
-  String get sortShortest => 'Court';
+  String get sortShortest => 'قصير';
 
   @override
-  String get sortLongest => 'Long';
+  String get sortLongest => 'طويل';
+
+  @override
+  String get noConnectionMessage =>
+      'Please check your connection and try again';
+
+  @override
+  String get selectSource => 'Select source';
+
+  @override
+  String get localGallery => 'Gallery';
+
+  @override
+  String get preview => 'Preview';
+
+  @override
+  String get useThisImageQuestion => 'Use this image?';
+
+  @override
+  String get useImage => 'Use Image';
+
+  @override
+  String get searchOnInternet => 'Search on Internet';
 }

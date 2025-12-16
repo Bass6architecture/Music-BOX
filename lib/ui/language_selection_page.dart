@@ -19,7 +19,40 @@ class LanguageSelectionPage extends StatelessWidget {
         centerTitle: true,
       ),
       body: ListView(
-        children: LocaleCubit.availableLocales.map((localeInfo) {
+        children: [
+          // ✅ Option "Système"
+          ListTile(
+            onTap: () async {
+              await localeCubit.setLocale(null); // null = système
+              if (context.mounted) {
+                Navigator.pop(context);
+              }
+            },
+            title: Text(
+              l10n.languageSystem, // "Langue du système"
+              style: theme.textTheme.bodyLarge,
+            ),
+            subtitle: Text(
+              l10n.languageSystemDesc, // "Suit la langue du téléphone"
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+            ),
+            leading: const Text(
+              '📱',
+              style: TextStyle(fontSize: 24),
+            ),
+            trailing: Radio<String?>(
+              value: null, // null représente le choix "Système"
+              groupValue: localeCubit.isSystemMode ? null : 'not_null', // Si mode système, on matche avec null
+              onChanged: (value) async {
+                 await localeCubit.setLocale(null);
+                 if (context.mounted) Navigator.pop(context);
+              },
+            ),
+          ),
+          const Divider(),
+          ...LocaleCubit.availableLocales.map((localeInfo) {
           final isSelected = currentLocale.languageCode == localeInfo.locale.languageCode;
           final isAvailable = !localeInfo.comingSoon;
           
@@ -30,12 +63,6 @@ class LanguageSelectionPage extends StatelessWidget {
                       await localeCubit.setLocale(localeInfo.locale);
                       if (context.mounted) {
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(l10n.languageChanged),
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
                       }
                     }
                   }
@@ -66,21 +93,14 @@ class LanguageSelectionPage extends StatelessWidget {
             ),
             trailing: Radio<String>(
               value: localeInfo.locale.languageCode,
-              // ignore: deprecated_member_use
-              groupValue: currentLocale.languageCode,
-              // ignore: deprecated_member_use
+              // Si on est en mode système, aucun bouton radio manuel ne doit être coché
+              groupValue: localeCubit.isSystemMode ? null : currentLocale.languageCode,
               onChanged: isAvailable 
                   ? (value) async {
-                      if (value != null && !isSelected) {
+                      if (value != null && (!isSelected || localeCubit.isSystemMode)) {
                         await localeCubit.setLocale(localeInfo.locale);
                         if (context.mounted) {
                           Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.languageChanged),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
                         }
                       }
                     }
@@ -95,6 +115,7 @@ class LanguageSelectionPage extends StatelessWidget {
             ),
           );
         }).toList(),
+        ],
       ),
     );
   }

@@ -162,6 +162,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currentLanguage => 'English';
 
   @override
+  String get languageSystem => 'System Language';
+
+  @override
+  String get languageSystemDesc => 'Follow system language';
+
+  @override
   String get languageAlreadySelected => 'English already selected';
 
   @override
@@ -1077,4 +1083,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sortLongest => 'Longest';
+
+  @override
+  String get noConnectionMessage =>
+      'Please check your connection and try again';
+
+  @override
+  String get selectSource => 'Select source';
+
+  @override
+  String get localGallery => 'Gallery';
+
+  @override
+  String get preview => 'Preview';
+
+  @override
+  String get useThisImageQuestion => 'Use this image?';
+
+  @override
+  String get useImage => 'Use Image';
+
+  @override
+  String get searchOnInternet => 'Search on Internet';
 }

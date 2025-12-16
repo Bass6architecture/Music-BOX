@@ -26,6 +26,17 @@
   "folders": "المجلدات",
   "settings": "الإعدادات",
   "nowPlaying": "قيد التشغيل",
+  "yourPlaylists": "قوائم التشغيل الخاصة بك",
+  "favorites": "المفضلة",
+  "recentlyAdded": "المضافة مؤخراً",
+  "recentlyPlayed": "تم تشغيلها مؤخراً",
+  "mostPlayed": "الأكثر تشغيلاً",
+  "forYou": "لك",
+  "quickPlay": "تشغيل سريع",
+  "listeningHabits": "عادات الاستماع",
+  "forgottenGems": "الجواهر المنسية",
+  "allTimeHits": "الأغاني الخالدة",
+  "explore": "استكشاف",
   
   "settingsTitle": "الإعدادات",
   "appearance": "المظهر",
@@ -45,6 +56,8 @@
   "language": "اللغة",
   "languageDescription": "لغة التطبيق",
   "currentLanguage": "العربية",
+  "languageSystem": "لغة النظام",
+  "languageSystemDesc": "تتبع لغة الهاتف",
   "languageAlreadySelected": "العربية محددة بالفعل",
   "languageComingSoon": "قريباً",
   "languageChanged": "تم تغيير اللغة",
@@ -54,7 +67,20 @@
   
   "equalizer": "المعادل",
   "equalizerDesc": "ضبط الجهير والصوت العالي",
+  "equalizerEnabled": "المعادل مفعل",
+  "equalizerDisabled": "المعادل معطل",
   "noEqualizerFound": "لم يتم العثور على معادل على هذا الجهاز",
+  
+  "background": "الخلفية",
+  "backgroundDesc": "تخصيص خلفية التطبيق",
+  "backgroundNone": "بلا",
+  "backgroundGradientMusical": "تدرج موسيقي",
+  "backgroundGradientDark": "تدرج داكن",
+  "backgroundParticles": "جزيئات",
+  "backgroundWaves": "موجات صوتية",
+  "backgroundNeonCity": "مدينة النيون",
+  "backgroundVinylSunset": "غروب الفينيل",
+  "backgroundAuroraRhythm": "إيقاع الشفق",
   
   "backgroundPlayback": "التشغيل في الخلفية",
   "backgroundPlaybackDesc": "تعطيل تحسين البطارية لتشغيل سلس",
@@ -81,6 +107,13 @@
   "contactDesc": "synergydevv@gmail.com",
   "cannotOpenPrivacyPolicy": "لا يمكن فتح سياسة الخصوصية",
   "cannotOpenEmail": "لا يمكن فتح تطبيق البريد",
+  "@version": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   
   "play": "تشغيل",
   "pause": "إيقاف مؤقت",
@@ -89,6 +122,7 @@
   "shuffle": "عشوائي",
   "repeat": "تكرار",
   "playNext": "تشغيل التالي",
+  "playAll": "تشغيل الكل",
   "addToQueue": "إضافة إلى القائمة",
   "addToQueueFull": "إضافة إلى قائمة الانتظار",
   "addToPlaylist": "إضافة إلى قائمة تشغيل",
@@ -102,22 +136,70 @@
   "setAsRingtone": "تعيين كنغمة رنين",
   "songDetails": "تفاصيل الأغنية",
   "editMetadata": "تعديل البيانات الوصفية",
-  "changeCover": "تغيير الغلاف",
+  "selectAll": "تحديد الكل",
   "deleteSong": "حذف الأغنية",
+  "confirmDeleteSong": "هل أنت متأكد من أنك تريد حذف هذا الملف؟",
+  "songAdded": "تمت إضافة الأغنية",
+  "createPlaylist": "إنشاء قائمة تشغيل",
+  "playlistNameHint": "اسم قائمة التشغيل",
+  "allSongs": "جميع الأغاني",
+  "sortBy": "ترتيب حسب",
+  "sortAscending": "تصاعدي",
+  "sortDescending": "تنازلي",
+  "title": "العنوان",
+  "artist": "الفنان",
+  "album": "الألبوم",
+  "duration": "المدة",
+  "sortByDateAdded": "تاريخ الإضافة",
+  "noSongs": "لا توجد أغاني",
+  "grantPermission": "منح الإذن",
+  "openSettings": "فتح الإعدادات",
+  "permissionRequired": "الإذن مطلوب",
+  "permissionDenied": "تم رفض الإذن",
+  "permissionPermanentlyDenied": "تم رفض الإذن نهائياً. يرجى تفعيله في الإعدادات.",
+  "storagePermissionRequired": "إذن التخزين مطلوب لقراءة الموسيقى الخاصة بك.",
+  "changeCover": "تغيير الغلاف",
+  
   "showLyrics": "عرض كلمات الأغاني",
   "hideLyrics": "إخفاء كلمات الأغاني",
+  "lyricsEdit": "تعديل الكلمات",
+  "lyricsDelete": "حذف الكلمات",
+  "lyricsDeleteConfirm": "حذف كلمات هذه الأغنية؟",
+  "lyricsImportUrl": "استيراد من ملف",
+  "lyricsImportClipboard": "لصق من الحافظة",
+  "lyricsSaved": "تم حفظ الكلمات",
+  "lyricsDeleted": "تم حذف الكلمات",
+  "lyricsPasteHint": "الصق أو اكتب الكلمات هنا...",
+  "cancel": "إلغاء",
+  "save": "حفظ",
+  "delete": "حذف",
   
   "unknownArtist": "فنان غير معروف",
   "unknownAlbum": "ألبوم غير معروف",
   "unknownTitle": "عنوان غير معروف",
-  "noSongs": "لا توجد أغاني",
+  
   "noAlbums": "لا توجد ألبومات",
   "noArtists": "لا يوجد فنانون",
   "noPlaylists": "لا توجد قوائم تشغيل",
   "noFolders": "لا توجد مجلدات",
   
   "songCount": "{count, plural, =0{لا توجد أغاني} =1{أغنية واحدة} other{{count} أغنية}}",
+  "@songCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
   "albumCount": "{count, plural, =0{لا توجد ألبومات} =1{ألبوم واحد} other{{count} ألبوم}}",
+  "@albumCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   
   "createPlaylist": "إنشاء قائمة تشغيل",
   "playlistName": "اسم قائمة التشغيل",
@@ -127,6 +209,7 @@
   "confirmDeletePlaylist": "هل تريد حقاً حذف قائمة التشغيل هذه؟",
   "emptyPlaylist": "قائمة تشغيل فارغة",
   "addSongs": "إضافة أغاني",
+  "addSongsToPlaylistDesc": "أضف أغاني لبدء الاستماع",
   "playlistCreated": "تم إنشاء قائمة التشغيل",
   "playlistDeleted": "تم حذف قائمة التشغيل",
   "playlistRenamed": "تمت إعادة تسمية قائمة التشغيل",
@@ -184,6 +267,13 @@
   "scanComplete": "اكتمل المسح",
   "scanFailed": "فشل المسح",
   "foundSongs": "تم العثور على {count} أغنية",
+  "@foundSongs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   
   "metadata": "البيانات الوصفية",
   "title": "العنوان",
@@ -210,6 +300,7 @@
   "requiresAndroid10": "تتطلب هذه الميزة أندرويد 10+",
   "errorOpeningFolder": "خطأ في فتح المجلد",
   "imageUpdated": "تم تحديث الصورة",
+  "androidOnly": "متاح على أندرويد فقط",
   "ringtoneSet": "تم التعيين كنغمة رنين",
   
   "permissionRequired": "الإذن مطلوب",
@@ -256,9 +347,17 @@
   "copyPath": "نسخ المسار",
   "pathCopied": "تم نسخ المسار",
   
+  "imageUpdated": "تم تحديث الصورة",
   "uriNotFound": "لم يتم العثور على URI للملف",
   "ringtoneTitle": "نغمة الرنين",
   "setRingtoneConfirm": "تعيين \"{title}\" كنغمة رنين؟",
+  "@setRingtoneConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "confirm": "تأكيد",
   "ringtoneSetSuccess": "✓ تم التعيين كنغمة رنين",
   "changesSaved": "تم حفظ التغييرات",
@@ -274,8 +373,22 @@
   "deleteStorageWarning": "⚠️ سيتم حذف الملف من تخزين هاتفك",
   
   "folderLabel": "المجلد: {name}",
+  "@folderLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "android10Required": "❌ تتطلب هذه الميزة أندرويد 10+",
   "errorWithDetails": "❌ خطأ: {error}",
+  "@errorWithDetails": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   
   "errorPermissionDenied": "تم رفض الإذن. تحقق من إعدادات التطبيق",
   "errorFileNotFound": "لم يتم العثور على الملف",
@@ -307,5 +420,94 @@
   "min30": "30 دقيقة",
   "min45": "45 دقيقة",
   "hour1": "ساعة واحدة",
-  "hours2": "ساعتين"
+  "hours2": "ساعتين",
+  "upNext": "الحالي",
+  "undo": "تراجع",
+  
+  "permissionAudioTitle": "الوصول للصوت",
+  "permissionAudioDesc": "لتشغيل ملفات الموسيقى المحلية",
+  "permissionNotificationTitle": "الإشعارات",
+  "permissionNotificationDesc": "للتحكم في التشغيل",
+  "permissionBatteryTitle": "التشغيل في الخلفية",
+  "permissionBatteryDesc": "يمنع التوقف عند إغلاق الشاشة",
+  "permissionRequired": "إذن مطلوب",
+  "permissionIntro": "لتوفير أفضل تجربة موسيقية، يحتاج صندوق الموسيقى إلى بعض الأذونات.",
+  "grant": "منح",
+  "enable": "تفعيل",
+  "accessApp": "الوصول للتطبيق",
+  "openSettings": "الإعدادات",
+  
+  "backupAndData": "النسخ الاحتياطي والبيانات",
+  "exportData": "تصدير البيانات",
+  "exportDataDesc": "حفظ المفضلة وقوائم التشغيل والإحصائيات",
+  "importBackup": "استيراد نسخة احتياطية",
+  "importBackupDesc": "استعادة من ملف .json",
+  "attention": "انتباه",
+  "restoreWarning": "الاستعادة ستستبدل المفضلة وقوائم التشغيل الحالية.\n\nهل تريد المتابعة؟",
+  "overwriteAndRestore": "استبدال واستعادة",
+  "restoreSuccessTitle": "تمت الاستعادة بنجاح",
+  "restoreSuccessMessage": "تمت استعادة بياناتك بنجاح.\n\nيرجى إعادة تشغيل التطبيق لتطبيق التغييرات.",
+  "backupReadError": "تعذر قراءة ملف النسخة الاحتياطية.",
+  
+  "sleepTimerTitle": "مؤقت النوم",
+  "sleepTimerDesc": "جدولة إيقاف الموسيقى",
+  "sleepTimerStoppingSoon": "سيتوقف قريباً...",
+  "sleepTimerActive": "نشط: إيقاف خلال {minutes} دقيقة",
+  "@sleepTimerActive": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerStopMusicAfter": "إيقاف الموسيقى بعد...",
+  "sleepTimerActiveRemaining": "نشط: {minutes}:{seconds} متبقية",
+  "@sleepTimerActiveRemaining": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "deactivate": "إلغاء التفعيل",
+  "timerSetFor": "تم ضبط المؤقت لمدة {label} 🌙",
+  "@timerSetFor": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "oneHour": "ساعة واحدة",
+  "oneHourThirty": "ساعة ونصف",
+  "oneHour": "ساعة واحدة",
+  "oneHourThirty": "ساعة ونصف",
+  "twoHours": "ساعتين",
+  "customize": "تخصيص",
+  
+  "backupSubject": "نسخة احتياطية Music Box",
+  "backupBody": "هذه نسختي الاحتياطية من Music Box بتاريخ {date}.",
+  "@backupBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "contactSubject": "دعم Music Box",
+  "sortNewest": "الأحدث",
+  "sortOldest": "الأقدم",
+  "sortShortest": "قصير",
+  "sortLongest": "طويل",
+  "noConnectionMessage": "Please check your connection and try again",
+  "hiddenFolders": "Hidden folders",
+  "selectSource": "Select source",
+  "localGallery": "Gallery",
+  "preview": "Preview",
+  "useThisImageQuestion": "Use this image?",
+  "useImage": "Use Image",
+  "searchOnInternet": "Search on Internet"
 }

@@ -256,23 +256,43 @@ class HomeScreenState extends State<HomeScreen>
                     ]
                   : const [],
             ),
-            child: NavigationBar(
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: _onItemTapped,
-              height: 80,
-              elevation: 0,
-              backgroundColor: Colors.transparent,
-              indicatorColor: theme.colorScheme.primary,
-              destinations: navigationItems.map((item) {
-                return NavigationDestination(
-                  icon: Icon(item.icon),
-                  selectedIcon: Icon(
-                    item.selectedIcon,
-                    color: Colors.white,
-                  ),
-                  label: item.label,
-                );
-              }).toList(),
+            child: NavigationBarTheme(
+              data: NavigationBarThemeData(
+                labelTextStyle: MaterialStateProperty.resolveWith<TextStyle>(
+                  (Set<MaterialState> states) {
+                    if (states.contains(MaterialState.selected)) {
+                      return const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        overflow: TextOverflow.ellipsis,
+                      );
+                    }
+                    return const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.normal,
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  },
+                ),
+              ),
+              child: NavigationBar(
+                selectedIndex: _selectedIndex,
+                onDestinationSelected: _onItemTapped,
+                height: 80,
+                elevation: 0,
+                backgroundColor: Colors.transparent,
+                indicatorColor: theme.colorScheme.primary,
+                destinations: navigationItems.map((item) {
+                  return NavigationDestination(
+                    icon: Icon(item.icon),
+                    selectedIcon: Icon(
+                      item.selectedIcon,
+                      color: Colors.white,
+                    ),
+                    label: item.label,
+                  );
+                }).toList(),
+              ),
             ),
           ),
         ],

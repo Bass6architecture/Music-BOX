@@ -135,14 +135,15 @@ class _OptimizedArtworkState extends State<OptimizedArtwork> {
     _lastRequestedPx = sizePx;
 
     try {
-      // Request artwork with DPR-aware size. The Dart API provides defaults
-      // for quality/format; we only override size and set quality to max.
-      final art = await _query.queryArtwork(
-        widget.id,
-        widget.type,
-        size: sizePx,
-        quality: 100,
-      );
+        // Request artwork with DPR-aware size.
+        // We force PNG for better quality (no JPEG artifacts), and quality 100.
+        final art = await _query.queryArtwork(
+          widget.id,
+          widget.type,
+          size: sizePx,
+          quality: 100,
+          format: ArtworkFormat.PNG,
+        );
       if (!mounted) return;
       
       // ✅ Limiter la taille du cache (LRU eviction)

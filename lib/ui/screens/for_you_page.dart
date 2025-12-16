@@ -153,7 +153,11 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
                             final song = _freshArrivals[index];
-                            return _CompactSongRow(song: song);
+                            return _CompactSongRow(
+                              song: song,
+                              queue: _freshArrivals,
+                              index: index,
+                            );
                           },
                           childCount: _freshArrivals.length,
                         ),
@@ -229,7 +233,7 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
                            '${_quickPlayMix.length} ${AppLocalizations.of(context)!.songs.toLowerCase()}',
                            style: theme.textTheme.bodyMedium?.copyWith(
                              color: Colors.white70,
-                           ),
+                             ),
                          ),
                        ],
                      ),
@@ -434,8 +438,15 @@ class _DetailedSongCard extends StatelessWidget {
 }
 
 class _CompactSongRow extends StatelessWidget {
-  const _CompactSongRow({required this.song});
+  const _CompactSongRow({
+    required this.song,
+    required this.queue,
+    required this.index,
+  });
+
   final SongModel song;
+  final List<SongModel> queue;
+  final int index;
 
   @override
   Widget build(BuildContext context) {
@@ -446,7 +457,7 @@ class _CompactSongRow extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        context.read<PlayerCubit>().setQueueAndPlay([song], 0);
+        context.read<PlayerCubit>().setQueueAndPlay(queue, index);
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6), // Thinner padding

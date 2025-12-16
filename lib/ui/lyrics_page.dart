@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
+import 'package:file_picker/file_picker.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,7 +15,7 @@ import '../widgets/optimized_artwork.dart';
 
 import '../player/player_cubit.dart';
 
-enum LyricsMode { loading, found, options, manual }
+enum LyricsMode { loading, found, options, manual, noConnection }
 
 class LyricsPage extends StatefulWidget {
   const LyricsPage({super.key});
@@ -214,6 +215,8 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
         final txt = map['lyrics']?.toString();
         if (txt != null && txt.trim().isNotEmpty) return txt;
       }
+    } on SocketException {
+      rethrow; // ✅ Propagate network errors for detection
     } catch (_) {}
     return null;
   }
@@ -228,6 +231,8 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
         final txt = (map['lyrics'] ?? map['lyric'] ?? map['text'])?.toString();
         if (txt != null && txt.trim().isNotEmpty) return txt;
       }
+    } on SocketException {
+      rethrow; // ✅ Propagate network errors for detection
     } catch (_) {}
     return null;
   }
@@ -260,6 +265,8 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
           if (plain != null && plain.trim().isNotEmpty) return plain;
         }
       }
+    } on SocketException {
+      rethrow; // ✅ Propagate network errors for detection
     } catch (_) {}
     return null;
   }
@@ -667,39 +674,45 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
     final candidatesA = _artistCandidates(a);
     final candidatesT = <String>{t, _normalizeTitle(t)}.where((e) => e.trim().isNotEmpty).toList();
 
-    for (final ca in candidatesA) {
-      for (final ct in candidatesT) {
-        if (!mounted || (_mode == LyricsMode.found && _lyrics != null)) return;
-        // Priority: LRCLIB (reliable), then Lyrist, then OVH
-        String? txt = await _fetchLyricsLrclib(ca, ct);
-        txt ??= await _fetchLyricsLyrist(ca, ct);
-        txt ??= await _fetchLyricsOvh(ca, ct);
-        if (txt != null && txt.trim().isNotEmpty) {
-          final cleaned = _cleanupLyrics(txt.trim());
-          if (!mounted) return;
-          setState(() {
-            _lyrics = cleaned;
-            _mode = LyricsMode.found;
-            _fromCache = false;
-            _lyricsSavedAt = DateTime.now().millisecondsSinceEpoch;
-            _staleCache = false;
-          });
-          await _saveLyricsToCache(cleaned);
-          _notifyFoundOnce();
-          _timeoutTimer?.cancel();
-          return;
+    try {
+      for (final ca in candidatesA) {
+        for (final ct in candidatesT) {
+          if (!mounted || (_mode == LyricsMode.found && _lyrics != null)) return;
+          // Priority: LRCLIB (reliable), then Lyrist, then OVH
+          String? txt = await _fetchLyricsLrclib(ca, ct);
+          txt ??= await _fetchLyricsLyrist(ca, ct);
+          txt ??= await _fetchLyricsOvh(ca, ct);
+          if (txt != null && txt.trim().isNotEmpty) {
+            final cleaned = _cleanupLyrics(txt.trim());
+            if (!mounted) return;
+            setState(() {
+              _lyrics = cleaned;
+              _mode = LyricsMode.found;
+              _fromCache = false;
+              _lyricsSavedAt = DateTime.now().millisecondsSinceEpoch;
+              _staleCache = false;
+            });
+            await _saveLyricsToCache(cleaned);
+            _timeoutTimer?.cancel();
+            return;
+          }
         }
       }
+    } on SocketException catch (_) {
+      // ✅ No internet connection detected
+      if (!mounted) return;
+      setState(() => _mode = LyricsMode.noConnection);
+      _timeoutTimer?.cancel();
+      return;
+    } catch (_) {
+      // Other errors - continue to timeout
     }
     // Do nothing here; the global timeout will switch to options if still loading
   }
 
   void _notifyFoundOnce() {
-    if (_notifiedFound || !mounted) return;
+    // ✅ Removed snackbar per user request - keep method for backwards compatibility
     _notifiedFound = true;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)!.lyricsFound)),
-    );
   }
 
   Widget _skeletonBar({double widthFactor = 1.0, double height = 14}) {
@@ -799,15 +812,16 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
               );
             },
             menuChildren: [
+              if (_lyrics != null && _lyrics!.isNotEmpty)
+                MenuItemButton(
+                  leadingIcon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+                  child: Text(AppLocalizations.of(context)!.lyricsDelete, style: const TextStyle(color: Colors.red)),
+                  onPressed: () => _showDeleteConfirmation(),
+                ),
               MenuItemButton(
-                leadingIcon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
-                child: Text(AppLocalizations.of(context)!.lyricsDelete, style: const TextStyle(color: Colors.red)),
-                onPressed: () => _showDeleteConfirmation(),
-              ),
-              MenuItemButton(
-                leadingIcon: const Icon(Icons.link_rounded),
+                leadingIcon: const Icon(Icons.folder_open_rounded),
                 child: Text(AppLocalizations.of(context)!.lyricsImportUrl),
-                onPressed: () => _showImportUrlDialog(),
+                onPressed: () => _showImportFileDialog(),
               ),
               MenuItemButton(
                 leadingIcon: const Icon(Icons.paste_rounded),
@@ -993,6 +1007,38 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
       case LyricsMode.manual:
         // Mode manuel maintenant géré par une page plein écran séparée
         return const SizedBox.shrink();
+      case LyricsMode.noConnection:
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 32),
+              Icon(
+                Icons.wifi_off_rounded,
+                size: 64,
+                color: Theme.of(context).colorScheme.error.withValues(alpha: 0.8),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                AppLocalizations.of(context)!.noConnectionMessage,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+                ),
+              ),
+              const Spacer(),
+              FilledButton.icon(
+                onPressed: _startAutoSearch,
+                icon: const Icon(Icons.refresh),
+                label: Text(AppLocalizations.of(context)!.retry),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
     }
   }
 
@@ -1119,49 +1165,28 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
     }
   }
 
-  void _showImportUrlDialog() {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.lyricsImportUrl),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            hintText: 'https://...',
-            border: OutlineInputBorder(),
-          ),
-          keyboardType: TextInputType.url,
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              if (controller.text.isNotEmpty) {
-                 Navigator.push(
-                    context, 
-                    MaterialPageRoute(
-                      builder: (_) => _LyricsWebSearchPage(
-                        searchQuery: controller.text,
-                        onCopiedText: (text) {
-                           _handleCopiedText(text);
-                           Navigator.pop(context);
-                        },
-                      ),
-                    ),
-                 );
-              }
-            },
-            child: Text(AppLocalizations.of(context)!.search),
-          ),
-        ],
-      ),
-    );
+  void _showImportFileDialog() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['txt', 'lrc'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final file = File(result.files.single.path!);
+        final content = await file.readAsString();
+        
+        if (content.isNotEmpty && mounted) {
+          _openEditor(initialText: content);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: ${e.toString()}')),
+        );
+      }
+    }
   }
 
   void _openEditor({String? initialText}) async {
@@ -1375,6 +1400,7 @@ class _LyricsEditorState extends State<_LyricsEditor> {
                    border: const OutlineInputBorder(),
                    filled: true,
                  ),
+                 cursorColor: Colors.white,
                  style: const TextStyle(fontFamily: 'monospace', fontSize: 14),
                ),
              ),

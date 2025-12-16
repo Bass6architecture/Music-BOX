@@ -26,6 +26,17 @@
   "folders": "Carpetas",
   "settings": "Ajustes",
   "nowPlaying": "Reproduciendo",
+  "yourPlaylists": "Tus listas",
+  "favorites": "Favoritos",
+  "recentlyAdded": "Añadidas recientemente",
+  "recentlyPlayed": "Reproducidas recientemente",
+  "mostPlayed": "Más reproducidas",
+  "forYou": "Para Ti",
+  "quickPlay": "Reproducción Rápida",
+  "listeningHabits": "En Repetición",
+  "forgottenGems": "Joyas Olvidadas",
+  "allTimeHits": "Atemporal",
+  "explore": "Explorar",
   
   "settingsTitle": "Ajustes",
   "appearance": "Apariencia",
@@ -45,6 +56,8 @@
   "language": "Idioma",
   "languageDescription": "Idioma de la aplicación",
   "currentLanguage": "Español",
+  "languageSystem": "Idioma del sistema",
+  "languageSystemDesc": "Sigue el idioma del teléfono",
   "languageAlreadySelected": "Español ya seleccionado",
   "languageComingSoon": "Próximamente",
   "languageChanged": "Idioma cambiado",
@@ -54,7 +67,20 @@
   
   "equalizer": "Ecualizador",
   "equalizerDesc": "Ajustar graves y agudos",
+  "equalizerEnabled": "Ecualizador activado",
+  "equalizerDisabled": "Ecualizador desactivado",
   "noEqualizerFound": "No se encontró ecualizador en este dispositivo",
+  
+  "background": "Fondo",
+  "backgroundDesc": "Personalizar fondo de la app",
+  "backgroundNone": "Ninguno",
+  "backgroundGradientMusical": "Degradado musical",
+  "backgroundGradientDark": "Degradado oscuro",
+  "backgroundParticles": "Partículas",
+  "backgroundWaves": "Ondas sonoras",
+  "backgroundNeonCity": "Ciudad de neón",
+  "backgroundVinylSunset": "Puesta de sol de vinilo",
+  "backgroundAuroraRhythm": "Ritmo de aurora",
   
   "backgroundPlayback": "Reproducción en segundo plano",
   "backgroundPlaybackDesc": "Desactivar optimización de batería para reproducción fluida",
@@ -81,6 +107,13 @@
   "contactDesc": "synergydevv@gmail.com",
   "cannotOpenPrivacyPolicy": "No se puede abrir la política de privacidad",
   "cannotOpenEmail": "No se puede abrir la aplicación de correo",
+  "@version": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   
   "play": "Reproducir",
   "pause": "Pausa",
@@ -89,6 +122,7 @@
   "shuffle": "Aleatorio",
   "repeat": "Repetir",
   "playNext": "Reproducir siguiente",
+  "playAll": "Reproducir todo",
   "addToQueue": "Añadir a la cola",
   "addToQueueFull": "Añadir a la cola de reproducción",
   "addToPlaylist": "Añadir a una lista",
@@ -102,22 +136,70 @@
   "setAsRingtone": "Establecer como tono",
   "songDetails": "Detalles de la canción",
   "editMetadata": "Editar metadatos",
-  "changeCover": "Cambiar carátula",
+  "selectAll": "Seleccionar todo",
   "deleteSong": "Eliminar canción",
+  "confirmDeleteSong": "¿Realmente quieres eliminar este archivo?",
+  "songAdded": "Canción añadida",
+  "createPlaylist": "Crear lista",
+  "playlistNameHint": "Nombre de la lista",
+  "allSongs": "Todas las canciones",
+  "sortBy": "Ordenar por",
+  "sortAscending": "Ascendente",
+  "sortDescending": "Descendente",
+  "title": "Título",
+  "artist": "Artista",
+  "album": "Álbum",
+  "duration": "Duración",
+  "sortByDateAdded": "Fecha de adición",
+  "noSongs": "Sin canciones",
+  "grantPermission": "Conceder permiso",
+  "openSettings": "Abrir configuración",
+  "permissionRequired": "Permiso requerido",
+  "permissionDenied": "Permiso denegado",
+  "permissionPermanentlyDenied": "Permiso denegado permanentemente. Habilítalo en la configuración.",
+  "storagePermissionRequired": "Se requiere permiso de almacenamiento para reproducir tu música.",
+  "changeCover": "Cambiar carátula",
+
   "showLyrics": "Mostrar letra",
   "hideLyrics": "Ocultar letra",
+  "lyricsEdit": "Editar letra",
+  "lyricsDelete": "Eliminar letra",
+  "lyricsDeleteConfirm": "¿Eliminar letra de esta canción?",
+  "lyricsImportUrl": "Importar desde archivo",
+  "lyricsImportClipboard": "Pegar desde portapapeles",
+  "lyricsSaved": "Letra guardada",
+  "lyricsDeleted": "Letra eliminada",
+  "lyricsPasteHint": "Pega o escribe la letra aquí...",
+  "cancel": "Cancelar",
+  "save": "Guardar",
+  "delete": "Eliminar",
   
   "unknownArtist": "Artista desconocido",
   "unknownAlbum": "Álbum desconocido",
   "unknownTitle": "Título desconocido",
-  "noSongs": "Sin canciones",
+
   "noAlbums": "Sin álbumes",
   "noArtists": "Sin artistas",
   "noPlaylists": "Sin listas",
   "noFolders": "Sin carpetas",
   
   "songCount": "{count, plural, =0{Sin canciones} =1{1 canción} other{{count} canciones}}",
+  "@songCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
   "albumCount": "{count, plural, =0{Sin álbumes} =1{1 álbum} other{{count} álbumes}}",
+  "@albumCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   
   "createPlaylist": "Crear lista",
   "playlistName": "Nombre de la lista",
@@ -127,6 +209,7 @@
   "confirmDeletePlaylist": "¿Realmente quieres eliminar esta lista?",
   "emptyPlaylist": "Lista vacía",
   "addSongs": "Añadir canciones",
+  "addSongsToPlaylistDesc": "Añade canciones para empezar a escuchar",
   "playlistCreated": "Lista creada",
   "playlistDeleted": "Lista eliminada",
   "playlistRenamed": "Lista renombrada",
@@ -180,10 +263,17 @@
   "copyTip": "Selecciona y copia la letra de la página. Se propondrá automáticamente aquí.",
   "lyricsCopied": "Letra copiada",
   
-  "scanningMusic": "Escaneando...",
-  "scanComplete": "Escaneo completo",
-  "scanFailed": "Escaneo fallido",
+  "scanningMusic": "Analizando...",
+  "scanComplete": "Análisis completo",
+  "scanFailed": "Análisis fallido",
   "foundSongs": "{count} canciones encontradas",
+  "@foundSongs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   
   "metadata": "Metadatos",
   "title": "Título",
@@ -210,7 +300,8 @@
   "requiresAndroid10": "Esta función requiere Android 10+",
   "errorOpeningFolder": "Error al abrir la carpeta",
   "imageUpdated": "Imagen actualizada",
-  "ringtoneSet": "Establecido como tono",
+  "androidOnly": "Disponible solo en Android",
+  "ringtoneSet": "Establecido como tono de llamada",
   
   "permissionRequired": "Permiso requerido",
   "storagePermissionRequired": "Se requiere permiso de almacenamiento para leer música",
@@ -242,8 +333,8 @@
   "duration60s": "60 s",
   "size50kb": "50 KB",
   "size100kb": "100 KB",
-  "startScan": "INICIAR ESCANEO",
-  "scanningInProgress": "Escaneo en progreso...",
+  "startScan": "INICIAR ANÁLISIS",
+  "scanningInProgress": "Análisis en curso...",
   
   "hideFolder": "Ocultar carpeta",
   "folderHidden": "Carpeta oculta",
@@ -256,11 +347,19 @@
   "copyPath": "Copiar ruta",
   "pathCopied": "Ruta copiada",
   
+  "imageUpdated": "Imagen actualizada",
   "uriNotFound": "URI del archivo no encontrado",
   "ringtoneTitle": "Tono de llamada",
   "setRingtoneConfirm": "¿Establecer \"{title}\" como tono?",
+  "@setRingtoneConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "confirm": "Confirmar",
-  "ringtoneSetSuccess": "✓ Establecido como tono",
+  "ringtoneSetSuccess": "✓ Establecido como tono de llamada",
   "changesSaved": "Cambios guardados",
   "fileDeletedPermanently": "Archivo eliminado permanentemente",
   
@@ -274,8 +373,22 @@
   "deleteStorageWarning": "⚠️ El archivo se eliminará del almacenamiento de tu teléfono",
   
   "folderLabel": "Carpeta: {name}",
+  "@folderLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "android10Required": "❌ Esta función requiere Android 10+",
   "errorWithDetails": "❌ Error: {error}",
+  "@errorWithDetails": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   
   "errorPermissionDenied": "Permiso denegado. Verifica la configuración de la app",
   "errorFileNotFound": "Archivo no encontrado",
@@ -301,11 +414,99 @@
   "minutes": "Minutos",
   "invalidDuration": "Por favor, define una duración válida",
   "stopMusicAfter": "Detener la música después de",
-  "start": "Iniciar",
+  "start": "Inicio",
   "min5": "5 min",
   "min15": "15 min",
   "min30": "30 min",
   "min45": "45 min",
   "hour1": "1 hora",
-  "hours2": "2 horas"
+  "hours2": "2 horas",
+  "upNext": "A continuación",
+  "undo": "Deshacer",
+
+  "permissionAudioTitle": "Acceso a Audio",
+  "permissionAudioDesc": "Para reproducir tus archivos de música locales",
+  "permissionNotificationTitle": "Notificaciones",
+  "permissionNotificationDesc": "Para controles de reproducción",
+  "permissionBatteryTitle": "Reproducción en segundo plano",
+  "permissionBatteryDesc": "Evita cortes cuando la pantalla está apagada",
+  "permissionRequired": "Permiso Requerido",
+  "permissionIntro": "Para ofrecer la mejor experiencia musical, Music Box necesita algunos permisos.",
+  "grant": "Conceder",
+  "enable": "Activar",
+  "accessApp": "Acceder a Music Box",
+  "openSettings": "Ajustes",
+
+  "backupAndData": "Copia de seguridad y Datos",
+  "exportData": "Exportar datos",
+  "exportDataDesc": "Guardar favoritos, listas y estadísticas",
+  "importBackup": "Importar copia de seguridad",
+  "importBackupDesc": "Restaurar desde archivo .json",
+  "attention": "Atención",
+  "restoreWarning": "La restauración sobrescribirá tus favoritos y listas actuales.\n\n¿Quieres continuar?",
+  "overwriteAndRestore": "Sobrescribir y Restaurar",
+  "restoreSuccessTitle": "Restauración exitosa",
+  "restoreSuccessMessage": "Tus datos han sido restaurados con éxito.\n\nPor favor reinicia la aplicación para que los cambios surtan efecto.",
+  "backupReadError": "No se puede leer el archivo de copia de seguridad.",
+  "sleepTimerTitle": "Temporizador de apagado",
+  "sleepTimerDesc": "Programar detención de música",
+  "sleepTimerStoppingSoon": "Deteniendo pronto...",
+  "sleepTimerActive": "Activo: Detener en {minutes} min",
+  "@sleepTimerActive": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerStopMusicAfter": "Detener música después de...",
+  "sleepTimerActiveRemaining": "Activo: {minutes}:{seconds} restantes",
+  "@sleepTimerActiveRemaining": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "deactivate": "Desactivar",
+  "timerSetFor": "Temporizador ajustado para {label} 🌙",
+  "@timerSetFor": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "oneHour": "1 hora",
+  "oneHourThirty": "1h 30",
+  "oneHour": "1 hora",
+  "oneHourThirty": "1h 30",
+  "twoHours": "2 horas",
+  "customize": "Personalizar",
+
+  "backupSubject": "Copia de seguridad Music Box",
+  "backupBody": "Aquí está mi copia de seguridad de Music Box del {date}.",
+  "@backupBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "contactSubject": "Soporte Music Box",
+  "sortNewest": "Más reciente",
+  "sortOldest": "Más antiguo",
+  "sortShortest": "Corta",
+  "sortLongest": "Larga",
+  "noConnectionMessage": "Por favor verifique su conexión e intente nuevamente",
+  "hiddenFolders": "Carpetas ocultas",
+  "selectSource": "Seleccionar fuente",
+  "localGallery": "Galería",
+  "preview": "Vista previa",
+  "useThisImageQuestion": "¿Usar esta imagen?",
+  "useImage": "Usar imagen",
+  "searchOnInternet": "Buscar en Internet"
 }

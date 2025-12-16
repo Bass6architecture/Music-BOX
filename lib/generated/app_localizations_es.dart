@@ -81,7 +81,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get nowPlaying => 'Reproduciendo';
 
   @override
-  String get yourPlaylists => 'Vos playlists';
+  String get yourPlaylists => 'Tus listas';
 
   @override
   String get favorites => 'Favoritos';
@@ -96,22 +96,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String get mostPlayed => 'Más reproducidas';
 
   @override
-  String get forYou => 'Pour Vous';
+  String get forYou => 'Para Ti';
 
   @override
-  String get quickPlay => 'Lecture Rapide';
+  String get quickPlay => 'Reproducción Rápida';
 
   @override
-  String get listeningHabits => 'En Boucle';
+  String get listeningHabits => 'En Repetición';
 
   @override
-  String get forgottenGems => 'Pépites Oubliées';
+  String get forgottenGems => 'Joyas Olvidadas';
 
   @override
-  String get allTimeHits => 'Intemporel';
+  String get allTimeHits => 'Atemporal';
 
   @override
-  String get explore => 'Explorer';
+  String get explore => 'Explorar';
 
   @override
   String get settingsTitle => 'Ajustes';
@@ -162,6 +162,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get currentLanguage => 'Español';
 
   @override
+  String get languageSystem => 'Idioma del sistema';
+
+  @override
+  String get languageSystemDesc => 'Sigue el idioma del teléfono';
+
+  @override
   String get languageAlreadySelected => 'Español ya seleccionado';
 
   @override
@@ -187,44 +193,44 @@ class AppLocalizationsEs extends AppLocalizations {
   String get equalizerDesc => 'Ajustar graves y agudos';
 
   @override
-  String get equalizerEnabled => 'Égaliseur activé';
+  String get equalizerEnabled => 'Ecualizador activado';
 
   @override
-  String get equalizerDisabled => 'Égaliseur désactivé';
+  String get equalizerDisabled => 'Ecualizador desactivado';
 
   @override
   String get noEqualizerFound =>
       'No se encontró ecualizador en este dispositivo';
 
   @override
-  String get background => 'Arrière-plan';
+  String get background => 'Fondo';
 
   @override
-  String get backgroundDesc => 'Personnaliser l\'arrière-plan de l\'app';
+  String get backgroundDesc => 'Personalizar fondo de la app';
 
   @override
-  String get backgroundNone => 'Aucun';
+  String get backgroundNone => 'Ninguno';
 
   @override
-  String get backgroundGradientMusical => 'Dégradé musical';
+  String get backgroundGradientMusical => 'Degradado musical';
 
   @override
-  String get backgroundGradientDark => 'Dégradé sombre';
+  String get backgroundGradientDark => 'Degradado oscuro';
 
   @override
-  String get backgroundParticles => 'Particules';
+  String get backgroundParticles => 'Partículas';
 
   @override
-  String get backgroundWaves => 'Ondes sonores';
+  String get backgroundWaves => 'Ondas sonoras';
 
   @override
-  String get backgroundNeonCity => 'Ville néon';
+  String get backgroundNeonCity => 'Ciudad de neón';
 
   @override
-  String get backgroundVinylSunset => 'Coucher de soleil vinyle';
+  String get backgroundVinylSunset => 'Puesta de sol de vinilo';
 
   @override
-  String get backgroundAuroraRhythm => 'Aurore boréale';
+  String get backgroundAuroraRhythm => 'Ritmo de aurora';
 
   @override
   String get backgroundPlayback => 'Reproducción en segundo plano';
@@ -318,7 +324,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get playNext => 'Reproducir siguiente';
 
   @override
-  String get playAll => 'Tout lire';
+  String get playAll => 'Reproducir todo';
 
   @override
   String get addToQueue => 'Añadir a la cola';
@@ -360,7 +366,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get editMetadata => 'Editar metadatos';
 
   @override
-  String get selectAll => 'Tout sélectionner';
+  String get selectAll => 'Seleccionar todo';
 
   @override
   String get deleteSong => 'Eliminar canción';
@@ -411,10 +417,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get grantPermission => 'Conceder';
 
   @override
-  String get openSettings => 'Abrir configuración';
+  String get openSettings => 'Ajustes';
 
   @override
-  String get permissionRequired => 'Permiso requerido';
+  String get permissionRequired => 'Permiso Requerido';
 
   @override
   String get permissionDenied => 'Permiso denegado';
@@ -437,29 +443,28 @@ class AppLocalizationsEs extends AppLocalizations {
   String get hideLyrics => 'Ocultar letra';
 
   @override
-  String get lyricsEdit => 'Modifier les paroles';
+  String get lyricsEdit => 'Editar letra';
 
   @override
-  String get lyricsDelete => 'Supprimer les paroles';
+  String get lyricsDelete => 'Eliminar letra';
 
   @override
-  String get lyricsDeleteConfirm =>
-      'Supprimer les paroles pour cette chanson ?';
+  String get lyricsDeleteConfirm => '¿Eliminar letra de esta canción?';
 
   @override
-  String get lyricsImportUrl => 'Importer depuis URL';
+  String get lyricsImportUrl => 'Importar desde archivo';
 
   @override
-  String get lyricsImportClipboard => 'Coller depuis le presse-papier';
+  String get lyricsImportClipboard => 'Pegar desde portapapeles';
 
   @override
-  String get lyricsSaved => 'Paroles enregistrées';
+  String get lyricsSaved => 'Letra guardada';
 
   @override
-  String get lyricsDeleted => 'Paroles supprimées';
+  String get lyricsDeleted => 'Letra eliminada';
 
   @override
-  String get lyricsPasteHint => 'Collez ou écrivez les paroles ici...';
+  String get lyricsPasteHint => 'Pega o escribe la letra aquí...';
 
   @override
   String get unknownArtist => 'Artista desconocido';
@@ -526,7 +531,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get addSongsToPlaylistDesc =>
-      'Ajoutez des chansons pour commencer l\'écoute';
+      'Añade canciones para empezar a escuchar';
 
   @override
   String get playlistCreated => 'Lista creada';
@@ -668,13 +673,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get lyricsCopied => 'Letra copiada';
 
   @override
-  String get scanningMusic => 'Escaneando...';
+  String get scanningMusic => 'Analizando...';
 
   @override
-  String get scanComplete => 'Escaneo completo';
+  String get scanComplete => 'Análisis completo';
 
   @override
-  String get scanFailed => 'Escaneo fallido';
+  String get scanFailed => 'Análisis fallido';
 
   @override
   String foundSongs(int count) {
@@ -742,7 +747,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get imageUpdated => 'Imagen actualizada';
 
   @override
-  String get ringtoneSet => 'Establecido como tono';
+  String get ringtoneSet => 'Establecido como tono de llamada';
 
   @override
   String get sortByName => 'Nombre';
@@ -784,10 +789,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get size100kb => '100 KB';
 
   @override
-  String get startScan => 'INICIAR ESCANEO';
+  String get startScan => 'INICIAR ANÁLISIS';
 
   @override
-  String get scanningInProgress => 'Escaneo en progreso...';
+  String get scanningInProgress => 'Análisis en curso...';
 
   @override
   String get hideFolder => 'Ocultar carpeta';
@@ -834,7 +839,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get confirm => 'Confirmar';
 
   @override
-  String get ringtoneSetSuccess => '✓ Establecido como tono';
+  String get ringtoneSetSuccess => '✓ Establecido como tono de llamada';
 
   @override
   String get changesSaved => 'Cambios guardados';
@@ -930,7 +935,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get stopMusicAfter => 'Detener la música después de';
 
   @override
-  String get start => 'Iniciar';
+  String get start => 'Inicio';
 
   @override
   String get min5 => '5 min';
@@ -951,137 +956,161 @@ class AppLocalizationsEs extends AppLocalizations {
   String get hours2 => '2 horas';
 
   @override
-  String get upNext => 'À suivre';
+  String get upNext => 'A continuación';
 
   @override
-  String get undo => 'Annuler';
+  String get undo => 'Deshacer';
 
   @override
-  String get permissionAudioTitle => 'Accès Audio';
+  String get permissionAudioTitle => 'Acceso a Audio';
 
   @override
-  String get permissionAudioDesc => 'Pour lire vos fichiers musicaux locaux';
+  String get permissionAudioDesc =>
+      'Para reproducir tus archivos de música locales';
 
   @override
-  String get permissionNotificationTitle => 'Notifications';
+  String get permissionNotificationTitle => 'Notificaciones';
 
   @override
-  String get permissionNotificationDesc => 'Pour les contrôles de lecture';
+  String get permissionNotificationDesc => 'Para controles de reproducción';
 
   @override
-  String get permissionBatteryTitle => 'Lecture en arrière-plan';
+  String get permissionBatteryTitle => 'Reproducción en segundo plano';
 
   @override
   String get permissionBatteryDesc =>
-      'Évite les coupures quand l\'écran est éteint';
+      'Evita cortes cuando la pantalla está apagada';
 
   @override
   String get permissionIntro =>
-      'Pour vous offrir la meilleure expérience musicale, Music Box a besoin de quelques autorisations.';
+      'Para ofrecer la mejor experiencia musical, Music Box necesita algunos permisos.';
 
   @override
-  String get grant => 'Autoriser';
+  String get grant => 'Conceder';
 
   @override
-  String get enable => 'Activer';
+  String get enable => 'Activar';
 
   @override
-  String get accessApp => 'Accéder à Music Box';
+  String get accessApp => 'Acceder a Music Box';
 
   @override
-  String get backupAndData => 'Sauvegarde & Données';
+  String get backupAndData => 'Copia de seguridad y Datos';
 
   @override
-  String get exportData => 'Exporter les données';
+  String get exportData => 'Exportar datos';
 
   @override
-  String get exportDataDesc => 'Sauvegarder favoris, playlists et stats';
+  String get exportDataDesc => 'Guardar favoritos, listas y estadísticas';
 
   @override
-  String get importBackup => 'Importer une sauvegarde';
+  String get importBackup => 'Importar copia de seguridad';
 
   @override
-  String get importBackupDesc => 'Restaurer depuis un fichier .json';
+  String get importBackupDesc => 'Restaurar desde archivo .json';
 
   @override
-  String get attention => 'Attention';
+  String get attention => 'Atención';
 
   @override
   String get restoreWarning =>
-      'La restauration va écraser vos favoris et playlists actuels.\n\nVoulez-vous continuer ?';
+      'La restauración sobrescribirá tus favoritos y listas actuales.\n\n¿Quieres continuar?';
 
   @override
-  String get overwriteAndRestore => 'Écraser et Restaurer';
+  String get overwriteAndRestore => 'Sobrescribir y Restaurar';
 
   @override
-  String get restoreSuccessTitle => 'Restauration réussie';
+  String get restoreSuccessTitle => 'Restauración exitosa';
 
   @override
   String get restoreSuccessMessage =>
-      'Vos données ont été restaurées avec succès.\n\nVeuillez redémarrer l\'application pour que tous les changements prennent effet.';
+      'Tus datos han sido restaurados con éxito.\n\nPor favor reinicia la aplicación para que los cambios surtan efecto.';
 
   @override
-  String get backupReadError => 'Impossible de lire le fichier de sauvegarde.';
+  String get backupReadError =>
+      'No se puede leer el archivo de copia de seguridad.';
 
   @override
-  String get sleepTimerTitle => 'Minuteur de veille';
+  String get sleepTimerTitle => 'Temporizador de apagado';
 
   @override
-  String get sleepTimerDesc => 'Programmer l\'arrêt de la musique';
+  String get sleepTimerDesc => 'Programar detención de música';
 
   @override
-  String get sleepTimerStoppingSoon => 'Arrêt imminent...';
+  String get sleepTimerStoppingSoon => 'Deteniendo pronto...';
 
   @override
   String sleepTimerActive(int minutes) {
-    return 'Actif : Arrêt dans $minutes min';
+    return 'Activo: Detener en $minutes min';
   }
 
   @override
-  String get sleepTimerStopMusicAfter => 'Arrêter la musique après...';
+  String get sleepTimerStopMusicAfter => 'Detener música después de...';
 
   @override
   String sleepTimerActiveRemaining(int minutes, String seconds) {
-    return 'Actif : $minutes:$seconds restants';
+    return 'Activo: $minutes:$seconds restantes';
   }
 
   @override
-  String get deactivate => 'Désactiver';
+  String get deactivate => 'Desactivar';
 
   @override
   String timerSetFor(String label) {
-    return 'Minuteur réglé pour $label 🌙';
+    return 'Temporizador ajustado para $label 🌙';
   }
 
   @override
-  String get oneHour => '1 heure';
+  String get oneHour => '1 hora';
 
   @override
   String get oneHourThirty => '1h 30';
 
   @override
-  String get twoHours => '2 heures';
+  String get twoHours => '2 horas';
 
   @override
-  String get backupSubject => 'Sauvegarde Music Box';
+  String get backupSubject => 'Copia de seguridad Music Box';
 
   @override
   String backupBody(String date) {
-    return 'Voici ma sauvegarde Music Box du $date.';
+    return 'Aquí está mi copia de seguridad de Music Box del $date.';
   }
 
   @override
-  String get contactSubject => 'Support Music Box';
+  String get contactSubject => 'Soporte Music Box';
 
   @override
-  String get sortNewest => 'Récent';
+  String get sortNewest => 'Más reciente';
 
   @override
-  String get sortOldest => 'Ancien';
+  String get sortOldest => 'Más antiguo';
 
   @override
-  String get sortShortest => 'Court';
+  String get sortShortest => 'Corta';
 
   @override
-  String get sortLongest => 'Long';
+  String get sortLongest => 'Larga';
+
+  @override
+  String get noConnectionMessage =>
+      'Por favor verifique su conexión e intente nuevamente';
+
+  @override
+  String get selectSource => 'Seleccionar fuente';
+
+  @override
+  String get localGallery => 'Galería';
+
+  @override
+  String get preview => 'Vista previa';
+
+  @override
+  String get useThisImageQuestion => '¿Usar esta imagen?';
+
+  @override
+  String get useImage => 'Usar imagen';
+
+  @override
+  String get searchOnInternet => 'Buscar en Internet';
 }

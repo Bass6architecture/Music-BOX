@@ -56,6 +56,8 @@
   "language": "Langue",
   "languageDescription": "Langue de l'application",
   "currentLanguage": "Français",
+  "languageSystem": "Langue du système",
+  "languageSystemDesc": "Suit la langue du téléphone",
   "languageAlreadySelected": "Français déjà sélectionné",
   "languageComingSoon": "Bientôt disponible",
   "languageChanged": "Langue changée",
@@ -163,7 +165,7 @@
   "lyricsEdit": "Modifier les paroles",
   "lyricsDelete": "Supprimer les paroles",
   "lyricsDeleteConfirm": "Supprimer les paroles pour cette chanson ?",
-  "lyricsImportUrl": "Importer depuis URL",
+  "lyricsImportUrl": "Importer depuis fichier",
   "lyricsImportClipboard": "Coller depuis le presse-papier",
   "lyricsSaved": "Paroles enregistrées",
   "lyricsDeleted": "Paroles supprimées",
@@ -498,5 +500,13 @@
   "sortNewest": "Récent",
   "sortOldest": "Ancien",
   "sortShortest": "Court",
-  "sortLongest": "Long"
+  "sortLongest": "Long",
+  "noConnectionMessage": "Veuillez vérifier votre connexion et réessayer",
+  "hiddenFolders": "Dossiers masqués",
+  "selectSource": "Sélectionner la source",
+  "localGallery": "Galerie",
+  "preview": "Aperçu",
+  "useThisImageQuestion": "Utiliser cette image ?",
+  "useImage": "Utiliser l'image",
+  "searchOnInternet": "Rechercher sur Internet"
 }

@@ -31,6 +31,10 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
     });
 
     // ✅ Écouter les changements de séquence pour mettre à jour les métadonnées IMMÉDIATEMENT
+    // ✅ Écouter les changements de séquence pour mettre à jour les métadonnées IMMÉDIATEMENT
+    // ⚠️ DESACTIVE : Cela crée des conflits avec PlayerCubit qui gère manuellement les mises à jour
+    // Le PlayerCubit est la source de vérité.
+    /*
     _player.sequenceStateStream.listen((sequenceState) {
       // if (sequenceState == null) return; // Analyzer says sequenceState is never null
       final currentItem = sequenceState.currentSource;
@@ -48,6 +52,7 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
         }
       }
     });
+    */
 
     // Initialiser le playback state avec systemActions
     playbackState.add(PlaybackState(
@@ -205,10 +210,15 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
     queue.add(items);
   }
 
+  /// ✅ CRITICAL FIX: NE PAS arrêter le service quand l'app est fermée depuis récents !
+  /// Laisser le foreground service continuer pour que la musique joue en arrière-plan.
+  /// Le service s'arrêtera seulement quand l'utilisateur appuie explicitement sur Stop
+  /// ou quand la lecture se termine naturellement.
   @override
   Future<void> onTaskRemoved() async {
-    debugPrint('🎵 AudioHandler.onTaskRemoved - Arrêt du service');
-    await stop();
+    debugPrint('🎵 AudioHandler.onTaskRemoved - App fermée, MAIS service audio continue !');
+    // NE PAS appeler stop() ici ! Le service doit continuer à jouer.
+    // await stop(); ← SUPPRIMÉ - c'était la cause du bug !
   }
 
   // Les événements headset/bluetooth (click, double click) sont mappés par Android en

@@ -57,6 +57,8 @@
   "language": "Language",
   "languageDescription": "Application language",
   "currentLanguage": "English",
+  "languageSystem": "System Language",
+  "languageSystemDesc": "Follow system language",
   "languageAlreadySelected": "English already selected",
   "languageComingSoon": "Coming soon",
   "languageChanged": "Language changed",
@@ -469,5 +471,13 @@
   "sortNewest": "Newest",
   "sortOldest": "Oldest",
   "sortShortest": "Shortest",
-  "sortLongest": "Longest"
+  "sortLongest": "Longest",
+  "noConnectionMessage": "Please check your connection and try again",
+  "hiddenFolders": "Hidden folders",
+  "selectSource": "Select source",
+  "localGallery": "Gallery",
+  "preview": "Preview",
+  "useThisImageQuestion": "Use this image?",
+  "useImage": "Use Image",
+  "searchOnInternet": "Search on Internet"
 }
