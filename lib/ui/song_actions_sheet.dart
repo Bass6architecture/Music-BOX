@@ -9,6 +9,10 @@ import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:music_box/generated/app_localizations.dart';
+// Cover Art
+import 'package:path_provider/path_provider.dart';
+import 'cover_art_search_page.dart';
+
 import '../player/player_cubit.dart';
 import '../widgets/optimized_artwork.dart';
 
@@ -491,8 +495,6 @@ Future<void> _openAddToPlaylist(BuildContext context, PlayerCubit cubit, SongMod
   );
 }
 
-import 'package:path_provider/path_provider.dart';
-import 'cover_art_search_page.dart';
 
 Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel song) async {
   // Initialiser les callbacks en premier
