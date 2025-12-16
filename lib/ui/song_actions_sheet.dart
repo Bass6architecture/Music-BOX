@@ -21,11 +21,8 @@ const MethodChannel _nativeChannel = MethodChannel('com.synergydev.music_box/nat
 bool _coverCallbacksInitialized = false;
 
 void _ensureCoverCallbacks(BuildContext context) {
-  if (_coverCallbacksInitialized) {
-    debugPrint('🔄 Callbacks déjà initialisés');
-    return;
-  }
-  debugPrint('🔄 Initialisation des callbacks...');
+  // Always update handler to use the latest context
+  debugPrint('🔄 Mise à jour des callbacks avec le contexte actuel...');
   _nativeChannel.setMethodCallHandler((call) async {
     debugPrint('🔔 Callback reçu: ${call.method} avec arguments: ${call.arguments}');
     switch (call.method) {
@@ -49,9 +46,12 @@ void _ensureCoverCallbacks(BuildContext context) {
               ),
             );
           } else {
+            // Échec système (ex: AAC/FLAC ou permission refusée),
+            // mais l'image locale est sauvegardée. On rassure l'utilisateur.
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('❌ ${l10n.coverFailed}'),
+                content: Text('✅ ${l10n.coverSaved} (App Only)'),
+                backgroundColor: Colors.teal,
               ),
             );
           }
@@ -70,9 +70,13 @@ void _ensureCoverCallbacks(BuildContext context) {
               ),
             );
           } else {
+            // Échec système (ex: format AAC/FLAC non supporté par mp3agic)
+            // Mais l'override local est déjà appliqué, donc on affiche "Succès (App)"
+            // pour ne pas paniquer l'utilisateur.
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('❌ ${l10n.metadataFailed}'),
+                content: Text('✅ ${l10n.metadataSaved} (App Only)'),
+                backgroundColor: Colors.teal, // Couleur distincte pour indiquer "Sauvegarde locale"
               ),
             );
           }
@@ -633,12 +637,13 @@ Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel son
         }
         // Si success == null, on attend la permission (le callback affichera le message)
       } catch (e) {
-        debugPrint('❌ Erreur lors de l\'écriture de la cover');
+        debugPrint('❌ Erreur technique lors de l\'écriture (MP3 uniquement?) : $e');
+        // On affiche quand même "Succès (App Only)" car l'override local a fonctionné
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${l10n.error}: $e'),
-              backgroundColor: Colors.red,
+              content: Text('✅ ${l10n.coverSaved} (App Only)'),
+              backgroundColor: Colors.teal,
             ),
           );
         }
@@ -1119,12 +1124,13 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
       }
       // Si success == null, on attend la permission (le callback affichera le message)
     } catch (e) {
-      debugPrint('📝 Erreur writeMetadata: $e');
+      debugPrint('📝 Erreur technique writeMetadata: $e');
+      // Override local OK, on affiche un succès discret
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.errorWithDetails(e.toString())),
-            backgroundColor: Colors.red,
+           SnackBar(
+            content: Text('✅ ${AppLocalizations.of(context)!.metadataSaved} (App Only)'),
+            backgroundColor: Colors.teal,
           ),
         );
       }

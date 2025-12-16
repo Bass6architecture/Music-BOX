@@ -1320,10 +1320,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
        // We rely on pre-caching or _updateQueue to have set this correctly in logical flow,
        // but here we are creating item from scratch.
        
-       if (song.albumId != null) {
-          // ✅ Use modern Album URI which is often higher res than albumart/ folder
-          artUri = Uri.parse('content://media/external/audio/albums/${song.albumId}');
-       } else if (_defaultCoverPath != null && _defaultCoverPath!.isNotEmpty) {
+       if (_defaultCoverPath != null && _defaultCoverPath!.isNotEmpty) {
           artUri = Uri.file(_defaultCoverPath!);
        }
     }

@@ -453,11 +453,13 @@ class MainActivity : AudioServiceActivity() {
             return@setMethodCallHandler
           }
           
+          
+          val audioUri = android.content.ContentUris.withAppendedId(
+            android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            audioId.toLong()
+          )
+
           try {
-            val audioUri = android.content.ContentUris.withAppendedId(
-              android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-              audioId.toLong()
-            )
             val imageFile = File(imagePath)
             if (!imageFile.exists()) {
               result.error("FILE_ERROR", "Image file not found", null)
@@ -467,21 +469,17 @@ class MainActivity : AudioServiceActivity() {
             // Check permission by trying to open stream
             var hasPermission = false
             try {
-                // Try to open for "w" (write) doesn't always throw on R if you don't write.
-                // But "rwt" usually triggers check.
-                // Or just try the full write operation? No, that's heavy.
-                // Just relying on startIntentSender if R is safe, BUT we want to skip it if authorized.
-                // If we check `checkUriPermission`, it might not work for Scoped Storage.
-                // Best check: try to open output stream.
-                contentResolver.openOutputStream(audioUri, "rwt")?.close()
+                // CRITICAL: Use openFileDescriptor with "rw" to check permission WITHOUT truncating.
+                // "rwt" or openOutputStream would truncate the file to 0 length!
+                contentResolver.openFileDescriptor(audioUri, "rw")?.close()
                 hasPermission = true
             } catch (e: Exception) {
                 // Ignore, we need permission
                 hasPermission = false
             }
 
-            if (hasPermission) {
-                 // Do the write immediately
+            if (hasPermission || android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.Q) {
+                 // Do the write immediately (or try to trigger Exception on Q)
                  val success = performAlbumArtWrite(audioUri, imagePath)
                  methodChannel?.invokeMethod("onAlbumArtWritten", mapOf("success" to success))
                  result.success(null)
@@ -536,29 +534,33 @@ class MainActivity : AudioServiceActivity() {
             return@setMethodCallHandler
           }
           
-          try {
-            val audioUri = android.content.ContentUris.withAppendedId(
-              android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-              audioId.toLong()
-            )
+          
+          val audioUri = android.content.ContentUris.withAppendedId(
+            android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            audioId.toLong()
+          )
             
-            val metadata = mapOf(
-                  "title" to title,
-                  "artist" to artist,
-                  "album" to album,
-                  "genre" to genre,
-                  "year" to year
-            )
+          val metadata = mapOf(
+                "title" to title,
+                "artist" to artist,
+                "album" to album,
+                "genre" to genre,
+                "year" to year
+          )
+
+          try {
 
             var hasPermission = false
             try {
-                contentResolver.openOutputStream(audioUri, "rwt")?.close()
+                // CRITICAL: Use openFileDescriptor "rw" to check without truncating
+                contentResolver.openFileDescriptor(audioUri, "rw")?.close()
                 hasPermission = true
             } catch (e: Exception) {
                 hasPermission = false
             }
 
-            if (hasPermission) {
+            if (hasPermission || android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.Q) {
+                 // On Android 10 (Q), we trigger the write to force a RecoverableSecurityException if needed.
                  val success = performMetadataWrite(audioUri, metadata)
                  methodChannel?.invokeMethod("onMetadataWritten", mapOf("success" to success))
                  result.success(null)
@@ -820,15 +822,21 @@ class MainActivity : AudioServiceActivity() {
   private fun performAlbumArtWrite(audioUri: Uri, imagePath: String): Boolean {
     var tempInput: File? = null
     var tempOutput: File? = null
-    return try {
+    try {
       tempInput = File(cacheDir, "temp_input_${System.currentTimeMillis()}.mp3")
       contentResolver.openInputStream(audioUri)?.use { input ->
         tempInput!!.outputStream().use { output ->
           input.copyTo(output)
         }
-      }
+      } ?: throw java.io.IOException("Failed to open input stream for $audioUri")
       
-      val mp3File = com.mpatric.mp3agic.Mp3File(tempInput.absolutePath)
+      val mp3File = try {
+        com.mpatric.mp3agic.Mp3File(tempInput.absolutePath)
+      } catch (e: com.mpatric.mp3agic.InvalidDataException) {
+        throw java.io.IOException("Ce fichier n'est pas un MP3 valide.")
+      } catch (e: com.mpatric.mp3agic.UnsupportedTagException) {
+        throw java.io.IOException("Tag non supporté.")
+      }
       val imageFile = File(imagePath)
       val imageBytes = imageFile.readBytes()
       
@@ -849,14 +857,11 @@ class MainActivity : AudioServiceActivity() {
           tempOutput!!.inputStream().use { input ->
             input.copyTo(output)
           }
-        }
-        true
+        } ?: throw java.io.IOException("Failed to open output stream for $audioUri")
+        return true
       } else {
-        false
+        throw java.io.IOException("Temp output file does not exist")
       }
-    } catch (e: Exception) {
-      e.printStackTrace()
-      false
     } finally {
       try { tempInput?.delete() } catch(_:Exception){}
       try { tempOutput?.delete() } catch(_:Exception){}
@@ -866,15 +871,21 @@ class MainActivity : AudioServiceActivity() {
   private fun performMetadataWrite(audioUri: Uri, metadata: Map<String, String>): Boolean {
     var tempInput: File? = null
     var tempOutput: File? = null
-    return try {
+    try {
       tempInput = File(cacheDir, "temp_input_meta_${System.currentTimeMillis()}.mp3")
       contentResolver.openInputStream(audioUri)?.use { input ->
         tempInput!!.outputStream().use { output ->
           input.copyTo(output)
         }
-      }
+      } ?: throw java.io.IOException("Failed to open input stream for $audioUri")
       
-      val mp3File = com.mpatric.mp3agic.Mp3File(tempInput.absolutePath)
+      val mp3File = try {
+        com.mpatric.mp3agic.Mp3File(tempInput.absolutePath)
+      } catch (e: com.mpatric.mp3agic.InvalidDataException) {
+        throw java.io.IOException("Ce fichier n'est pas un MP3 valide.")
+      } catch (e: com.mpatric.mp3agic.UnsupportedTagException) {
+        throw java.io.IOException("Tag non supporté.")
+      }
       val tag = if (mp3File.hasId3v2Tag()) {
         mp3File.id3v2Tag
       } else {
@@ -900,14 +911,11 @@ class MainActivity : AudioServiceActivity() {
           tempOutput!!.inputStream().use { input ->
             input.copyTo(output)
           }
-        }
-        true
+        } ?: throw java.io.IOException("Failed to open output stream for $audioUri")
+        return true
       } else {
-        false
+        throw java.io.IOException("Temp output file does not exist")
       }
-    } catch (e: Exception) {
-      e.printStackTrace()
-      false
     } finally {
       try { tempInput?.delete() } catch(_:Exception){}
       try { tempOutput?.delete() } catch(_:Exception){}
