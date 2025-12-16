@@ -33,6 +33,7 @@ class MainActivity : AudioServiceActivity() {
     private const val REQ_DELETE = 1001
     private const val REQ_WRITE = 1002
     private const val REQ_WRITE_METADATA = 1003
+    private const val REQ_PERMISSION_ONLY = 1004
   }
 
   private fun getDominantColor(bmp: Bitmap): Int {
@@ -105,6 +106,7 @@ class MainActivity : AudioServiceActivity() {
   private var pendingDeleteUri: Uri? = null
   private var pendingWriteData: Pair<String, String>? = null  // audioUri, imagePath
   private var pendingMetadataData: Pair<String, Map<String, String>>? = null  // audioUri, metadata
+  private var pendingPermissionResult: MethodChannel.Result? = null // For generic permission request
   private var methodChannel: MethodChannel? = null
   private var widgetCommandReceiver: BroadcastReceiver? = null
   
@@ -452,40 +454,51 @@ class MainActivity : AudioServiceActivity() {
           }
           
           try {
-            // Construire l'URI MediaStore pour cet audio
             val audioUri = android.content.ContentUris.withAppendedId(
               android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
               audioId.toLong()
             )
-            
-            // Lire l'image
             val imageFile = File(imagePath)
             if (!imageFile.exists()) {
-              android.util.Log.e("writeAlbumArt", "Image file not found: $imagePath")
               result.error("FILE_ERROR", "Image file not found", null)
               return@setMethodCallHandler
             }
             
-            android.util.Log.d("writeAlbumArt", "Audio URI: $audioUri")
-            android.util.Log.d("writeAlbumArt", "Image path: $imagePath")
-            android.util.Log.d("writeAlbumArt", "Android SDK: ${android.os.Build.VERSION.SDK_INT}")
-            
-            // Android 10+ nécessite createWriteRequest
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-              try {
-                android.util.Log.d("writeAlbumArt", "Requesting write permission...")
-                val uris = listOf(audioUri)
-                val pi = android.provider.MediaStore.createWriteRequest(contentResolver, uris)
-                pendingWriteData = Pair(audioUri.toString(), imagePath)
-                startIntentSenderForResult(pi.intentSender, REQ_WRITE, null, 0, 0, 0)
-                result.success(null) // En attente de la réponse utilisateur
-              } catch (e: Exception) {
-                android.util.Log.e("writeAlbumArt", "Permission error: ${e.message}")
-                e.printStackTrace()
-                result.success(false)
-              }
+            // Check permission by trying to open stream
+            var hasPermission = false
+            try {
+                // Try to open for "w" (write) doesn't always throw on R if you don't write.
+                // But "rwt" usually triggers check.
+                // Or just try the full write operation? No, that's heavy.
+                // Just relying on startIntentSender if R is safe, BUT we want to skip it if authorized.
+                // If we check `checkUriPermission`, it might not work for Scoped Storage.
+                // Best check: try to open output stream.
+                contentResolver.openOutputStream(audioUri, "rwt")?.close()
+                hasPermission = true
+            } catch (e: Exception) {
+                // Ignore, we need permission
+                hasPermission = false
+            }
+
+            if (hasPermission) {
+                 // Do the write immediately
+                 val success = performAlbumArtWrite(audioUri, imagePath)
+                 methodChannel?.invokeMethod("onAlbumArtWritten", mapOf("success" to success))
+                 result.success(null)
             } else {
-              result.success(false)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                  try {
+                    val uris = listOf(audioUri)
+                    val pi = android.provider.MediaStore.createWriteRequest(contentResolver, uris)
+                    pendingWriteData = Pair(audioUri.toString(), imagePath)
+                    startIntentSenderForResult(pi.intentSender, REQ_WRITE, null, 0, 0, 0)
+                    result.success(null)
+                  } catch (e: Exception) {
+                    result.success(false)
+                  }
+                } else {
+                  result.success(false)
+                }
             }
           } catch (e: Exception) {
             result.error("WRITE_ERROR", e.message, null)
@@ -510,31 +523,40 @@ class MainActivity : AudioServiceActivity() {
               audioId.toLong()
             )
             
-            android.util.Log.d("writeMetadata", "Audio URI: $audioUri")
-            android.util.Log.d("writeMetadata", "Android SDK: ${android.os.Build.VERSION.SDK_INT}")
-            
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-              try {
-                android.util.Log.d("writeMetadata", "Requesting write permission...")
-                val uris = listOf(audioUri)
-                val pi = android.provider.MediaStore.createWriteRequest(contentResolver, uris)
-                val metadata = mapOf(
+            val metadata = mapOf(
                   "title" to title,
                   "artist" to artist,
                   "album" to album,
                   "genre" to genre,
                   "year" to year
-                )
-                pendingMetadataData = Pair(audioUri.toString(), metadata)
-                startIntentSenderForResult(pi.intentSender, REQ_WRITE_METADATA, null, 0, 0, 0)
-                result.success(null)
-              } catch (e: Exception) {
-                android.util.Log.e("writeMetadata", "Permission error: ${e.message}")
-                e.printStackTrace()
-                result.success(false)
-              }
+            )
+
+            var hasPermission = false
+            try {
+                contentResolver.openOutputStream(audioUri, "rwt")?.close()
+                hasPermission = true
+            } catch (e: Exception) {
+                hasPermission = false
+            }
+
+            if (hasPermission) {
+                 val success = performMetadataWrite(audioUri, metadata)
+                 methodChannel?.invokeMethod("onMetadataWritten", mapOf("success" to success))
+                 result.success(null)
             } else {
-              result.success(false)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                  try {
+                    val uris = listOf(audioUri)
+                    val pi = android.provider.MediaStore.createWriteRequest(contentResolver, uris)
+                    pendingMetadataData = Pair(audioUri.toString(), metadata)
+                    startIntentSenderForResult(pi.intentSender, REQ_WRITE_METADATA, null, 0, 0, 0)
+                    result.success(null)
+                  } catch (e: Exception) {
+                    result.success(false)
+                  }
+                } else {
+                  result.success(false)
+                }
             }
           } catch (e: Exception) {
             result.error("WRITE_ERROR", e.message, null)
@@ -593,6 +615,33 @@ class MainActivity : AudioServiceActivity() {
             result.error("PATH_ERROR", e.message, null)
           }
         }
+        "requestWritePermission" -> {
+          val audioId = call.argument<Int>("audioId")
+          if (audioId == null) {
+            result.error("ARG_ERROR", "Missing audioId", null)
+            return@setMethodCallHandler
+          }
+          
+          if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            try {
+              val audioUri = android.content.ContentUris.withAppendedId(
+                android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                audioId.toLong()
+              )
+              val uris = listOf(audioUri)
+              val pi = android.provider.MediaStore.createWriteRequest(contentResolver, uris)
+              
+              pendingPermissionResult = result
+              startIntentSenderForResult(pi.intentSender, REQ_PERMISSION_ONLY, null, 0, 0, 0)
+              // We do not call result.success here, we wait for onActivityResult
+            } catch (e: Exception) {
+              result.success(false)
+            }
+          } else {
+            // Android < 11
+            result.success(true)
+          }
+        }
         else -> result.notImplemented()
       }
     }
@@ -600,6 +649,19 @@ class MainActivity : AudioServiceActivity() {
   
 
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    if (requestCode == REQ_PERMISSION_ONLY) {
+        val res = pendingPermissionResult
+        if (res != null) {
+            if (resultCode == RESULT_OK) {
+                res.success(true)
+            } else {
+                res.success(false)
+            }
+            pendingPermissionResult = null
+        }
+        return
+    }
+
     // Gère d'abord notre requête de suppression et évite d'appeler super pour REQ_DELETE
     if (requestCode == REQ_DELETE) {
       val uri = pendingDeleteUri
@@ -615,156 +677,38 @@ class MainActivity : AudioServiceActivity() {
       return
     }
     // Gère la requête d'écriture (pochette système)
+    // Gère la requête d'écriture (pochette système)
     if (requestCode == REQ_WRITE) {
-      android.util.Log.d("writeAlbumArt", "onActivityResult: resultCode=$resultCode, RESULT_OK=$RESULT_OK")
       if (resultCode == RESULT_OK && pendingWriteData != null) {
         val (audioUriStr, imagePath) = pendingWriteData!!
         val audioUri = Uri.parse(audioUriStr)
-        android.util.Log.d("writeAlbumArt", "Permission granted, writing to: $audioUri")
-        try {
-          // Copier le fichier audio original vers un temp
-          val tempInput = File(cacheDir, "temp_input_${System.currentTimeMillis()}.mp3")
-          contentResolver.openInputStream(audioUri)?.use { input ->
-            tempInput.outputStream().use { output ->
-              input.copyTo(output)
-            }
-          }
-          
-          android.util.Log.d("writeAlbumArt", "Copied to temp: ${tempInput.absolutePath}")
-          
-          // Modifier avec mp3agic
-          val mp3File = com.mpatric.mp3agic.Mp3File(tempInput.absolutePath)
-          val imageFile = File(imagePath)
-          val imageBytes = imageFile.readBytes()
-          
-          android.util.Log.d("writeAlbumArt", "Image size: ${imageBytes.size} bytes")
-          
-          val tag = if (mp3File.hasId3v2Tag()) {
-            android.util.Log.d("writeAlbumArt", "Using existing ID3v2 tag")
-            mp3File.id3v2Tag
-          } else {
-            android.util.Log.d("writeAlbumArt", "Creating new ID3v2 tag")
-            com.mpatric.mp3agic.ID3v24Tag()
-          }
-          
-          tag.setAlbumImage(imageBytes, "image/jpeg")
-          mp3File.id3v2Tag = tag
-          
-          val tempOutput = File(cacheDir, "temp_output_${System.currentTimeMillis()}.mp3")
-          android.util.Log.d("writeAlbumArt", "Saving to temp output: ${tempOutput.absolutePath}")
-          mp3File.save(tempOutput.absolutePath)
-          
-          if (tempOutput.exists()) {
-            android.util.Log.d("writeAlbumArt", "Writing back to MediaStore...")
-            contentResolver.openOutputStream(audioUri)?.use { output ->
-              tempOutput.inputStream().use { input ->
-                input.copyTo(output)
-              }
-            }
-            
-            // Cleanup
-            tempInput.delete()
-            tempOutput.delete()
-            
-            android.util.Log.d("writeAlbumArt", "SUCCESS!")
-            methodChannel?.invokeMethod("onAlbumArtWritten", mapOf("success" to true))
-          } else {
-            android.util.Log.e("writeAlbumArt", "Temp output doesn't exist")
-            tempInput.delete()
-            methodChannel?.invokeMethod("onAlbumArtWritten", mapOf("success" to false))
-          }
-        } catch (e: Exception) {
-          android.util.Log.e("writeAlbumArt", "Error after permission: ${e.message}")
-          e.printStackTrace()
-          methodChannel?.invokeMethod("onAlbumArtWritten", mapOf("success" to false))
-        } finally {
-          pendingWriteData = null
-        }
+        val success = performAlbumArtWrite(audioUri, imagePath)
+        methodChannel?.invokeMethod("onAlbumArtWritten", mapOf("success" to success))
       } else {
-        android.util.Log.e("writeAlbumArt", "Permission denied or no pending data")
         methodChannel?.invokeMethod("onAlbumArtWritten", mapOf("success" to false))
-        pendingWriteData = null
       }
+      pendingWriteData = null
       return
     }
     // Gère la requête d'écriture des métadonnées
     if (requestCode == REQ_WRITE_METADATA) {
-      android.util.Log.d("writeMetadata", "onActivityResult: resultCode=$resultCode, RESULT_OK=$RESULT_OK")
       if (resultCode == RESULT_OK && pendingMetadataData != null) {
         val (audioUriStr, metadata) = pendingMetadataData!!
         val audioUri = Uri.parse(audioUriStr)
-        android.util.Log.d("writeMetadata", "Permission granted, writing to: $audioUri")
-        try {
-          // Copier le fichier audio original vers un temp
-          val tempInput = File(cacheDir, "temp_input_meta_${System.currentTimeMillis()}.mp3")
-          contentResolver.openInputStream(audioUri)?.use { input ->
-            tempInput.outputStream().use { output ->
-              input.copyTo(output)
-            }
-          }
-          
-          android.util.Log.d("writeMetadata", "Copied to temp: ${tempInput.absolutePath}")
-          
-          // Modifier avec mp3agic
-          val mp3File = com.mpatric.mp3agic.Mp3File(tempInput.absolutePath)
-          
-          val tag = if (mp3File.hasId3v2Tag()) {
-            android.util.Log.d("writeMetadata", "Using existing ID3v2 tag")
-            mp3File.id3v2Tag
-          } else {
-            android.util.Log.d("writeMetadata", "Creating new ID3v2 tag")
-            com.mpatric.mp3agic.ID3v24Tag()
-          }
-          
-          // Appliquer les métadonnées
-          metadata["title"]?.let { if (it.isNotEmpty()) tag.title = it }
-          metadata["artist"]?.let { if (it.isNotEmpty()) tag.artist = it }
-          metadata["album"]?.let { if (it.isNotEmpty()) tag.album = it }
-          metadata["genre"]?.let { if (it.isNotEmpty()) {
-            val genreInt = it.toIntOrNull()
-            if (genreInt != null) tag.genre = genreInt
-          }}
-          metadata["year"]?.let { if (it.isNotEmpty()) tag.year = it }
-          
-          mp3File.id3v2Tag = tag
-          
-          val tempOutput = File(cacheDir, "temp_output_meta_${System.currentTimeMillis()}.mp3")
-          android.util.Log.d("writeMetadata", "Saving to temp output: ${tempOutput.absolutePath}")
-          mp3File.save(tempOutput.absolutePath)
-          
-          if (tempOutput.exists()) {
-            android.util.Log.d("writeMetadata", "Writing back to MediaStore...")
-            contentResolver.openOutputStream(audioUri)?.use { output ->
-              tempOutput.inputStream().use { input ->
-                input.copyTo(output)
-              }
-            }
-            
-            // Cleanup
-            tempInput.delete()
-            tempOutput.delete()
-            
-            android.util.Log.d("writeMetadata", "SUCCESS!")
-            methodChannel?.invokeMethod("onMetadataWritten", mapOf("success" to true))
-          } else {
-            android.util.Log.e("writeMetadata", "Temp output doesn't exist")
-            tempInput.delete()
-            methodChannel?.invokeMethod("onMetadataWritten", mapOf("success" to false))
-          }
-        } catch (e: Exception) {
-          android.util.Log.e("writeMetadata", "Error after permission: ${e.message}")
-          e.printStackTrace()
-          methodChannel?.invokeMethod("onMetadataWritten", mapOf("success" to false))
-        } finally {
-          pendingMetadataData = null
-        }
+        val success = performMetadataWrite(audioUri, metadata)
+        methodChannel?.invokeMethod("onMetadataWritten", mapOf("success" to success))
       } else {
-        android.util.Log.e("writeMetadata", "Permission denied or no pending data")
         methodChannel?.invokeMethod("onMetadataWritten", mapOf("success" to false))
-        pendingMetadataData = null
       }
+      pendingMetadataData = null
       return
     }
+          
+
+          
+
+          
+
     // Évite le double reply du plugin image_cropper lorsque uCrop est annulé (RESULT_CANCELED)
     // UCrop.REQUEST_CROP = 69
     if (requestCode == 69 && resultCode == RESULT_CANCELED) {
@@ -833,5 +777,102 @@ class MainActivity : AudioServiceActivity() {
     paint.shader = shader
     canvas.drawRoundRect(rect, radius, radius, paint)
     return output
+  }
+
+  private fun performAlbumArtWrite(audioUri: Uri, imagePath: String): Boolean {
+    var tempInput: File? = null
+    var tempOutput: File? = null
+    return try {
+      tempInput = File(cacheDir, "temp_input_${System.currentTimeMillis()}.mp3")
+      contentResolver.openInputStream(audioUri)?.use { input ->
+        tempInput!!.outputStream().use { output ->
+          input.copyTo(output)
+        }
+      }
+      
+      val mp3File = com.mpatric.mp3agic.Mp3File(tempInput.absolutePath)
+      val imageFile = File(imagePath)
+      val imageBytes = imageFile.readBytes()
+      
+      val tag = if (mp3File.hasId3v2Tag()) {
+        mp3File.id3v2Tag
+      } else {
+        com.mpatric.mp3agic.ID3v24Tag()
+      }
+      
+      tag.setAlbumImage(imageBytes, "image/jpeg")
+      mp3File.id3v2Tag = tag
+      
+      tempOutput = File(cacheDir, "temp_output_${System.currentTimeMillis()}.mp3")
+      mp3File.save(tempOutput.absolutePath)
+      
+      if (tempOutput.exists()) {
+        contentResolver.openOutputStream(audioUri)?.use { output ->
+          tempOutput!!.inputStream().use { input ->
+            input.copyTo(output)
+          }
+        }
+        true
+      } else {
+        false
+      }
+    } catch (e: Exception) {
+      e.printStackTrace()
+      false
+    } finally {
+      try { tempInput?.delete() } catch(_:Exception){}
+      try { tempOutput?.delete() } catch(_:Exception){}
+    }
+  }
+
+  private fun performMetadataWrite(audioUri: Uri, metadata: Map<String, String>): Boolean {
+    var tempInput: File? = null
+    var tempOutput: File? = null
+    return try {
+      tempInput = File(cacheDir, "temp_input_meta_${System.currentTimeMillis()}.mp3")
+      contentResolver.openInputStream(audioUri)?.use { input ->
+        tempInput!!.outputStream().use { output ->
+          input.copyTo(output)
+        }
+      }
+      
+      val mp3File = com.mpatric.mp3agic.Mp3File(tempInput.absolutePath)
+      val tag = if (mp3File.hasId3v2Tag()) {
+        mp3File.id3v2Tag
+      } else {
+        com.mpatric.mp3agic.ID3v24Tag()
+      }
+      
+      metadata["title"]?.let { if (it.isNotEmpty()) tag.title = it }
+      metadata["artist"]?.let { if (it.isNotEmpty()) tag.artist = it }
+      metadata["album"]?.let { if (it.isNotEmpty()) tag.album = it }
+      metadata["genre"]?.let { if (it.isNotEmpty()) {
+         val genreInt = it.toIntOrNull()
+         if (genreInt != null) tag.genre = genreInt
+      }}
+      metadata["year"]?.let { if (it.isNotEmpty()) tag.year = it }
+      
+      mp3File.id3v2Tag = tag
+      
+      tempOutput = File(cacheDir, "temp_output_meta_${System.currentTimeMillis()}.mp3")
+      mp3File.save(tempOutput.absolutePath)
+      
+      if (tempOutput.exists()) {
+        contentResolver.openOutputStream(audioUri)?.use { output ->
+          tempOutput!!.inputStream().use { input ->
+            input.copyTo(output)
+          }
+        }
+        true
+      } else {
+        false
+      }
+    } catch (e: Exception) {
+      e.printStackTrace()
+      false
+    } finally {
+      try { tempInput?.delete() } catch(_:Exception){}
+      try { tempOutput?.delete() } catch(_:Exception){}
+    }
   }
 }

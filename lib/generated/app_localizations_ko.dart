@@ -444,7 +444,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get lyricsDeleteConfirm => '가사를 삭제할까요?';
 
   @override
-  String get lyricsImportUrl => '파일에서 가져오기';
+  String get lyricsImportFile => '파일에서 가져오기';
 
   @override
   String get lyricsImportClipboard => '클립보드에서 붙여넣기';

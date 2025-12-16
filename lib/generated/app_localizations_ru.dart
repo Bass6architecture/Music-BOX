@@ -445,7 +445,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get lyricsDeleteConfirm => 'Удалить текст песни?';
 
   @override
-  String get lyricsImportUrl => 'Из файла';
+  String get lyricsImportFile => 'Из файла';
 
   @override
   String get lyricsImportClipboard => 'Из буфера обмена';

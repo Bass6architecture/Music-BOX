@@ -7,9 +7,9 @@ enum BackgroundType {
   gradientDark,
   particles,
   waves,
-  neonCity,
   vinylSunset,
-  auroraRhythm,
+  glassMorphism,
+  abstractDark,
 }
 
 class BackgroundCubit extends Cubit<BackgroundType> {
@@ -45,12 +45,12 @@ class BackgroundCubit extends Cubit<BackgroundType> {
         return 'assets/backgrounds/bg_particles.png';
       case BackgroundType.waves:
         return 'assets/backgrounds/bg_waves.png';
-      case BackgroundType.neonCity:
-        return 'assets/backgrounds/bg_neon_city.png';
       case BackgroundType.vinylSunset:
         return 'assets/backgrounds/bg_vinyl_sunset.png';
-      case BackgroundType.auroraRhythm:
-        return 'assets/backgrounds/bg_aurora_rhythm.png';
+      case BackgroundType.glassMorphism:
+        return 'assets/backgrounds/bg_glass_morphism.png';
+      case BackgroundType.abstractDark:
+        return 'assets/backgrounds/bg_abstract_dark.png';
     }
   }
 }

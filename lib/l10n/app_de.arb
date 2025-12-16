@@ -157,7 +157,7 @@
   "lyricsEdit": "Text bearbeiten",
   "lyricsDelete": "Text löschen",
   "lyricsDeleteConfirm": "Text für diesen Titel löschen?",
-  "lyricsImportUrl": "Aus Datei importieren",
+  "lyricsImportFile": "Aus Datei importieren",
   "lyricsImportClipboard": "Aus Zwischenablage einfügen",
   "lyricsSaved": "Text gespeichert",
   "lyricsDeleted": "Text gelöscht",

@@ -444,7 +444,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get lyricsDeleteConfirm => 'इस गीत के बोल हटाएं?';
 
   @override
-  String get lyricsImportUrl => 'फ़ाइल से आयात करें';
+  String get lyricsImportFile => 'फ़ाइल से आयात करें';
 
   @override
   String get lyricsImportClipboard => 'क्लिपबोर्ड से पेस्ट करें';

@@ -38,28 +38,32 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
     });
   }
 
-  void _loadRecommendations() {
+  Future<void> _loadRecommendations() async {
     final cubit = context.read<PlayerCubit>();
     final state = cubit.state;
     
-    // Perform calculation
-    final quick = RecommendationEngine.getQuickPlayMix(state);
-    final forgotten = RecommendationEngine.getForgottenGems(state);
-    final habits = RecommendationEngine.getRecentAlbums(state);
-    final fresh = RecommendationEngine.getRecentlyAdded(state);
-    final hits = RecommendationEngine.getAllTimeHits(state);
+    // Create input DTO
+    final inputs = RecommendationInputs(
+      allSongs: state.allSongs,
+      playCounts: Map.from(state.playCounts),
+      lastPlayed: Map.from(state.lastPlayed),
+      favorites: List.from(state.favorites),
+      hiddenFolders: List.from(state.hiddenFolders),
+      showHiddenFolders: state.showHiddenFolders,
+    );
 
-    // If no habits (new user), load suggestions
-    final suggestions = habits.isEmpty ? RecommendationEngine.getSuggestedAlbums(state) : <SongModel>[];
+    // Run calculation in background isolate
+    // This prevents UI jank when processing thousands of songs
+    final results = await RecommendationEngine.computeRecommendations(inputs);
 
     if (mounted) {
       setState(() {
-        _quickPlayMix = quick;
-        _forgottenGems = forgotten;
-        _habits = habits; 
-        _suggestions = suggestions;
-        _freshArrivals = fresh;
-        _allTimeHits = hits;
+        _quickPlayMix = results.quickPlay;
+        _forgottenGems = results.forgotten;
+        _habits = results.habits; 
+        _suggestions = results.suggestions;
+        _freshArrivals = results.fresh;
+        _allTimeHits = results.hits;
         _isInit = true;
       });
     }
@@ -312,12 +316,13 @@ class OpacifiedArtwork extends StatelessWidget {
   Widget build(BuildContext context) {
     return Opacity(
       opacity: opacity,
-      child: OptimizedArtwork.square(
-        id: song.id,
-        type: ArtworkType.AUDIO,
-        size: 400,
-        fit: BoxFit.cover,
-      ),
+        child: OptimizedArtwork.square(
+          key: ValueKey(song.id),
+          id: song.id,
+          type: ArtworkType.AUDIO,
+          size: 400,
+          fit: BoxFit.cover,
+        ),
     );
   }
 }
@@ -366,6 +371,7 @@ class _DetailedSongCard extends StatelessWidget {
                             ? const ColorFilter.mode(Colors.grey, BlendMode.saturation)
                             : const ColorFilter.mode(Colors.transparent, BlendMode.dst),
                          child: OptimizedArtwork.square(
+                          key: ValueKey(song.id),
                           id: song.id,
                           type: ArtworkType.AUDIO,
                           size: size * 2,
@@ -471,6 +477,7 @@ class _CompactSongRow extends StatelessWidget {
                    ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: OptimizedArtwork.square(
+                      key: ValueKey(song.id),
                       id: song.id,
                       type: ArtworkType.AUDIO,
                       size: 56,

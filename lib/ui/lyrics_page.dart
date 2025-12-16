@@ -1,7 +1,9 @@
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:ui' as ui;
+import 'package:flutter/rendering.dart'; // For ScrollDirection
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +12,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:music_box/generated/app_localizations.dart';
 import '../widgets/optimized_artwork.dart';
 
@@ -44,6 +47,15 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
   static const int _lyricsTtlMs = 30 * 24 * 60 * 60 * 1000; // 30 jours
   bool _staleCache = false;
   String? _lastCopyText;
+  
+  // Synced Lyrics State
+  List<LyricLine> _parsedLyrics = [];
+  final ItemScrollController _itemScrollController = ItemScrollController();
+  final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
+  bool _isAutoScrolling = true;
+  Timer? _resumeAutoScrollTimer;
+  int _currentIndex = -1;
+  StreamSubscription? _positionSub;
 
   @override
   void initState() {
@@ -58,10 +70,87 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
     _loadBlurBackground();
     _startAutoSearch();
     _ensureRecommendedDefaultsIfFirstRun();
+
+    // Listen to playback position for sync using JustAudio player directly
+    _positionSub = _cubit.player.positionStream.listen((duration) {
+      if (_parsedLyrics.isNotEmpty && _mode == LyricsMode.found) {
+        final pos = duration.inMilliseconds;
+        _syncLyrics(pos);
+      }
+    });
+
+    // Also need a periodic ticker for smooth updates if audioHandler doesn't emit often enough?
+    // PlayerCubit has a position stream based on AudioPlayer? 
+    // Usually AudioHandler emits frequently, but we can also use a ticker if needed.
+    // For now, rely on AudioService state updates or add a periodic generic timer if smoother sync needed.
+  }
+
+  void _syncLyrics(int position) {
+    if (_parsedLyrics.isEmpty) return;
+
+    // Find the current line based on position
+    int newIndex = -1;
+    for (int i = 0; i < _parsedLyrics.length; i++) {
+      if (position >= _parsedLyrics[i].timestamp) {
+        newIndex = i;
+      } else {
+        break;
+      }
+    }
+
+    // Only update if index changed
+    if (newIndex != _currentIndex) {
+      if (mounted) {
+        setState(() => _currentIndex = newIndex);
+        if (_isAutoScrolling && newIndex != -1) {
+          _scrollToIndex(newIndex);
+        }
+      }
+    }
+  }
+
+  void _scrollToIndex(int index) {
+    if (!_itemScrollController.isAttached) return;
+    _itemScrollController.scrollTo(
+      index: index,
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOut,
+      alignment: 0.5,
+    );
+  }
+
+  void _parseLrc(String raw) {
+    _parsedLyrics.clear();
+    final lines = raw.split('\n');
+    final p = RegExp(r'^\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)$');
+    
+    for (var line in lines) {
+      final match = p.firstMatch(line.trim());
+      if (match != null) {
+        final min = int.parse(match.group(1)!);
+        final sec = int.parse(match.group(2)!);
+        final msStr = match.group(3)!;
+        final ms = int.parse(msStr.length == 2 ? '${msStr}0' : msStr); // .12 -> 120ms, .123 -> 123ms
+        
+        final time = (min * 60 * 1000) + (sec * 1000) + ms;
+        final text = match.group(4)!.trim();
+        _parsedLyrics.add(LyricLine(time, text));
+      } else {
+         // Non-synced lines? If we are in "Synced Mode", maybe ignore or add as comment?
+         // For now, if we found ANY synced lines, we treat it as LRC.
+         // If NO synced lines found at all, we fall back to plain text.
+         if (line.trim().isNotEmpty && _parsedLyrics.isNotEmpty) {
+           // Maybe append to previous line?
+         }
+      }
+    }
   }
 
   @override
   void dispose() {
+    _positionSub?.cancel();
+    _resumeAutoScrollTimer?.cancel();
+    _scrollController.dispose();
     _timeoutTimer?.cancel();
     _copyDebounce?.cancel();
     _pulseController.dispose();
@@ -114,6 +203,9 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
             _staleCache = stale;
             _mode = LyricsMode.found;
           });
+          // Parse loaded lyrics for sync
+          if (_lyrics != null) _parseLrc(_lyrics!);
+          
           _notifyFoundOnce();
         }
       }
@@ -685,6 +777,9 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
           if (txt != null && txt.trim().isNotEmpty) {
             final cleaned = _cleanupLyrics(txt.trim());
             if (!mounted) return;
+            // Try to parse synced lyrics if present
+            _parseLrc(cleaned);
+            
             setState(() {
               _lyrics = cleaned;
               _mode = LyricsMode.found;
@@ -820,7 +915,7 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
                 ),
               MenuItemButton(
                 leadingIcon: const Icon(Icons.folder_open_rounded),
-                child: Text(AppLocalizations.of(context)!.lyricsImportUrl),
+                child: Text(AppLocalizations.of(context)!.lyricsImportFile),
                 onPressed: () => _showImportFileDialog(),
               ),
               MenuItemButton(
@@ -920,6 +1015,73 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
       case LyricsMode.loading:
         return _buildLoadingSkeleton();
       case LyricsMode.found:
+        // Check if we have synced lyrics
+        if (_parsedLyrics.isNotEmpty) {
+          return NotificationListener<UserScrollNotification>(
+            onNotification: (notification) {
+              if (notification.direction != ScrollDirection.idle) {
+                // User is scrolling
+                if (_isAutoScrolling) {
+                  setState(() => _isAutoScrolling = false);
+                }
+                _resumeAutoScrollTimer?.cancel();
+              } else {
+                // Scroll stopped, schedule resume
+                _resumeAutoScrollTimer?.cancel();
+                _resumeAutoScrollTimer = Timer(const Duration(seconds: 3), () {
+                  if (mounted) {
+                    setState(() => _isAutoScrolling = true);
+                    if (_currentIndex != -1) _scrollToIndex(_currentIndex);
+                  }
+                });
+              }
+              return false;
+            },
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.symmetric(vertical: 120, horizontal: 16),
+              itemCount: _parsedLyrics.length,
+              itemBuilder: (context, index) {
+                final line = _parsedLyrics[index];
+                final bool isActive = index == _currentIndex;
+                final bool isPast = index < _currentIndex;
+                
+                return GestureDetector(
+                   onTap: () {
+                     // Optional: Seek to timestamp
+                     // _cubit.audioHandler?.seek(Duration(milliseconds: line.timestamp));
+                   },
+                   child: AnimatedContainer(
+                     duration: const Duration(milliseconds: 300),
+                     curve: Curves.easeInOut,
+                     margin: const EdgeInsets.symmetric(vertical: 8),
+                     padding: EdgeInsets.symmetric(vertical: 8, horizontal: _alignCenter ? 12 : 0),
+                     decoration: BoxDecoration(
+                       borderRadius: BorderRadius.circular(8),
+                       color: isActive 
+                           ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3) 
+                           : Colors.transparent,
+                     ),
+                     child: Text(
+                       line.text,
+                       textAlign: _alignCenter ? TextAlign.center : TextAlign.left,
+                       style: TextStyle(
+                         fontSize: isActive ? _fontSize * 1.1 : _fontSize,
+                         height: _lineHeight,
+                         fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                         color: isActive 
+                             ? Theme.of(context).colorScheme.primary 
+                             : Theme.of(context).colorScheme.onSurface.withValues(alpha: isPast ? 0.5 : 0.8),
+                       ),
+                     ),
+                   ),
+                );
+              },
+            ),
+          );
+        }
+
+        // Fallback for unsynced lyrics
         return Padding(
           padding: const EdgeInsets.all(16.0),
           child: SingleChildScrollView(
@@ -1208,6 +1370,7 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
            _mode = LyricsMode.found;
            _lyricsSavedAt = DateTime.now().millisecondsSinceEpoch;
         });
+        _parseLrc(cleaned);
         await _saveLyricsToCache(cleaned);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.lyricsSaved)));
       }
@@ -1410,4 +1573,11 @@ class _LyricsEditorState extends State<_LyricsEditor> {
     );
   }
 
+}
+
+class LyricLine {
+  final int timestamp; // milliseconds
+  final String text;
+
+  const LyricLine(this.timestamp, this.text);
 }

@@ -157,7 +157,7 @@
   "lyricsEdit": "歌詞を編集",
   "lyricsDelete": "歌詞を削除",
   "lyricsDeleteConfirm": "歌詞を削除しますか？",
-  "lyricsImportUrl": "ファイルからインポート",
+  "lyricsImportFile": "ファイルからインポート",
   "lyricsImportClipboard": "クリップボードから貼り付け",
   "lyricsSaved": "歌詞を保存しました",
   "lyricsDeleted": "歌詞を削除しました",

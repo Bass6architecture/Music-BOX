@@ -448,7 +448,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsDeleteConfirm => 'Delete lyrics for this song?';
 
   @override
-  String get lyricsImportUrl => 'Import from URL';
+  String get lyricsImportFile => 'Import file';
 
   @override
   String get lyricsImportClipboard => 'Paste from Clipboard';

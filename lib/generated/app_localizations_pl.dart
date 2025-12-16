@@ -445,7 +445,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get lyricsDeleteConfirm => 'Usunąć tekst tego utworu?';
 
   @override
-  String get lyricsImportUrl => 'Importuj z pliku';
+  String get lyricsImportFile => 'Importuj z pliku';
 
   @override
   String get lyricsImportClipboard => 'Wklej ze schowka';

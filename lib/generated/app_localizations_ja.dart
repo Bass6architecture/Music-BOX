@@ -444,7 +444,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get lyricsDeleteConfirm => '歌詞を削除しますか？';
 
   @override
-  String get lyricsImportUrl => 'ファイルからインポート';
+  String get lyricsImportFile => 'ファイルからインポート';
 
   @override
   String get lyricsImportClipboard => 'クリップボードから貼り付け';

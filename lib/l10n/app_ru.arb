@@ -157,7 +157,7 @@
   "lyricsEdit": "Редактировать текст",
   "lyricsDelete": "Удалить текст",
   "lyricsDeleteConfirm": "Удалить текст песни?",
-  "lyricsImportUrl": "Из файла",
+  "lyricsImportFile": "Из файла",
   "lyricsImportClipboard": "Из буфера обмена",
   "lyricsSaved": "Текст сохранен",
   "lyricsDeleted": "Текст удален",

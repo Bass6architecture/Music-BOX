@@ -157,7 +157,7 @@
   "lyricsEdit": "编辑歌词",
   "lyricsDelete": "删除歌词",
   "lyricsDeleteConfirm": "删除此歌曲的歌词？",
-  "lyricsImportUrl": "从文件导入",
+  "lyricsImportFile": "从文件导入",
   "lyricsImportClipboard": "粘贴剪贴板内容",
   "lyricsSaved": "歌词已保存",
   "lyricsDeleted": "歌词已删除",

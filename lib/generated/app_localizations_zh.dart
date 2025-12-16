@@ -443,7 +443,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get lyricsDeleteConfirm => '删除此歌曲的歌词？';
 
   @override
-  String get lyricsImportUrl => '从文件导入';
+  String get lyricsImportFile => '从文件导入';
 
   @override
   String get lyricsImportClipboard => '粘贴剪贴板内容';

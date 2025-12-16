@@ -157,7 +157,7 @@
   "lyricsEdit": "Edytuj tekst",
   "lyricsDelete": "Usuń tekst",
   "lyricsDeleteConfirm": "Usunąć tekst tego utworu?",
-  "lyricsImportUrl": "Importuj z pliku",
+  "lyricsImportFile": "Importuj z pliku",
   "lyricsImportClipboard": "Wklej ze schowka",
   "lyricsSaved": "Tekst zapisany",
   "lyricsDeleted": "Tekst usunięty",

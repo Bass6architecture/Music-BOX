@@ -157,7 +157,7 @@
   "lyricsEdit": "Sözleri Düzenle",
   "lyricsDelete": "Sözleri Sil",
   "lyricsDeleteConfirm": "Bu şarkının sözleri silinsin mi?",
-  "lyricsImportUrl": "Dosyadan Al",
+  "lyricsImportFile": "Dosyadan Al",
   "lyricsImportClipboard": "Panodan Yapıştır",
   "lyricsSaved": "Sözler kaydedildi",
   "lyricsDeleted": "Sözler silindi",

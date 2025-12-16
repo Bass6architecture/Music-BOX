@@ -165,7 +165,7 @@
   "lyricsEdit": "تعديل الكلمات",
   "lyricsDelete": "حذف الكلمات",
   "lyricsDeleteConfirm": "حذف كلمات هذه الأغنية؟",
-  "lyricsImportUrl": "استيراد من ملف",
+  "lyricsImportFile": "استيراد من ملف",
   "lyricsImportClipboard": "لصق من الحافظة",
   "lyricsSaved": "تم حفظ الكلمات",
   "lyricsDeleted": "تم حذف الكلمات",

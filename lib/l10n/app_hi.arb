@@ -157,7 +157,7 @@
   "lyricsEdit": "बोल संपादित करें",
   "lyricsDelete": "बोल हटाएं",
   "lyricsDeleteConfirm": "इस गीत के बोल हटाएं?",
-  "lyricsImportUrl": "फ़ाइल से आयात करें",
+  "lyricsImportFile": "फ़ाइल से आयात करें",
   "lyricsImportClipboard": "क्लिपबोर्ड से पेस्ट करें",
   "lyricsSaved": "बोल सहेजे गए",
   "lyricsDeleted": "बोल हटाए गए",

@@ -445,7 +445,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get lyricsDeleteConfirm => 'Hapus lirik lagu ini?';
 
   @override
-  String get lyricsImportUrl => 'Impor dari File';
+  String get lyricsImportFile => 'Impor dari File';
 
   @override
   String get lyricsImportClipboard => 'Tempel dari Papan Klip';

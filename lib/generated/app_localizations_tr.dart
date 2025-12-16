@@ -445,7 +445,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get lyricsDeleteConfirm => 'Bu şarkının sözleri silinsin mi?';
 
   @override
-  String get lyricsImportUrl => 'Dosyadan Al';
+  String get lyricsImportFile => 'Dosyadan Al';
 
   @override
   String get lyricsImportClipboard => 'Panodan Yapıştır';

@@ -157,7 +157,7 @@
   "lyricsEdit": "Editar letras",
   "lyricsDelete": "Excluir letras",
   "lyricsDeleteConfirm": "Excluir letras desta música?",
-  "lyricsImportUrl": "Importar do arquivo",
+  "lyricsImportFile": "Importar do arquivo",
   "lyricsImportClipboard": "Colar da área de transferência",
   "lyricsSaved": "Letras salvas",
   "lyricsDeleted": "Letras excluídas",

@@ -452,7 +452,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get lyricsDeleteConfirm => '¿Eliminar letra de esta canción?';
 
   @override
-  String get lyricsImportUrl => 'Importar desde archivo';
+  String get lyricsImportFile => 'Importar archivo';
 
   @override
   String get lyricsImportClipboard => 'Pegar desde portapapeles';

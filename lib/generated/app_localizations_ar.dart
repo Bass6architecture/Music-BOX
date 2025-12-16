@@ -446,7 +446,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get lyricsDeleteConfirm => 'حذف كلمات هذه الأغنية؟';
 
   @override
-  String get lyricsImportUrl => 'استيراد من ملف';
+  String get lyricsImportFile => 'استيراد من ملف';
 
   @override
   String get lyricsImportClipboard => 'لصق من الحافظة';

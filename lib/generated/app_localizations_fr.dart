@@ -452,7 +452,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Supprimer les paroles pour cette chanson ?';
 
   @override
-  String get lyricsImportUrl => 'Importer depuis fichier';
+  String get lyricsImportFile => 'Importer un fichier';
 
   @override
   String get lyricsImportClipboard => 'Coller depuis le presse-papier';

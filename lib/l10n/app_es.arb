@@ -165,7 +165,7 @@
   "lyricsEdit": "Editar letra",
   "lyricsDelete": "Eliminar letra",
   "lyricsDeleteConfirm": "¿Eliminar letra de esta canción?",
-  "lyricsImportUrl": "Importar desde archivo",
+  "lyricsImportFile": "Importar archivo",
   "lyricsImportClipboard": "Pegar desde portapapeles",
   "lyricsSaved": "Letra guardada",
   "lyricsDeleted": "Letra eliminada",

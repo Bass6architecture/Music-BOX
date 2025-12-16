@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'dart:io';
+import 'dart:async'; // For Timer
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart' as painting;
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -63,6 +64,8 @@ class _OptimizedArtworkState extends State<OptimizedArtwork> {
     }
   }
 
+  Timer? _debounceTimer;
+
   @override
   void initState() {
     super.initState();
@@ -71,32 +74,42 @@ class _OptimizedArtworkState extends State<OptimizedArtwork> {
     final exactKey = '${_typeKey(widget.type)}:${widget.id}';
     if (_cache.containsKey(exactKey)) {
       _bytes = _cache[exactKey];
-    } 
-    // ✅ 2. Placeholder check: Removed to avoid "Blurry -> Sharp" flash.
-    // We prefer a clean Placeholder -> Sharp transition.
-
-    // Initial load with a safe default. Will be refined after first layout.
-    _load(sizePx: (widget.size != null) ? (widget.size! * 3).round() : 1024);
+    } else {
+      // ✅ 2. Schedule load if not in cache (Debounced)
+      _scheduleLoad();
+    }
   }
 
   @override
   void didUpdateWidget(covariant OptimizedArtwork oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.id != widget.id || oldWidget.type != widget.type) {
-      _lastRequestedPx = null; // force recalculation
-      _bytes = null; // Reset bytes to show placeholder or new image
+      _lastRequestedPx = null;
+      _bytes = null;
+      _debounceTimer?.cancel();
       
-      // ✅ Try to find cached version for new ID immediately
       final exactKey = '${_typeKey(widget.type)}:${widget.id}';
       if (_cache.containsKey(exactKey)) {
         _bytes = _cache[exactKey];
       } else {
-         // Placeholder override logic removed.
+        _scheduleLoad();
       }
-      
-      // Trigger a quick reload; exact size will be adjusted on next build.
-      _load(sizePx: (widget.size != null) ? (widget.size! * 3).round() : 1024);
     }
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
+
+  void _scheduleLoad() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 50), () {
+      if (mounted) {
+        _load(sizePx: (widget.size != null) ? (widget.size! * 3).round() : 1024);
+      }
+    });
   }
 
   Future<void> _load({required int sizePx}) async {

@@ -157,7 +157,7 @@
   "lyricsEdit": "가사 편집",
   "lyricsDelete": "가사 삭제",
   "lyricsDeleteConfirm": "가사를 삭제할까요?",
-  "lyricsImportUrl": "파일에서 가져오기",
+  "lyricsImportFile": "파일에서 가져오기",
   "lyricsImportClipboard": "클립보드에서 붙여넣기",
   "lyricsSaved": "가사 저장됨",
   "lyricsDeleted": "가사 삭제됨",

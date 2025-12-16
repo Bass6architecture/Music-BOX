@@ -28,51 +28,43 @@ class BackgroundSelectionPage extends StatelessWidget {
             children: [
               _BackgroundTile(
                 backgroundType: BackgroundType.none,
-                title: l10n.backgroundNone,
                 isSelected: currentBackground == BackgroundType.none,
                 onTap: () => context.read<BackgroundCubit>().setBackground(BackgroundType.none),
               ),
               _BackgroundTile(
                 backgroundType: BackgroundType.gradientMusical,
-                title: l10n.backgroundGradientMusical,
                 isSelected: currentBackground == BackgroundType.gradientMusical,
                 onTap: () => context.read<BackgroundCubit>().setBackground(BackgroundType.gradientMusical),
               ),
               _BackgroundTile(
                 backgroundType: BackgroundType.gradientDark,
-                title: l10n.backgroundGradientDark,
                 isSelected: currentBackground == BackgroundType.gradientDark,
                 onTap: () => context.read<BackgroundCubit>().setBackground(BackgroundType.gradientDark),
               ),
               _BackgroundTile(
                 backgroundType: BackgroundType.particles,
-                title: l10n.backgroundParticles,
                 isSelected: currentBackground == BackgroundType.particles,
                 onTap: () => context.read<BackgroundCubit>().setBackground(BackgroundType.particles),
                ),
               _BackgroundTile(
                 backgroundType: BackgroundType.waves,
-                title: l10n.backgroundWaves,
                 isSelected: currentBackground == BackgroundType.waves,
                 onTap: () => context.read<BackgroundCubit>().setBackground(BackgroundType.waves),
               ),
               _BackgroundTile(
-                backgroundType: BackgroundType.neonCity,
-                title: l10n.backgroundNeonCity,
-                isSelected: currentBackground == BackgroundType.neonCity,
-                onTap: () => context.read<BackgroundCubit>().setBackground(BackgroundType.neonCity),
-              ),
-              _BackgroundTile(
                 backgroundType: BackgroundType.vinylSunset,
-                title: l10n.backgroundVinylSunset,
                 isSelected: currentBackground == BackgroundType.vinylSunset,
                 onTap: () => context.read<BackgroundCubit>().setBackground(BackgroundType.vinylSunset),
               ),
               _BackgroundTile(
-                backgroundType: BackgroundType.auroraRhythm,
-                title: l10n.backgroundAuroraRhythm,
-                isSelected: currentBackground == BackgroundType.auroraRhythm,
-                onTap: () => context.read<BackgroundCubit>().setBackground(BackgroundType.auroraRhythm),
+                backgroundType: BackgroundType.glassMorphism,
+                isSelected: currentBackground == BackgroundType.glassMorphism,
+                onTap: () => context.read<BackgroundCubit>().setBackground(BackgroundType.glassMorphism),
+              ),
+              _BackgroundTile(
+                backgroundType: BackgroundType.abstractDark,
+                isSelected: currentBackground == BackgroundType.abstractDark,
+                onTap: () => context.read<BackgroundCubit>().setBackground(BackgroundType.abstractDark),
               ),
             ],
           );
@@ -84,13 +76,11 @@ class BackgroundSelectionPage extends StatelessWidget {
 
 class _BackgroundTile extends StatelessWidget {
   final BackgroundType backgroundType;
-  final String title;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _BackgroundTile({
     required this.backgroundType,
-    required this.title,
     required this.isSelected,
     required this.onTap,
   });
@@ -134,35 +124,6 @@ class _BackgroundTile extends StatelessWidget {
                   previewImage!,
                   fit: BoxFit.cover,
                 ),
-
-              // Gradient overlay for title
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.8),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
 
               // Selected indicator
               if (isSelected)

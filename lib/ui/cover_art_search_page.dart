@@ -41,14 +41,37 @@ class _CoverArtSearchPageState extends State<CoverArtSearchPage> {
             // We use a capture phase listener to intercept clicks on images
             await _controller.runJavaScript('''
               document.addEventListener('click', function(e) {
+                // Find nearest anchor or image
                 var target = e.target;
+                var anchor = target.closest('a');
                 var img = target.tagName === 'IMG' ? target : target.closest('img');
                 
+                var src = null;
+                
+                // 1. Prioritize explicit IMG tags
                 if (img && img.src) {
-                  // Prevent default behavior (opening result) to show our preview first
+                  src = img.src;
+                } 
+                // 2. Check anchor children if no direct image clicked
+                else if (anchor) {
+                   var childImg = anchor.querySelector('img');
+                   if (childImg) src = childImg.src;
+                }
+                
+                // 3. Check for background image on the clicked target
+                if (!src) {
+                  var style = window.getComputedStyle(target);
+                  var bg = style.backgroundImage;
+                  if (bg && bg.startsWith('url(')) {
+                     src = bg.slice(4, -1).replace(/"/g, "");
+                  }
+                }
+
+                if (src) {
+                  // Prevent navigation to show preview
                   e.preventDefault();
                   e.stopPropagation();
-                  ImageClickChannel.postMessage(img.src);
+                  ImageClickChannel.postMessage(src);
                 }
               }, true);
             ''');
@@ -114,12 +137,24 @@ class _CoverArtSearchPageState extends State<CoverArtSearchPage> {
         builder: (ctx) => const Center(child: CircularProgressIndicator()),
       );
 
-      final response = await http.get(Uri.parse(url));
+      Uint8List? bytes;
+
+      if (url.startsWith('data:')) {
+        // Handle Data URI
+        final uri = Uri.parse(url);
+        bytes = uri.data?.contentAsBytes();
+      } else {
+        // Handle standard URL
+        final response = await http.get(Uri.parse(url));
+        if (response.statusCode == 200) {
+          bytes = response.bodyBytes;
+        }
+      }
       
       if (mounted) Navigator.pop(context); // Dismiss loading
 
-      if (response.statusCode == 200) {
-        if (mounted) Navigator.pop(context, response.bodyBytes);
+      if (bytes != null && bytes.isNotEmpty) {
+        if (mounted) Navigator.pop(context, bytes);
       } else {
         if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
@@ -128,7 +163,8 @@ class _CoverArtSearchPageState extends State<CoverArtSearchPage> {
         }
       }
     } catch (e) {
-      if (mounted) Navigator.pop(context); // Dismiss loading if error
+      if (mounted && Navigator.canPop(context)) Navigator.pop(context); // Dismiss loading if error
+      debugPrint('Error downloading image: $e');
       if (mounted) {
          ScaffoldMessenger.of(context).showSnackBar(
            SnackBar(content: Text('${AppLocalizations.of(context)!.error}: $e')),

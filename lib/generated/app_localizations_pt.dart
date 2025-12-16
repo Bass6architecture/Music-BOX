@@ -446,7 +446,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get lyricsDeleteConfirm => 'Excluir letras desta música?';
 
   @override
-  String get lyricsImportUrl => 'Importar do arquivo';
+  String get lyricsImportFile => 'Importar do arquivo';
 
   @override
   String get lyricsImportClipboard => 'Colar da área de transferência';

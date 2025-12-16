@@ -988,11 +988,11 @@ abstract class AppLocalizations {
   /// **'Supprimer les paroles pour cette chanson ?'**
   String get lyricsDeleteConfirm;
 
-  /// No description provided for @lyricsImportUrl.
+  /// No description provided for @lyricsImportFile.
   ///
   /// In fr, this message translates to:
-  /// **'Importer depuis fichier'**
-  String get lyricsImportUrl;
+  /// **'Importer un fichier'**
+  String get lyricsImportFile;
 
   /// No description provided for @lyricsImportClipboard.
   ///
