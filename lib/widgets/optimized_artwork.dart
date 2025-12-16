@@ -72,17 +72,8 @@ class _OptimizedArtworkState extends State<OptimizedArtwork> {
     if (_cache.containsKey(exactKey)) {
       _bytes = _cache[exactKey];
     } 
-    // ✅ 2. Placeholder check: If no exact match, try to find ANY cached version for this ID (e.g. from MiniPlayer)
-    // This ensures Hero animation has *something* to fly with immediately.
-    else {
-      final partialKey = ':${widget.id}'; // Suffix for this ID
-      for (final k in _cache.keys) {
-        if (k.endsWith(partialKey) && _cache[k] != null) {
-          _bytes = _cache[k];
-          break; // Use the first one found (likely MiniPlayer's small version)
-        }
-      }
-    }
+    // ✅ 2. Placeholder check: Removed to avoid "Blurry -> Sharp" flash.
+    // We prefer a clean Placeholder -> Sharp transition.
 
     // Initial load with a safe default. Will be refined after first layout.
     _load(sizePx: (widget.size != null) ? (widget.size! * 3).round() : 1024);
@@ -100,13 +91,7 @@ class _OptimizedArtworkState extends State<OptimizedArtwork> {
       if (_cache.containsKey(exactKey)) {
         _bytes = _cache[exactKey];
       } else {
-         final partialKey = ':${widget.id}';
-         for (final k in _cache.keys) {
-          if (k.endsWith(partialKey) && _cache[k] != null) {
-            _bytes = _cache[k];
-            break;
-          }
-        }
+         // Placeholder override logic removed.
       }
       
       // Trigger a quick reload; exact size will be adjusted on next build.
