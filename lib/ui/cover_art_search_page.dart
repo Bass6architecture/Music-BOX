@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -22,6 +21,7 @@ class CoverArtSearchPage extends StatefulWidget {
 class _CoverArtSearchPageState extends State<CoverArtSearchPage> {
   late final WebViewController _controller;
   bool _isLoading = true;
+  bool _isInteracting = false; // Guard against multi-taps
 
   @override
   void initState() {
@@ -36,7 +36,7 @@ class _CoverArtSearchPageState extends State<CoverArtSearchPage> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (String url) async {
-            setState(() => _isLoading = false);
+            if (mounted) setState(() => _isLoading = false);
             // Inject click listener for images
             // We use a capture phase listener to intercept clicks on images
             await _controller.runJavaScript('''
@@ -80,16 +80,23 @@ class _CoverArtSearchPageState extends State<CoverArtSearchPage> {
       )
       ..addJavaScriptChannel(
         'ImageClickChannel',
-        onMessageReceived: (JavaScriptMessage message) {
-          _showPreviewDialog(message.message);
+        onMessageReceived: (JavaScriptMessage message) async {
+           // Create a local debouncer
+           if (_isInteracting) return;
+           _isInteracting = true;
+           
+           await _showPreviewDialog(message.message);
+           
+           if (mounted) _isInteracting = false;
         },
       )
       ..loadRequest(Uri.parse(url));
   }
 
-  void _showPreviewDialog(String imageUrl) {
-    showDialog(
+  Future<void> _showPreviewDialog(String imageUrl) async {
+    await showDialog(
       context: context,
+      barrierDismissible: false, // Force user to choose action
       builder: (ctx) => AlertDialog(
         title: Text(AppLocalizations.of(context)!.preview),
         content: Column(
@@ -112,12 +119,12 @@ class _CoverArtSearchPageState extends State<CoverArtSearchPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx), // Close dialog, stay on webview
+            onPressed: () => Navigator.pop(ctx), // Close dialog
             child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
             onPressed: () {
-              Navigator.pop(ctx); // Close dialog
+              Navigator.pop(ctx); // Close dialog first
               _downloadAndReturn(imageUrl);
             },
             child: Text(AppLocalizations.of(context)!.useImage),

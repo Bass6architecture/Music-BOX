@@ -15,6 +15,7 @@ class BackgroundSelectionPage extends StatefulWidget {
 class _BackgroundSelectionPageState extends State<BackgroundSelectionPage> {
   RewardedAd? _rewardedAd;
   bool _isAdLoading = false;
+  bool _isAdShowing = false; // Hide AppBar during ad
   final String _adUnitId = 'ca-app-pub-9535801913153032/6103998986'; // User provided reward unit ID
 
   @override
@@ -55,8 +56,11 @@ class _BackgroundSelectionPageState extends State<BackgroundSelectionPage> {
     }
 
     _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
-      onAdShowedFullScreenContent: (ad) {},
+      onAdShowedFullScreenContent: (ad) {
+        setState(() => _isAdShowing = true);
+      },
       onAdDismissedFullScreenContent: (ad) {
+        setState(() => _isAdShowing = false);
         ad.dispose();
         _rewardedAd = null;
       },
@@ -106,7 +110,7 @@ class _BackgroundSelectionPageState extends State<BackgroundSelectionPage> {
 
     return Scaffold(
       backgroundColor: Colors.transparent, // Transparent to show Stack background
-      appBar: AppBar(
+      appBar: _isAdShowing || _isAdLoading ? null : AppBar(
         title: Text(l10n.background),
         backgroundColor: Colors.transparent,
       ),

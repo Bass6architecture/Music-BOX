@@ -9,7 +9,7 @@ enum BackgroundType {
   waves, // Restored
   abstractDark,
   // glassMorphism, // Removed
-  // cosmicBeats, // Removed
+  // cosmicBeats, // Removed (Too bright)
   vinylSunset,
   deepSpace,
   midnightCity,

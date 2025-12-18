@@ -33,6 +33,9 @@ class OptimizedArtwork extends StatefulWidget {
   // Set to false when used inside Sliver lists/grids to avoid provider select.
   final bool useCustomOverrides;
   final BorderRadius? borderRadius; // ✅ New parameter
+  
+  /// Public static getter to expose artwork cache for pre-population (by ArtworkPreloader)
+  static Map<String, Uint8List?> get artworkCache => _OptimizedArtworkState._cache;
 
   @override
   State<OptimizedArtwork> createState() => _OptimizedArtworkState();
@@ -41,7 +44,10 @@ class OptimizedArtwork extends StatefulWidget {
 class _OptimizedArtworkState extends State<OptimizedArtwork> {
   static final OnAudioQuery _query = OnAudioQuery();
   static final Map<String, Uint8List?> _cache = <String, Uint8List?>{};
-  static const int _maxCacheSize = 250; // ✅ Increased cache size for smoother scrolling
+  static const int _maxCacheSize = 2000; // ✅ Increased for full artwork pre-caching
+  
+  /// Expose cache for external pre-population (by ArtworkPreloader)
+  static Map<String, Uint8List?> get cache => _cache;
 
   Uint8List? _bytes;
   int? _lastRequestedPx; // track last DPR-aware size we requested

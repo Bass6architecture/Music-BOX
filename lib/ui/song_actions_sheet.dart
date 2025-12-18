@@ -50,7 +50,7 @@ void _ensureCoverCallbacks(BuildContext context) {
             // mais l'image locale est sauvegardée. On rassure l'utilisateur.
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('✅ ${l10n.coverSaved} (App Only)'),
+                content: Text('✅ ${l10n.coverSaved}'),
                 backgroundColor: Colors.teal,
               ),
             );
@@ -75,8 +75,8 @@ void _ensureCoverCallbacks(BuildContext context) {
             // pour ne pas paniquer l'utilisateur.
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('✅ ${l10n.metadataSaved} (App Only)'),
-                backgroundColor: Colors.teal, // Couleur distincte pour indiquer "Sauvegarde locale"
+                content: Text('✅ ${l10n.metadataSaved}'),
+                backgroundColor: Colors.teal,
               ),
             );
           }
@@ -613,6 +613,8 @@ Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel son
     if (context.mounted) {
       PaintingBinding.instance.imageCache.clear();
       PaintingBinding.instance.imageCache.clearLiveImages();
+      // Force les widgets à se reconstruire avec la nouvelle pochette
+      cubit.forceArtworkRefresh(song.id);
     }
     
     // Enregistrer directement dans le système (pas de choix)
@@ -638,11 +640,11 @@ Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel son
         // Si success == null, on attend la permission (le callback affichera le message)
       } catch (e) {
         debugPrint('❌ Erreur technique lors de l\'écriture (MP3 uniquement?) : $e');
-        // On affiche quand même "Succès (App Only)" car l'override local a fonctionné
+        // On affiche quand même un succès car l'override local a fonctionné
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('✅ ${l10n.coverSaved} (App Only)'),
+              content: Text('✅ ${l10n.coverSaved}'),
               backgroundColor: Colors.teal,
             ),
           );
@@ -1098,6 +1100,8 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
     year: int.tryParse(yearCtrl.text.trim()),
   );
   await cubit.setMetadataOverride(song.id, overrides);
+  // Force les widgets à se reconstruire avec les nouvelles métadonnées
+  cubit.forceArtworkRefresh(song.id);
 
   // 3) Enregistrer directement dans le système (pas de choix)
   if (context.mounted && Platform.isAndroid) {
@@ -1129,7 +1133,7 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
            SnackBar(
-            content: Text('✅ ${AppLocalizations.of(context)!.metadataSaved} (App Only)'),
+            content: Text('✅ ${AppLocalizations.of(context)!.metadataSaved}'),
             backgroundColor: Colors.teal,
           ),
         );

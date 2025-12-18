@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 
@@ -11,12 +13,14 @@ import 'generated/app_localizations.dart';
 
 import 'ui/screens/home_screen.dart';
 import 'widgets/permission_wrapper.dart';
+import 'widgets/optimized_artwork.dart';
 import 'player/player_cubit.dart';
 import 'core/theme/theme_cubit.dart';
 import 'core/l10n/locale_cubit.dart';
 import 'core/background/background_cubit.dart';
 
 import 'services/ad_service.dart';
+import 'services/artwork_preloader.dart';
 import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
 import 'ui/screens/modern_music_widgets.dart';
@@ -113,6 +117,8 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
   late AnimationController _pulseController;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
+  bool _hasNavigated = false;
+  String _loadingStatus = '';
 
   @override
   void initState() {
@@ -135,6 +141,9 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
     
     // Initialiser AdMob ici seulement (quand UI visible) pour éviter crash background
     AdService().initialize();
+    
+    // Connect ArtworkPreloader to OptimizedArtwork cache
+    ArtworkPreloader.setCache(OptimizedArtwork.artworkCache);
 
     _checkAndNavigate();
   }
@@ -156,10 +165,100 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
     
     if (!mounted) return;
     
+    // If permissions not granted, go to permission screen immediately
+    if (!hasAudio || !hasNotif) {
+      _navigateTo(const PermissionWrapper());
+      return;
+    }
+    
+    // Wait for songs to load and pre-cache artwork
+    await _waitAndPreload();
+    
+    // Navigate to home
+    _navigateTo(const HomeScreen());
+  }
+  
+  Future<void> _waitAndPreload() async {
+    final cubit = context.read<PlayerCubit>();
+    final audioQuery = OnAudioQuery();
+    
+    // Set timeout to prevent infinite splash
+    final timeout = Future.delayed(const Duration(seconds: 5));
+    
+    // Wait for songs to be loaded (or timeout)
+    final songsLoaded = _waitForSongs(cubit);
+    
+    await Future.any([songsLoaded, timeout]);
+    
+    if (!mounted || _hasNavigated) return;
+    
+    // Update status
+    setState(() => _loadingStatus = 'Chargement des pochettes...');
+    
+    // Get all unique IDs for pre-caching
+    try {
+      final songs = cubit.state.allSongs;
+      final songIds = songs.map((s) => s.id).toList();
+      
+      // Query albums and artists
+      final albums = await audioQuery.queryAlbums();
+      final artists = await audioQuery.queryArtists();
+      
+      final albumIds = albums.map((a) => a.id).toList();
+      final artistIds = artists.map((a) => a.id).toList();
+      
+      debugPrint('[Splash] Pre-caching: ${songIds.length} songs, ${albumIds.length} albums, ${artistIds.length} artists');
+      
+      // Pre-cache all artwork with mini timeout
+      final preloadFuture = ArtworkPreloader.preloadAll(
+        songIds: songIds,
+        albumIds: albumIds,
+        artistIds: artistIds,
+        sizePx: 300,
+      );
+      
+      // Give it max 4 more seconds for artwork (total ~5s splash max)
+      await Future.any([
+        preloadFuture,
+        Future.delayed(const Duration(seconds: 4)),
+      ]);
+      
+    } catch (e) {
+      debugPrint('[Splash] Pre-cache error: $e');
+    }
+  }
+  
+  Future<void> _waitForSongs(PlayerCubit cubit) async {
+    // If already loaded, return immediately
+    if (cubit.state.allSongs.isNotEmpty) return;
+    
+    // Otherwise wait for state change
+    final completer = Completer<void>();
+    late StreamSubscription sub;
+    
+    sub = cubit.stream.listen((state) {
+      if (state.allSongs.isNotEmpty && !completer.isCompleted) {
+        completer.complete();
+        sub.cancel();
+      }
+    });
+    
+    // Also check again in case it loaded between check and subscription
+    if (cubit.state.allSongs.isNotEmpty && !completer.isCompleted) {
+      completer.complete();
+      sub.cancel();
+    }
+    
+    await completer.future;
+  }
+  
+  void _navigateTo(Widget page) {
+    if (_hasNavigated || !mounted) return;
+    _hasNavigated = true;
+    
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (context, animation, _) => 
-            (hasAudio && hasNotif) ? const HomeScreen() : const PermissionWrapper(),
+        pageBuilder: (context, animation, _) => page,
         transitionDuration: const Duration(milliseconds: 300),
         transitionsBuilder: (context, animation, _, child) {
           return FadeTransition(opacity: animation, child: child);

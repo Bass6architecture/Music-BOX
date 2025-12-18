@@ -1085,6 +1085,16 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     await _persistMetadataOverrides();
   }
 
+  /// Force UI widgets to rebuild by emitting a new state with updated references.
+  /// Call this after saving cover/metadata when the visual changes might not be picked up.
+  void forceArtworkRefresh(int songId) {
+    // Create a new list reference to force BlocBuilder to rebuild
+    final songs = List<SongModel>.from(state.songs);
+    // Create a new map reference for custom artwork paths
+    final artworkPaths = Map<int, String>.from(state.customArtworkPaths);
+    emit(state.copyWith(songs: songs, customArtworkPaths: artworkPaths));
+  }
+
   // -----------------------------
   // Soft delete (local only)
   // -----------------------------
