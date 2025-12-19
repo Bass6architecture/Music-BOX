@@ -174,6 +174,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get languageComingSoon => 'Bientôt disponible';
 
   @override
+  String get comingSoon => 'Bientôt disponible';
+
+  @override
   String get languageChanged => 'Langue changée';
 
   @override

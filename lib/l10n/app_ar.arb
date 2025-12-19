@@ -1,513 +1,0 @@
-{
-  "@@locale": "ar",
-  
-  "appName": "صندوق الموسيقى",
-  "ok": "موافق",
-  "cancel": "إلغاء",
-  "delete": "حذف",
-  "save": "حفظ",
-  "share": "مشاركة",
-  "edit": "تعديل",
-  "add": "إضافة",
-  "remove": "إزالة",
-  "search": "بحث",
-  "loading": "جارٍ التحميل...",
-  "error": "خطأ",
-  "retry": "إعادة المحاولة",
-  "close": "إغلاق",
-  "done": "تم",
-  "yes": "نعم",
-  "no": "لا",
-  
-  "songs": "الأغاني",
-  "playlists": "قوائم التشغيل",
-  "albums": "الألبومات",
-  "artists": "الفنانون",
-  "folders": "المجلدات",
-  "settings": "الإعدادات",
-  "nowPlaying": "قيد التشغيل",
-  "yourPlaylists": "قوائم التشغيل الخاصة بك",
-  "favorites": "المفضلة",
-  "recentlyAdded": "المضافة مؤخراً",
-  "recentlyPlayed": "تم تشغيلها مؤخراً",
-  "mostPlayed": "الأكثر تشغيلاً",
-  "forYou": "لك",
-  "quickPlay": "تشغيل سريع",
-  "listeningHabits": "عادات الاستماع",
-  "forgottenGems": "الجواهر المنسية",
-  "allTimeHits": "الأغاني الخالدة",
-  "explore": "استكشاف",
-  
-  "settingsTitle": "الإعدادات",
-  "appearance": "المظهر",
-  "audio": "الصوت",
-  "library": "المكتبة",
-  "about": "حول",
-  
-  "theme": "السمة",
-  "themeDescription": "سمة التطبيق",
-  "themeSystem": "النظام",
-  "themeSystemDesc": "اتبع سمة الهاتف",
-  "themeLight": "فاتح",
-  "themeLightDesc": "فاتح دائماً",
-  "themeDark": "داكن",
-  "themeDarkDesc": "داكن دائماً",
-  
-  "language": "اللغة",
-  "languageDescription": "لغة التطبيق",
-  "currentLanguage": "العربية",
-  "languageSystem": "لغة النظام",
-  "languageSystemDesc": "تتبع لغة الهاتف",
-  "languageAlreadySelected": "العربية محددة بالفعل",
-  "languageComingSoon": "قريباً",
-  "languageChanged": "تم تغيير اللغة",
-  "languageNeedsRestart": "يتطلب إعادة التشغيل لتطبيق اللغة",
-  "restartNow": "إعادة التشغيل الآن",
-  "restartLater": "لاحقاً",
-  
-  "equalizer": "المعادل",
-  "equalizerDesc": "ضبط الجهير والصوت العالي",
-  "equalizerEnabled": "المعادل مفعل",
-  "equalizerDisabled": "المعادل معطل",
-  "noEqualizerFound": "لم يتم العثور على معادل على هذا الجهاز",
-  
-  "background": "الخلفية",
-  "backgroundDesc": "تخصيص خلفية التطبيق",
-  "backgroundNone": "بلا",
-  "backgroundGradientMusical": "تدرج موسيقي",
-  "backgroundGradientDark": "تدرج داكن",
-  "backgroundParticles": "جزيئات",
-  "backgroundWaves": "موجات صوتية",
-  "backgroundNeonCity": "مدينة النيون",
-  "backgroundVinylSunset": "غروب الفينيل",
-  "backgroundAuroraRhythm": "إيقاع الشفق",
-  
-  "backgroundPlayback": "التشغيل في الخلفية",
-  "backgroundPlaybackDesc": "تعطيل تحسين البطارية لتشغيل سلس",
-  "batteryOptimizationTitle": "إيقاف تحسين استخدام البطارية؟",
-  "batteryOptimizationMessage": "سيتمكن صندوق الموسيقى من التشغيل في الخلفية. لن يتم تقييد استخدام البطارية.",
-  "batteryOptimizationEnabled": "✓ تم تعطيل تحسين البطارية",
-  "batteryOptimizationDisabled": "⚠️ تحسين البطارية مفعل (قد يسبب انقطاعات)",
-  
-  "notifications": "الإشعارات",
-  "notificationsDesc": "إعدادات الإشعارات",
-  "cannotOpenSettings": "تعذر فتح الإعدادات",
-  "androidOnly": "متاح على أندرويد فقط",
-  
-  "scanMusic": "مسح الموسيقى",
-  "scanMusicDesc": "كشف المقاطع المفقودة",
-  "hiddenFolders": "المجلدات المخفية",
-  "hiddenFoldersDesc": "إدارة المجلدات المخفية",
-  
-  "version": "الإصدار {version}",
-  
-  "privacyPolicy": "سياسة الخصوصية",
-  "privacyPolicyDesc": "عرض سياسة الخصوصية",
-  "contact": "اتصل بنا",
-  "contactDesc": "synergydevv@gmail.com",
-  "cannotOpenPrivacyPolicy": "لا يمكن فتح سياسة الخصوصية",
-  "cannotOpenEmail": "لا يمكن فتح تطبيق البريد",
-  "@version": {
-    "placeholders": {
-      "version": {
-        "type": "String"
-      }
-    }
-  },
-  
-  "play": "تشغيل",
-  "pause": "إيقاف مؤقت",
-  "next": "التالي",
-  "previous": "السابق",
-  "shuffle": "عشوائي",
-  "repeat": "تكرار",
-  "playNext": "تشغيل التالي",
-  "playAll": "تشغيل الكل",
-  "addToQueue": "إضافة إلى القائمة",
-  "addToQueueFull": "إضافة إلى قائمة الانتظار",
-  "addToPlaylist": "إضافة إلى قائمة تشغيل",
-  "addToMyPlaylists": "إضافة إلى قوائمي",
-  "removeFromPlaylist": "إزالة من قائمة التشغيل",
-  "removeFromHistory": "إزالة من السجل",
-  "addToFavorites": "إضافة إلى المفضلة",
-  "removeFromFavorites": "إزالة من المفضلة",
-  "goToAlbum": "الانتقال إلى الألبوم",
-  "goToArtist": "الانتقال إلى الفنان",
-  "setAsRingtone": "تعيين كنغمة رنين",
-  "songDetails": "تفاصيل الأغنية",
-  "editMetadata": "تعديل البيانات الوصفية",
-  "selectAll": "تحديد الكل",
-  "deleteSong": "حذف الأغنية",
-  "confirmDeleteSong": "هل أنت متأكد من أنك تريد حذف هذا الملف؟",
-  "songAdded": "تمت إضافة الأغنية",
-  "createPlaylist": "إنشاء قائمة تشغيل",
-  "playlistNameHint": "اسم قائمة التشغيل",
-  "allSongs": "جميع الأغاني",
-  "sortBy": "ترتيب حسب",
-  "sortAscending": "تصاعدي",
-  "sortDescending": "تنازلي",
-  "title": "العنوان",
-  "artist": "الفنان",
-  "album": "الألبوم",
-  "duration": "المدة",
-  "sortByDateAdded": "تاريخ الإضافة",
-  "noSongs": "لا توجد أغاني",
-  "grantPermission": "منح الإذن",
-  "openSettings": "فتح الإعدادات",
-  "permissionRequired": "الإذن مطلوب",
-  "permissionDenied": "تم رفض الإذن",
-  "permissionPermanentlyDenied": "تم رفض الإذن نهائياً. يرجى تفعيله في الإعدادات.",
-  "storagePermissionRequired": "إذن التخزين مطلوب لقراءة الموسيقى الخاصة بك.",
-  "changeCover": "تغيير الغلاف",
-  
-  "showLyrics": "عرض كلمات الأغاني",
-  "hideLyrics": "إخفاء كلمات الأغاني",
-  "lyricsEdit": "تعديل الكلمات",
-  "lyricsDelete": "حذف الكلمات",
-  "lyricsDeleteConfirm": "حذف كلمات هذه الأغنية؟",
-  "lyricsImportFile": "استيراد من ملف",
-  "lyricsImportClipboard": "لصق من الحافظة",
-  "lyricsSaved": "تم حفظ الكلمات",
-  "lyricsDeleted": "تم حذف الكلمات",
-  "lyricsPasteHint": "الصق أو اكتب الكلمات هنا...",
-  "cancel": "إلغاء",
-  "save": "حفظ",
-  "delete": "حذف",
-  
-  "unknownArtist": "فنان غير معروف",
-  "unknownAlbum": "ألبوم غير معروف",
-  "unknownTitle": "عنوان غير معروف",
-  
-  "noAlbums": "لا توجد ألبومات",
-  "noArtists": "لا يوجد فنانون",
-  "noPlaylists": "لا توجد قوائم تشغيل",
-  "noFolders": "لا توجد مجلدات",
-  
-  "songCount": "{count, plural, =0{لا توجد أغاني} =1{أغنية واحدة} other{{count} أغنية}}",
-  "@songCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  
-  "albumCount": "{count, plural, =0{لا توجد ألبومات} =1{ألبوم واحد} other{{count} ألبوم}}",
-  "@albumCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  
-  "createPlaylist": "إنشاء قائمة تشغيل",
-  "playlistName": "اسم قائمة التشغيل",
-  "playlistNameHint": "قائمتي",
-  "renamePlaylist": "إعادة التسمية",
-  "deletePlaylist": "حذف قائمة التشغيل",
-  "confirmDeletePlaylist": "هل تريد حقاً حذف قائمة التشغيل هذه؟",
-  "emptyPlaylist": "قائمة تشغيل فارغة",
-  "addSongs": "إضافة أغاني",
-  "addSongsToPlaylistDesc": "أضف أغاني لبدء الاستماع",
-  "playlistCreated": "تم إنشاء قائمة التشغيل",
-  "playlistDeleted": "تم حذف قائمة التشغيل",
-  "playlistRenamed": "تمت إعادة تسمية قائمة التشغيل",
-  "songAdded": "تمت إضافة الأغنية",
-  "songAddedToPlaylist": "تمت الإضافة إلى قائمة التشغيل",
-  "songRemoved": "تمت إزالة الأغنية",
-  "selectPlaylist": "اختر قائمة تشغيل",
-  "noPlaylistsCreateOne": "لا توجد قوائم تشغيل. أنشئ واحدة.",
-  "newPlaylist": "قائمة تشغيل جديدة",
-  "newPlaylistEllipsis": "قائمة تشغيل جديدة...",
-  "create": "إنشاء",
-  "scheduledNext": "مجدولة للتشغيل التالي",
-  "addedToQueue": "تمت الإضافة إلى قائمة الانتظار",
-  "removedFromHistory": "تمت الإزالة من السجل",
-  
-  "favorites": "المفضلة",
-  "noFavorites": "لا توجد مفضلات",
-  "addedToFavorites": "تمت الإضافة إلى المفضلة",
-  "removedFromFavorites": "تمت الإزالة من المفضلة",
-  
-  "queue": "قائمة الانتظار",
-  "clearQueue": "مسح قائمة الانتظار",
-  "queueEmpty": "قائمة الانتظار فارغة",
-  "addedToQueue": "تمت الإضافة إلى قائمة الانتظار",
-  "confirmClearQueue": "هل تريد حقاً مسح قائمة الانتظار؟",
-  "swipeToRemove": "اسحب للإزالة",
-  "clearHistory": "مسح السجل",
-  "historyCleared": "تم مسح السجل",
-  "options": "خيارات",
-  
-  "lyrics": "كلمات الأغاني",
-  "lyricsFound": "تم العثور على الكلمات",
-  "noLyrics": "لا توجد كلمات متاحة",
-  "searchingLyrics": "جارٍ البحث عن الكلمات...",
-  "lyricsNotFound": "لم يتم العثور على كلمات لهذه الأغنية",
-  "lyricsError": "خطأ أثناء البحث",
-  "retryLyrics": "إعادة المحاولة",
-  "lyricsDisplay": "عرض كلمات الأغاني",
-  "blurBackground": "خلفية فنية ضبابية",
-  "blurBackgroundDesc": "استخدم غلاف الألبوم كخلفية ضبابية",
-  "alignment": "المحاذاة",
-  "alignLeft": "يسار",
-  "alignCenter": "وسط",
-  "textSize": "حجم النص",
-  "lineHeight": "ارتفاع السطر",
-  "reset": "إعادة تعيين",
-  "copiedText": "تم اكتشاف نص منسوخ",
-  "useAsLyrics": "استخدام ككلمات أغاني",
-  "webSearch": "البحث على الويب",
-  "tip": "نصيحة",
-  "copyTip": "حدد وانسخ كلمات الأغاني من الصفحة. سيتم اقتراحها تلقائياً هنا.",
-  "lyricsCopied": "تم نسخ كلمات الأغاني",
-  
-  "scanningMusic": "جارٍ المسح...",
-  "scanComplete": "اكتمل المسح",
-  "scanFailed": "فشل المسح",
-  "foundSongs": "تم العثور على {count} أغنية",
-  "@foundSongs": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  
-  "metadata": "البيانات الوصفية",
-  "title": "العنوان",
-  "artist": "الفنان",
-  "album": "الألبوم",
-  "genre": "النوع",
-  "year": "السنة",
-  "track": "المقطع",
-  "duration": "المدة",
-  "path": "المسار",
-  "size": "الحجم",
-  "format": "التنسيق",
-  "bitrate": "معدل البت",
-  "sampleRate": "معدل العينة",
-  "metadataSaved": "تم حفظ البيانات الوصفية",
-  "metadataFailed": "فشل الحفظ",
-  "coverSaved": "تم حفظ الغلاف",
-  "coverFailed": "فشل الحفظ",
-  "confirmDelete": "تأكيد الحذف",
-  "confirmDeleteSong": "هل تريد حقاً حذف هذه الأغنية؟",
-  "fileDeleted": "تم حذف الملف",
-  "fileDeletionFailed": "فشل الحذف",
-  "crop": "قص",
-  "requiresAndroid10": "تتطلب هذه الميزة أندرويد 10+",
-  "errorOpeningFolder": "خطأ في فتح المجلد",
-  "imageUpdated": "تم تحديث الصورة",
-  "androidOnly": "متاح على أندرويد فقط",
-  "ringtoneSet": "تم التعيين كنغمة رنين",
-  
-  "permissionRequired": "الإذن مطلوب",
-  "storagePermissionRequired": "إذن التخزين مطلوب لقراءة الموسيقى",
-  "grantPermission": "منح الإذن",
-  "permissionDenied": "تم رفض الإذن",
-  "permissionPermanentlyDenied": "لقد رفضت الأذونات. يرجى تفعيل الأذونات يدويًا في إعدادات التطبيق.",
-  "openSettings": "فتح الإعدادات",
-  
-  "recentlyPlayed": "المشغلة مؤخراً",
-  "recentlyAdded": "المضافة مؤخراً",
-  "mostPlayed": "الأكثر تشغيلاً",
-  
-  "allSongs": "جميع الأغاني",
-  "sortBy": "ترتيب حسب",
-  "sortByName": "الاسم",
-  "sortByArtist": "الفنان",
-  "sortByAlbum": "الألبوم",
-  "sortByDuration": "المدة",
-  "sortByDateAdded": "تاريخ الإضافة",
-  "sortByPlayCount": "عدد مرات التشغيل",
-  "sortAscending": "تصاعدي",
-  "sortDescending": "تنازلي",
-  "shuffleAll": "تشغيل الكل عشوائياً",
-  
-  "allow": "السماح",
-  "filterDuration": "تجاهل المدد الأقل من",
-  "filterSize": "تجاهل الأحجام الأقل من",
-  "duration30s": "30 ث",
-  "duration60s": "60 ث",
-  "size50kb": "50 كيلوبايت",
-  "size100kb": "100 كيلوبايت",
-  "startScan": "بدء المسح",
-  "scanningInProgress": "جارٍ المسح...",
-  
-  "hideFolder": "إخفاء المجلد",
-  "folderHidden": "تم إخفاء المجلد",
-  "unhideFolder": "إظهار",
-  "folderUnhidden": "تم إظهار المجلد",
-  "folderProperties": "خصائص المجلد",
-  "openLocation": "فتح الموقع",
-  "viewHiddenFolders": "عرض المجلدات المخفية",
-  "open": "فتح",
-  "copyPath": "نسخ المسار",
-  "pathCopied": "تم نسخ المسار",
-  
-  "imageUpdated": "تم تحديث الصورة",
-  "uriNotFound": "لم يتم العثور على URI للملف",
-  "ringtoneTitle": "نغمة الرنين",
-  "setRingtoneConfirm": "تعيين \"{title}\" كنغمة رنين؟",
-  "@setRingtoneConfirm": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "confirm": "تأكيد",
-  "ringtoneSetSuccess": "✓ تم التعيين كنغمة رنين",
-  "changesSaved": "تم حفظ التغييرات",
-  "fileDeletedPermanently": "تم حذف الملف نهائياً",
-  
-  "editArtistInfo": "تعديل معلومات الفنان",
-  "optional": "اختياري",
-  "genreOptional": "النوع (اختياري)",
-  "yearOptional": "السنة (اختياري)",
-  
-  "deletePermanently": "حذف نهائي؟",
-  "deleteWarningMessage": "هذا الإجراء لا رجعة فيه وسيحذف:",
-  "deleteStorageWarning": "⚠️ سيتم حذف الملف من تخزين هاتفك",
-  
-  "folderLabel": "المجلد: {name}",
-  "@folderLabel": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "android10Required": "❌ تتطلب هذه الميزة أندرويد 10+",
-  "errorWithDetails": "❌ خطأ: {error}",
-  "@errorWithDetails": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  
-  "errorPermissionDenied": "تم رفض الإذن. تحقق من إعدادات التطبيق",
-  "errorFileNotFound": "لم يتم العثور على الملف",
-  "errorInsufficientStorage": "مساحة تخزين غير كافية",
-  "errorNetworkProblem": "مشكلة في الاتصال",
-  "errorCorruptFile": "ملف تالف أو تنسيق غير صالح",
-  "errorGeneric": "حدث خطأ",
-  
-  "sleepTimer": "مؤقت النوم",
-  "sleepTimerSet": "تم ضبط المؤقت على {duration}",
-  "@sleepTimerSet": {
-    "placeholders": {
-      "duration": {
-        "type": "String"
-      }
-    }
-  },
-  "cancelTimer": "إلغاء المؤقت",
-  "customTimer": "مؤقت مخصص",
-  "customize": "تخصيص",
-  "setTimer": "تعيين",
-  "hours": "ساعات",
-  "minutes": "دقائق",
-  "invalidDuration": "يرجى تحديد مدة صالحة",
-  "stopMusicAfter": "إيقاف الموسيقى بعد",
-  "start": "بدء",
-  "min5": "5 دقائق",
-  "min15": "15 دقيقة",
-  "min30": "30 دقيقة",
-  "min45": "45 دقيقة",
-  "hour1": "ساعة واحدة",
-  "hours2": "ساعتين",
-  "upNext": "الحالي",
-  "undo": "تراجع",
-  
-  "permissionAudioTitle": "الوصول للصوت",
-  "permissionAudioDesc": "لتشغيل ملفات الموسيقى المحلية",
-  "permissionNotificationTitle": "الإشعارات",
-  "permissionNotificationDesc": "للتحكم في التشغيل",
-  "permissionBatteryTitle": "التشغيل في الخلفية",
-  "permissionBatteryDesc": "يمنع التوقف عند إغلاق الشاشة",
-  "permissionRequired": "إذن مطلوب",
-  "permissionIntro": "لتوفير أفضل تجربة موسيقية، يحتاج صندوق الموسيقى إلى بعض الأذونات.",
-  "grant": "منح",
-  "enable": "تفعيل",
-  "accessApp": "الوصول للتطبيق",
-  "openSettings": "الإعدادات",
-  
-  "backupAndData": "النسخ الاحتياطي والبيانات",
-  "exportData": "تصدير البيانات",
-  "exportDataDesc": "حفظ المفضلة وقوائم التشغيل والإحصائيات",
-  "importBackup": "استيراد نسخة احتياطية",
-  "importBackupDesc": "استعادة من ملف .json",
-  "attention": "انتباه",
-  "restoreWarning": "الاستعادة ستستبدل المفضلة وقوائم التشغيل الحالية.\n\nهل تريد المتابعة؟",
-  "overwriteAndRestore": "استبدال واستعادة",
-  "restoreSuccessTitle": "تمت الاستعادة بنجاح",
-  "restoreSuccessMessage": "تمت استعادة بياناتك بنجاح.\n\nيرجى إعادة تشغيل التطبيق لتطبيق التغييرات.",
-  "backupReadError": "تعذر قراءة ملف النسخة الاحتياطية.",
-  
-  "sleepTimerTitle": "مؤقت النوم",
-  "sleepTimerDesc": "جدولة إيقاف الموسيقى",
-  "sleepTimerStoppingSoon": "سيتوقف قريباً...",
-  "sleepTimerActive": "نشط: إيقاف خلال {minutes} دقيقة",
-  "@sleepTimerActive": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      }
-    }
-  },
-  "sleepTimerStopMusicAfter": "إيقاف الموسيقى بعد...",
-  "sleepTimerActiveRemaining": "نشط: {minutes}:{seconds} متبقية",
-  "@sleepTimerActiveRemaining": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      },
-      "seconds": {
-        "type": "String"
-      }
-    }
-  },
-  "deactivate": "إلغاء التفعيل",
-  "timerSetFor": "تم ضبط المؤقت لمدة {label} 🌙",
-  "@timerSetFor": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "oneHour": "ساعة واحدة",
-  "oneHourThirty": "ساعة ونصف",
-  "oneHour": "ساعة واحدة",
-  "oneHourThirty": "ساعة ونصف",
-  "twoHours": "ساعتين",
-  "customize": "تخصيص",
-  
-  "backupSubject": "نسخة احتياطية Music Box",
-  "backupBody": "هذه نسختي الاحتياطية من Music Box بتاريخ {date}.",
-  "@backupBody": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "contactSubject": "دعم Music Box",
-  "sortNewest": "الأحدث",
-  "sortOldest": "الأقدم",
-  "sortShortest": "قصير",
-  "sortLongest": "طويل",
-  "noConnectionMessage": "Please check your connection and try again",
-  "hiddenFolders": "Hidden folders",
-  "selectSource": "Select source",
-  "localGallery": "Gallery",
-  "preview": "Preview",
-  "useThisImageQuestion": "Use this image?",
-  "useImage": "Use Image",
-  "searchOnInternet": "Search on Internet"
-}

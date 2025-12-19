@@ -174,6 +174,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageComingSoon => 'Coming soon';
 
   @override
+  String get comingSoon => 'Coming soon';
+
+  @override
   String get languageChanged => 'Language changed';
 
   @override
