@@ -11,6 +11,8 @@
   "rename": "Rename",
   "add": "Add",
   "remove": "Remove",
+  "removeFromList": "Remove from list",
+  "playlistSongRemoved": "Song removed from playlist",
   "search": "Search",
   "loading": "Loading...",
   "error": "Error",

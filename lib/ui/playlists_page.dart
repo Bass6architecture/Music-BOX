@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_box/generated/app_localizations.dart';
 import '../player/player_cubit.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'widgets/modern_widgets.dart';
+import '../core/theme/app_theme.dart';
 
 import 'package:music_box/ui/favorite_songs_page.dart';
 import 'package:music_box/ui/recently_added_page.dart';
@@ -50,7 +54,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
           // Header Title
           if (!widget.embedded)
             SliverAppBar(
-              title: Text(AppLocalizations.of(context)!.playlists),
+              title: Text(AppLocalizations.of(context)!.playlists, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
               floating: true,
               snap: true,
               backgroundColor: Colors.transparent,
@@ -68,7 +72,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
               children: [
                 _SystemPlaylistCard(
                   title: AppLocalizations.of(context)!.favorites,
-                  icon: Icons.favorite_rounded,
+                  icon: PhosphorIconsFill.heart(),
                   color: Colors.red,
                   count: favoritesCount,
                   onTap: () => Navigator.of(context).push(
@@ -82,7 +86,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                 ),
                 _SystemPlaylistCard(
                   title: AppLocalizations.of(context)!.recentlyAdded,
-                  icon: Icons.schedule_rounded,
+                  icon: PhosphorIconsFill.clock(),
                   color: Colors.blue,
                   count: recentAddedCount,
                   onTap: () => Navigator.of(context).push(
@@ -96,7 +100,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                 ),
                 _SystemPlaylistCard(
                   title: AppLocalizations.of(context)!.recentlyPlayed,
-                  icon: Icons.history_rounded,
+                  icon: PhosphorIconsFill.clockCounterClockwise(),
                   color: Colors.purple,
                   count: displayRecentPlayedCount,
                   onTap: () => Navigator.of(context).push(
@@ -110,7 +114,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                 ),
                 _SystemPlaylistCard(
                   title: AppLocalizations.of(context)!.mostPlayed,
-                  icon: Icons.trending_up_rounded,
+                  icon: PhosphorIconsFill.chartLineUp(),
                   color: Colors.orange,
                   count: displayMostPlayedCount,
                   onTap: () => Navigator.of(context).push(
@@ -134,15 +138,16 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                 children: [
                   Text(
                     AppLocalizations.of(context)!.yourPlaylists,
-                    style: theme.textTheme.titleMedium?.copyWith(
+                    style: GoogleFonts.outfit(
                       fontWeight: FontWeight.bold,
+                      fontSize: 20,
                       color: theme.colorScheme.onSurface,
                     ),
                   ),
                   const Spacer(),
                   IconButton(
                     onPressed: () => _createNewPlaylist(context),
-                    icon: const Icon(Icons.add_circle_outline_rounded),
+                    icon: PhosphorIcon(PhosphorIcons.plusCircle()),
                     tooltip: AppLocalizations.of(context)!.createPlaylist,
                   ),
                 ],
@@ -158,22 +163,23 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.queue_music_rounded,
+                    PhosphorIcon(
+                      PhosphorIcons.playlist(),
                       size: 64,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: 16),
                     Text(
                       AppLocalizations.of(context)!.noPlaylists,
-                      style: theme.textTheme.bodyLarge?.copyWith(
+                      style: GoogleFonts.outfit(
                         color: theme.colorScheme.onSurfaceVariant,
+                        fontSize: 16,
                       ),
                     ),
                     const SizedBox(height: 8),
                     FilledButton.tonalIcon(
                       onPressed: () => _createNewPlaylist(context),
-                      icon: const Icon(Icons.add_rounded),
+                      icon: PhosphorIcon(PhosphorIcons.plus()),
                       label: Text(AppLocalizations.of(context)!.createPlaylist),
                     ),
                   ],
@@ -186,25 +192,66 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                 (context, index) {
                   final playlist = playlists[index];
                   final count = playlist.songIds.where((id) => visibleSongIds.contains(id)).length;
-                  return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      child: _UserPlaylistTile(
-                        playlist: playlist,
-                        count: count,
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => BlocProvider.value(
-                                value: context.read<PlayerCubit>(),
-                                child: UserPlaylistPage(playlistId: playlist.id, playlistName: playlist.name),
-                              ),
-                            ),
-                          );
-                        },
-                        onRename: () => _renamePlaylist(context, playlist),
-                        onDelete: () => _deletePlaylist(context, playlist),
+                  return ModernListTile(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => BlocProvider.value(
+                            value: context.read<PlayerCubit>(),
+                            child: UserPlaylistPage(playlistId: playlist.id, playlistName: playlist.name),
+                          ),
+                        ),
+                      );
+                    },
+                    leading: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                       ),
-                    );
+                      child: PhosphorIcon(
+                        PhosphorIcons.playlist(),
+                        color: theme.colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                    title: playlist.name,
+                    subtitle: AppLocalizations.of(context)!.songCount(count),
+                    trailing: (onRename != null || onDelete != null)
+                        ? PopupMenuButton<String>(
+                            icon: PhosphorIcon(
+                              PhosphorIcons.dotsThreeVertical(),
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                            onSelected: (value) {
+                              if (value == 'rename') _renamePlaylist(context, playlist);
+                              if (value == 'delete') _deletePlaylist(context, playlist);
+                            },
+                            itemBuilder: (context) => [
+                              PopupMenuItem(
+                                value: 'rename',
+                                child: Row(
+                                  children: [
+                                    PhosphorIcon(PhosphorIcons.pencilLine(), size: 20),
+                                    const SizedBox(width: 12),
+                                    Text(AppLocalizations.of(context)!.renamePlaylist, style: GoogleFonts.outfit()),
+                                  ],
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    PhosphorIcon(PhosphorIcons.trash(), size: 20),
+                                    const SizedBox(width: 12),
+                                    Text(AppLocalizations.of(context)!.deletePlaylist, style: GoogleFonts.outfit()),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          )
+                        : null,
+                  );
                 },
                 childCount: playlists.length,
               ),
@@ -233,23 +280,25 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
     final name = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.createPlaylist),
+        title: Text(AppLocalizations.of(context)!.createPlaylist, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         content: TextField(
           controller: controller,
           autofocus: true,
+          style: GoogleFonts.outfit(),
           decoration: InputDecoration(
             hintText: AppLocalizations.of(context)!.playlistNameHint,
+            hintStyle: GoogleFonts.outfit(),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(AppLocalizations.of(context)!.cancel),
+            child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit()),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, controller.text),
-            child: Text(AppLocalizations.of(context)!.create),
+            child: Text(AppLocalizations.of(context)!.create, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -273,23 +322,25 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
     final newName = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.renamePlaylist),
+        title: Text(AppLocalizations.of(context)!.renamePlaylist, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         content: TextField(
           controller: controller,
           autofocus: true,
+          style: GoogleFonts.outfit(),
           decoration: InputDecoration(
             hintText: AppLocalizations.of(context)!.playlistName,
+            hintStyle: GoogleFonts.outfit(),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(AppLocalizations.of(context)!.cancel),
+            child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit()),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: Text(AppLocalizations.of(context)!.save),
+            child: Text(AppLocalizations.of(context)!.save, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -303,12 +354,12 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.deletePlaylist),
-        content: Text(AppLocalizations.of(context)!.confirmDeletePlaylist),
+        title: Text(AppLocalizations.of(context)!.deletePlaylist, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        content: Text(AppLocalizations.of(context)!.confirmDeletePlaylist, style: GoogleFonts.outfit()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(AppLocalizations.of(context)!.cancel),
+            child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit()),
           ),
           FilledButton.tonal(
             onPressed: () => Navigator.pop(ctx, true),
@@ -316,7 +367,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
               backgroundColor: Theme.of(context).colorScheme.errorContainer,
               foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
             ),
-            child: Text(AppLocalizations.of(context)!.delete),
+            child: Text(AppLocalizations.of(context)!.delete, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -349,71 +400,68 @@ class _SystemPlaylistCard extends StatelessWidget {
     // Soft background color based on the main color but very subtle
     final bgColor = color.withValues(alpha: 0.1);
     
-    return Container(
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(24),
-          onTap: onTap,
-          child: Stack(
-            children: [
-              // Icon - Top Left
-              Positioned(
-                left: 16,
-                top: 16,
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    icon,
-                    color: color,
-                    size: 24,
-                  ),
+    return ModernCard(
+      padding: EdgeInsets.zero,
+      color: bgColor,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+        onTap: onTap,
+        child: Stack(
+          children: [
+            // Icon - Top Left
+            Positioned(
+              left: 16,
+              top: 16,
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  shape: BoxShape.circle,
                 ),
+                child: PhosphorIcon(
+                  icon,
+                  color: color,
+                  size: 24,
+                )
               ),
-              // Count - Top Right
-              Positioned(
-                right: 16,
-                top: 16,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    AppLocalizations.of(context)!.songCount(count),
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurface,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+            ),
+            // Count - Top Right
+            Positioned(
+              right: 16,
+              top: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-              ),
-              // Title - Bottom Left
-              Positioned(
-                left: 16,
-                bottom: 16,
-                right: 16,
                 child: Text(
-                  title,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                  AppLocalizations.of(context)!.songCount(count),
+                  style: GoogleFonts.outfit(
                     color: theme.colorScheme.onSurface,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ],
-          ),
+            ),
+            // Title - Bottom Left
+            Positioned(
+              left: 16,
+              bottom: 16,
+              right: 16,
+              child: Text(
+                title,
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
+                  fontSize: 16,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -461,8 +509,8 @@ class _UserPlaylistTile extends StatelessWidget {
                   color: theme.colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.queue_music_rounded,
+                child: PhosphorIcon(
+                  PhosphorIcons.playlist(),
                   color: theme.colorScheme.onPrimaryContainer,
                 ),
               ),
@@ -473,8 +521,9 @@ class _UserPlaylistTile extends StatelessWidget {
                   children: [
                     Text(
                       playlist.name,
-                      style: theme.textTheme.titleMedium?.copyWith(
+                      style: GoogleFonts.outfit(
                         fontWeight: FontWeight.w600,
+                        fontSize: 16,
                       ),
                     ),
                   ],
@@ -482,15 +531,16 @@ class _UserPlaylistTile extends StatelessWidget {
               ),
               Text(
                 AppLocalizations.of(context)!.songCount(count),
-                style: theme.textTheme.bodySmall?.copyWith(
+                style: GoogleFonts.outfit(
                   color: theme.colorScheme.onSurfaceVariant,
+                  fontSize: 12,
                 ),
               ),
               const SizedBox(width: 8),
               if (onRename != null || onDelete != null)
                 PopupMenuButton<String>(
-                  icon: Icon(
-                    Icons.more_vert_rounded,
+                  icon: PhosphorIcon(
+                    PhosphorIcons.dotsThreeVertical(),
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                   onSelected: (value) {
@@ -503,9 +553,9 @@ class _UserPlaylistTile extends StatelessWidget {
                         value: 'rename',
                         child: Row(
                           children: [
-                            const Icon(Icons.edit_rounded, size: 20),
+                            PhosphorIcon(PhosphorIcons.pencilLine(), size: 20),
                             const SizedBox(width: 12),
-                            Text(AppLocalizations.of(context)!.renamePlaylist),
+                            Text(AppLocalizations.of(context)!.renamePlaylist, style: GoogleFonts.outfit()),
                           ],
                         ),
                       ),
@@ -514,9 +564,9 @@ class _UserPlaylistTile extends StatelessWidget {
                         value: 'delete',
                         child: Row(
                           children: [
-                            const Icon(Icons.delete_rounded, size: 20),
+                            PhosphorIcon(PhosphorIcons.trash(), size: 20),
                             const SizedBox(width: 12),
-                            Text(AppLocalizations.of(context)!.deletePlaylist),
+                            Text(AppLocalizations.of(context)!.deletePlaylist, style: GoogleFonts.outfit()),
                           ],
                         ),
                       ),

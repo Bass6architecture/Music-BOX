@@ -5,6 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 import 'package:music_box/generated/app_localizations.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../core/theme/app_theme.dart';
 
 // Phase d'état pour l'écran de scan
 enum ScanPhase { idle, scanning, done }
@@ -163,7 +166,7 @@ class _ScanMusicPageState extends State<ScanMusicPage> with SingleTickerProvider
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.scanMusic),
+        title: Text(AppLocalizations.of(context)!.scanMusic, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
       ),
       body: AbsorbPointer(
         absorbing: _busy,

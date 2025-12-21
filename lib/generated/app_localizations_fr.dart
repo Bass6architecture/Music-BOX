@@ -36,6 +36,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get remove => 'Retirer';
 
   @override
+  String get removeFromList => 'Retirer';
+
+  @override
+  String get playlistSongRemoved => 'Chanson retirée de la playlist';
+
+  @override
   String get search => 'Rechercher';
 
   @override
@@ -172,9 +178,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get languageComingSoon => 'Bientôt disponible';
-
-  @override
-  String get comingSoon => 'Bientôt disponible';
 
   @override
   String get languageChanged => 'Langue changée';

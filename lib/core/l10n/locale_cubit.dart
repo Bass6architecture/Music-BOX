@@ -73,41 +73,29 @@ class LocaleCubit extends Cubit<Locale> {
   }
 
   /// Langues supportées
+  /// Langues supportées - ONLY FR/EN as requested
   static const List<Locale> supportedLocales = [
     Locale('fr'), // Français
     Locale('en'), // English
-    Locale('ar'), // Arabic
-    Locale('es'), // Spanish
-    Locale('pt'), // Portuguese
-    Locale('hi'), // Hindi
-    Locale('de'), // German
-    Locale('it'), // Italian
-    Locale('ru'), // Russian
-    Locale('zh'), // Chinese
-    Locale('ja'), // Japanese
-    Locale('ko'), // Korean
-    Locale('tr'), // Turkish
-    Locale('pl'), // Polish
-    Locale('id'), // Indonesian
   ];
 
   /// Langues disponibles (incluant celles à venir)
   static const List<LocaleInfo> availableLocales = [
     LocaleInfo(locale: Locale('fr'), name: 'Français', flag: '🇫🇷'),
     LocaleInfo(locale: Locale('en'), name: 'English', flag: '🇬🇧'),
-    LocaleInfo(locale: Locale('ar'), name: 'العربية', flag: '🇸🇦'),
-    LocaleInfo(locale: Locale('es'), name: 'Español', flag: '🇪🇸'),
-    LocaleInfo(locale: Locale('pt'), name: 'Português', flag: '🇧🇷'),
-    LocaleInfo(locale: Locale('hi'), name: 'हिन्दी', flag: '🇮🇳'),
-    LocaleInfo(locale: Locale('de'), name: 'Deutsch', flag: '🇩🇪'),
-    LocaleInfo(locale: Locale('it'), name: 'Italiano', flag: '🇮🇹'),
-    LocaleInfo(locale: Locale('ru'), name: 'Русский', flag: '🇷🇺'),
-    LocaleInfo(locale: Locale('zh'), name: '简体中文', flag: '🇨🇳'),
-    LocaleInfo(locale: Locale('ja'), name: '日本語', flag: '🇯🇵'),
-    LocaleInfo(locale: Locale('ko'), name: '한국어', flag: '🇰🇷'),
-    LocaleInfo(locale: Locale('tr'), name: 'Türkçe', flag: '🇹🇷'),
-    LocaleInfo(locale: Locale('pl'), name: 'Polski', flag: '🇵🇱'),
-    LocaleInfo(locale: Locale('id'), name: 'Bahasa Indonesia', flag: '🇮🇩'),
+    LocaleInfo(locale: Locale('ar'), name: 'العربية', flag: '🇸🇦', comingSoon: true),
+    LocaleInfo(locale: Locale('es'), name: 'Español', flag: '🇪🇸', comingSoon: true),
+    LocaleInfo(locale: Locale('pt'), name: 'Português', flag: '🇧🇷', comingSoon: true),
+    LocaleInfo(locale: Locale('hi'), name: 'हिन्दी', flag: '🇮🇳', comingSoon: true),
+    LocaleInfo(locale: Locale('de'), name: 'Deutsch', flag: '🇩🇪', comingSoon: true),
+    LocaleInfo(locale: Locale('it'), name: 'Italiano', flag: '🇮🇹', comingSoon: true),
+    LocaleInfo(locale: Locale('ru'), name: 'Русский', flag: '🇷🇺', comingSoon: true),
+    LocaleInfo(locale: Locale('zh'), name: '简体中文', flag: '🇨🇳', comingSoon: true),
+    LocaleInfo(locale: Locale('ja'), name: '日本語', flag: '🇯🇵', comingSoon: true),
+    LocaleInfo(locale: Locale('ko'), name: '한국어', flag: '🇰🇷', comingSoon: true),
+    LocaleInfo(locale: Locale('tr'), name: 'Türkçe', flag: '🇹🇷', comingSoon: true),
+    LocaleInfo(locale: Locale('pl'), name: 'Polski', flag: '🇵🇱', comingSoon: true),
+    LocaleInfo(locale: Locale('id'), name: 'Bahasa Indonesia', flag: '🇮🇩', comingSoon: true),
   ];
 
   String getLocaleName(Locale locale) {

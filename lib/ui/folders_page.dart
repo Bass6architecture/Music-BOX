@@ -6,6 +6,9 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:music_box/generated/app_localizations.dart';
 import 'package:path/path.dart' as p;
 import 'package:android_intent_plus/android_intent.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../core/theme/app_theme.dart';
 
 import '../player/player_cubit.dart';
 import '../widgets/permission_wrapper.dart';
@@ -134,16 +137,16 @@ class _FoldersPageState extends State<FoldersPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.visibility_off),
-                title: Text(AppLocalizations.of(context)!.hideFolder),
+                leading: PhosphorIcon(PhosphorIcons.eyeSlash()),
+                title: Text(AppLocalizations.of(context)!.hideFolder, style: GoogleFonts.outfit()),
                 onTap: () async {
                   Navigator.pop(ctx);
                   await _hideFolder(folder);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.info_outline),
-                title: Text(AppLocalizations.of(context)!.folderProperties),
+                leading: PhosphorIcon(PhosphorIcons.info()),
+                title: Text(AppLocalizations.of(context)!.folderProperties, style: GoogleFonts.outfit()),
                 onTap: () {
                   Navigator.pop(ctx);
                   showDialog<void>(
@@ -164,11 +167,9 @@ class _FoldersPageState extends State<FoldersPage> {
                       ],
                     ),
                   );
-                },
-              ),
               ListTile(
-                leading: const Icon(Icons.folder_open),
-                title: Text(AppLocalizations.of(context)!.openLocation),
+                leading: PhosphorIcon(PhosphorIcons.folderOpen()),
+                title: Text(AppLocalizations.of(context)!.openLocation, style: GoogleFonts.outfit()),
                 onTap: () async {
                   Navigator.pop(ctx);
                   if (!io.Platform.isAndroid) {
@@ -265,7 +266,7 @@ class _FoldersPageState extends State<FoldersPage> {
                         color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.folder_off_outlined, size: 64, color: theme.colorScheme.primary),
+                    child: PhosphorIcon(PhosphorIcons.folderMinus(), size: 64, color: theme.colorScheme.primary),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -279,7 +280,7 @@ class _FoldersPageState extends State<FoldersPage> {
                           MaterialPageRoute(builder: (_) => const HiddenFoldersPage()),
                         );
                       },
-                      icon: const Icon(Icons.visibility_off_outlined),
+                      icon: PhosphorIcon(PhosphorIcons.eyeSlash()),
                       label: Text(AppLocalizations.of(context)!.viewHiddenFolders),
                     ),
                   ],
@@ -295,10 +296,9 @@ class _FoldersPageState extends State<FoldersPage> {
                       stretch: true,
                       backgroundColor: theme.scaffoldBackgroundColor,
                       surfaceTintColor: Colors.transparent,
-                      // ✅ Actions déplacées ici (dans SliverAppBar)
                       actions: [
                         IconButton(
-                          icon: const Icon(Icons.visibility_off_outlined),
+                          icon: PhosphorIcon(PhosphorIcons.eyeSlash()),
                           tooltip: AppLocalizations.of(context)!.viewHiddenFolders,
                           onPressed: () {
                             Navigator.of(context).push(
@@ -312,7 +312,7 @@ class _FoldersPageState extends State<FoldersPage> {
                         titlePadding: const EdgeInsetsDirectional.only(start: 16, bottom: 16),
                         title: Text(
                           AppLocalizations.of(context)!.folders,
-                          style: TextStyle(color: theme.colorScheme.onSurface),
+                          style: GoogleFonts.outfit(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 24),
                         ),
                         background: Container(
                           decoration: BoxDecoration(
@@ -350,19 +350,20 @@ class _FoldersPageState extends State<FoldersPage> {
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.visibility_off_outlined, 
+                              PhosphorIcon(PhosphorIcons.eyeSlash(), 
                                    size: 20, 
                                    color: theme.colorScheme.onSurfaceVariant),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
                                   AppLocalizations.of(context)!.hiddenFolders,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                  style: GoogleFonts.outfit(
                                     color: theme.colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ),
-                              Icon(Icons.chevron_right_rounded,
+                              PhosphorIcon(PhosphorIcons.caretRight(),
                                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
                             ],
                           ),
@@ -464,8 +465,8 @@ class _FolderTile extends StatelessWidget {
                     color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    Icons.folder_rounded,
+                  child: PhosphorIcon(
+                    PhosphorIconsFill.folder(),
                     color: theme.colorScheme.secondary,
                     size: 24,
                   ),
@@ -477,8 +478,9 @@ class _FolderTile extends StatelessWidget {
                     children: [
                       Text(
                         name,
-                        style: theme.textTheme.titleMedium?.copyWith(
+                        style: GoogleFonts.outfit(
                           fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -486,16 +488,17 @@ class _FolderTile extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         AppLocalizations.of(context)!.songCount(count),
-                        style: theme.textTheme.bodySmall?.copyWith(
+                        style: GoogleFonts.outfit(
                           color: theme.colorScheme.onSurfaceVariant,
+                          fontSize: 12,
                         ),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: Icon(
-                    Icons.more_vert_rounded,
+                  icon: PhosphorIcon(
+                    PhosphorIcons.dotsThreeVertical(),
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                   onPressed: onLongPress,

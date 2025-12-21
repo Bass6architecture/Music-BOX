@@ -152,6 +152,18 @@ abstract class AppLocalizations {
   /// **'Retirer'**
   String get remove;
 
+  /// No description provided for @removeFromList.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retirer'**
+  String get removeFromList;
+
+  /// No description provided for @playlistSongRemoved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Chanson retirée de la playlist'**
+  String get playlistSongRemoved;
+
   /// No description provided for @search.
   ///
   /// In fr, this message translates to:
@@ -427,12 +439,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Bientôt disponible'**
   String get languageComingSoon;
-
-  /// No description provided for @comingSoon.
-  ///
-  /// In fr, this message translates to:
-  /// **'Bientôt disponible'**
-  String get comingSoon;
 
   /// No description provided for @languageChanged.
   ///

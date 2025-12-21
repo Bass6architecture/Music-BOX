@@ -14,6 +14,10 @@ import '../../core/constants/app_constants.dart';
 
 import '../song_actions_sheet.dart';
 import '../search_page.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../widgets/modern_widgets.dart';
+import '../../core/theme/app_theme.dart';
 
 import '../../core/utils/music_data_processor.dart';
 import 'home_screen.dart'; // To access toggleSelectionMode
@@ -269,16 +273,10 @@ class _SongsScreenState extends State<SongsScreen>
 
   IconData _getSortIcon(_SortType type) {
     switch (type) {
-      case _SortType.title:
-        return Icons.title;
-      case _SortType.artist:
-        return Icons.person;
-      case _SortType.album:
-        return Icons.album;
-      case _SortType.duration:
-        return Icons.timer;
+      case _SortType.timer:
+        return PhosphorIcons.timer();
       case _SortType.date:
-        return Icons.calendar_today;
+        return PhosphorIcons.calendar();
     }
   }
 
@@ -318,159 +316,175 @@ class _SongsScreenState extends State<SongsScreen>
 
       final scaffold = Scaffold(
         backgroundColor: Colors.transparent,
-        body: Stack(
-          children: [
-             Column(
-               children: [
-                 // Fixed Selection Header (if in selection mode)
-                 if (_isSelectionMode)
-                   Container(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                      color: Theme.of(context).colorScheme.surface,
-                      child: SafeArea(
-                        bottom: false,
-                        child: Row(
-                          children: [
-                             IconButton(
-                               icon: const Icon(Icons.close), 
-                               onPressed: _exitSelectionMode,
-                               tooltip: AppLocalizations.of(context)!.cancel,
-                             ),
-                             const SizedBox(width: 8),
-                             Text(
-                               '${_selectedIds.length}',
-                               style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                             ),
-                             const Spacer(),
-                             TextButton.icon(
-                               onPressed: _selectAll,
-                               icon: Icon(_selectedIds.length == _filteredSongs.length ? Icons.deselect_rounded : Icons.select_all_rounded),
-                               label: Text(_selectedIds.length == _filteredSongs.length ? "Désélect. tout" : AppLocalizations.of(context)!.selectAll),
-                             )
-                          ],
+        body: PopScope(
+          canPop: !_isSelectionMode,
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) return;
+            if (_isSelectionMode) {
+              _exitSelectionMode();
+            }
+          },
+          child: Stack(
+            children: [
+               Column(
+                 children: [
+                   // Fixed Selection Header (if in selection mode)
+                   if (_isSelectionMode)
+                     Container(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                        color: Theme.of(context).colorScheme.surface,
+                        child: SafeArea(
+                          bottom: false,
+                          child: Row(
+                            children: [
+                               IconButton(
+                                 icon: PhosphorIcon(PhosphorIcons.x()), 
+                                 onPressed: _exitSelectionMode,
+                                 tooltip: AppLocalizations.of(context)!.cancel,
+                               ),
+                               const SizedBox(width: 8),
+                               Text(
+                                 '${_selectedIds.length}',
+                                 style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold),
+                               ),
+                               const Spacer(),
+                               TextButton.icon(
+                                 onPressed: _selectAll,
+                                 icon: PhosphorIcon(_selectedIds.length == _filteredSongs.length ? PhosphorIcons.minusSquare() : PhosphorIcons.checkSquare()),
+                                 label: Text(
+                                   _selectedIds.length == _filteredSongs.length ? "Désélect. tout" : AppLocalizations.of(context)!.selectAll,
+                                   style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+                                 ),
+                               )
+                            ],
+                          ),
                         ),
-                      ),
-                   ),
-
-                 Expanded(
-                     child: Scrollbar(
-                       controller: _scrollController,
-                       thumbVisibility: true,
-                       interactive: true,
-                       thickness: 10, // Plus épais pour une meilleure prise en main
-                       radius: const Radius.circular(8),
-                     child: RefreshIndicator(
-                       onRefresh: _loadSongs,
-                       child: CustomScrollView(
+                     ),
+  
+                   Expanded(
+                       child: Scrollbar(
                          controller: _scrollController,
-                         slivers: [
-                           // Standard Header (Only if NOT in selection mode)
-                           if (!_isSelectionMode)
-                             SliverToBoxAdapter(
-                               child: Container(
-                                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                                 child: SingleChildScrollView(
-                                   scrollDirection: Axis.horizontal,
-                                   child: Row(
-                                   children: [
-                                      FilterChip(
-                                        avatar: const Icon(Icons.shuffle_rounded, size: 18),
-                                        label: Text(AppLocalizations.of(context)!.shuffle),
-                                        onSelected: (_) {
-                                          if (_filteredSongs.isNotEmpty) {
-                                            final idx = math.Random().nextInt(_filteredSongs.length);
-                                            playerCubit.setQueueAndPlay(_filteredSongs, idx);
-                                          }
-                                        },
-                                      ),
-                                      const SizedBox(width: 8),
-                                      MenuAnchor(
-                                        builder: (context, controller, child) {
-                                          return ActionChip(
-                                            avatar: const Icon(Icons.sort_rounded, size: 18),
-                                            label: Text('${_getSortLabel(_sortType)}${_getSortSuffix()}'),
-                                            onPressed: () {
-                                              if (controller.isOpen) {
-                                                controller.close();
-                                              } else {
-                                                controller.open();
-                                              }
-                                            },
-                                          );
-                                        },
-                                        menuChildren: _SortType.values.map((type) {
-                                          return MenuItemButton(
-                                            leadingIcon: Icon(_getSortIcon(type)),
-                                            child: Text(_getSortLabel(type)),
-                                            onPressed: () => _sortSongs(type),
-                                          );
-                                        }).toList(),
-                                      ),
-
-                                      const SizedBox(width: 16),
-                                      
-                                      // Song Count (Discret)
-                                      Text(
-                                        AppLocalizations.of(context)!.songCount(_filteredSongs.length),
-                                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                          color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                         thumbVisibility: true,
+                         interactive: true,
+                         thickness: 10, // Plus épais pour une meilleure prise en main
+                         radius: const Radius.circular(8),
+                       child: RefreshIndicator(
+                         onRefresh: _loadSongs,
+                         child: CustomScrollView(
+                           controller: _scrollController,
+                           slivers: [
+                             // Standard Header (Only if NOT in selection mode)
+                             if (!_isSelectionMode)
+                               SliverToBoxAdapter(
+                                 child: Container(
+                                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                                   child: SingleChildScrollView(
+                                     scrollDirection: Axis.horizontal,
+                                     child: Row(
+                                     children: [
+                                        FilterChip(
+                                          avatar: PhosphorIcon(PhosphorIcons.shuffle(), size: 18),
+                                          label: Text(AppLocalizations.of(context)!.shuffle, style: GoogleFonts.outfit()),
+                                          onSelected: (_) {
+                                            if (_filteredSongs.isNotEmpty) {
+                                              final idx = math.Random().nextInt(_filteredSongs.length);
+                                              playerCubit.setQueueAndPlay(_filteredSongs, idx);
+                                            }
+                                          },
                                         ),
-                                      ),
-                                    ],
+                                        const SizedBox(width: 8),
+                                        MenuAnchor(
+                                          builder: (context, controller, child) {
+                                            return ActionChip(
+                                               avatar: PhosphorIcon(PhosphorIcons.sortAscending(), size: 18),
+                                              label: Text(
+                                                '${_getSortLabel(_sortType)}${_getSortSuffix()}',
+                                                style: GoogleFonts.outfit(),
+                                              ),
+                                              onPressed: () {
+                                                if (controller.isOpen) {
+                                                  controller.close();
+                                                } else {
+                                                  controller.open();
+                                                }
+                                              },
+                                            );
+                                          },
+                                          menuChildren: _SortType.values.map((type) {
+                                            return MenuItemButton(
+                                               leadingIcon: PhosphorIcon(_getSortIcon(type), size: 20),
+                                              child: Text(_getSortLabel(type), style: GoogleFonts.outfit()),
+                                              onPressed: () => _sortSongs(type),
+                                            );
+                                          }).toList(),
+                                        ),
+  
+                                        const SizedBox(width: 16),
+                                        
+                                        // Song Count (Discret)
+                                        Text(
+                                          AppLocalizations.of(context)!.songCount(_filteredSongs.length),
+                                          style: GoogleFonts.outfit(
+                                            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                     ),
+                                   ),
                                    ),
                                  ),
-                                 ),
+  
+  
+                             SliverList(
+                               delegate: SliverChildBuilderDelegate(
+                                 (context, index) {
+                                   if (index >= itemsToShow.length) {
+                                      return const SizedBox(height: 100); 
+                                   }
+   
+                                   final song = itemsToShow[index];
+                                   return SongTile(
+                                     song: song,
+                                     isSelectionMode: _isSelectionMode,
+                                     isSelected: _selectedIds.contains(song.id),
+                                     onTap: () {
+                                       if (_isSelectionMode) {
+                                         _toggleSelection(song.id);
+                                       } else {
+                                         playerCubit.setQueueAndPlay(itemsToShow, index);
+                                       }
+                                     },
+                                     onLongPress: () {
+                                       if (!_isSelectionMode) {
+                                         context.findAncestorStateOfType<HomeScreenState>()?.toggleSelectionMode(true);
+                                         _toggleSelection(song.id);
+                                       }
+                                     },
+                                     onMorePressed: _isSelectionMode ? null : () => openSongActionsSheet(context, song),
+                                   );
+                                 },
+                                 childCount: itemsToShow.length + 1,
                                ),
-
-
-                           SliverList(
-                             delegate: SliverChildBuilderDelegate(
-                               (context, index) {
-                                 if (index >= itemsToShow.length) {
-                                    return const SizedBox(height: 100); 
-                                 }
- 
-                                 final song = itemsToShow[index];
-                                 return SongTile(
-                                   song: song,
-                                   isSelectionMode: _isSelectionMode,
-                                   isSelected: _selectedIds.contains(song.id),
-                                   onTap: () {
-                                     if (_isSelectionMode) {
-                                       _toggleSelection(song.id);
-                                     } else {
-                                       playerCubit.setQueueAndPlay(itemsToShow, index);
-                                     }
-                                   },
-                                   onLongPress: () {
-                                     if (!_isSelectionMode) {
-                                       context.findAncestorStateOfType<HomeScreenState>()?.toggleSelectionMode(true);
-                                       _toggleSelection(song.id);
-                                     }
-                                   },
-                                   onMorePressed: _isSelectionMode ? null : () => openSongActionsSheet(context, song),
-                                 );
-                               },
-                               childCount: itemsToShow.length + 1,
                              ),
-                           ),
-                         ],
+                           ],
+                         ),
                        ),
                      ),
                    ),
-                 ),
-               ],
-             ),
-
-             // Bottom Bar (Selection Actions)
-             if (_isSelectionMode)
-               Positioned(
-                 left: 0, 
-                 right: 0,
-                 bottom: 0,
-                 child: _buildSelectionBottomBar(context),
+                 ],
                ),
-          ],
+  
+               // Bottom Bar (Selection Actions)
+               if (_isSelectionMode)
+                 Positioned(
+                   left: 0, 
+                   right: 0,
+                   bottom: 0,
+                   child: _buildSelectionBottomBar(context),
+                 ),
+            ],
+          ),
         ),
       );
       content = scaffold;
@@ -504,8 +518,8 @@ class _SongsScreenState extends State<SongsScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              _isPermanentlyDenied ? Icons.block : Icons.folder_off,
+            PhosphorIcon(
+              _isPermanentlyDenied ? PhosphorIcons.prohibit() : PhosphorIcons.folderSimpleStar(), // Use something related
               size: 80,
               color: _isPermanentlyDenied ? theme.colorScheme.error : Colors.white,
             ),
@@ -514,7 +528,7 @@ class _SongsScreenState extends State<SongsScreen>
               _isPermanentlyDenied 
                   ? AppLocalizations.of(context)!.permissionDenied
                   : AppLocalizations.of(context)!.permissionRequired,
-              style: theme.textTheme.headlineSmall,
+              style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -523,7 +537,7 @@ class _SongsScreenState extends State<SongsScreen>
                   ? AppLocalizations.of(context)!.permissionPermanentlyDenied
                   : AppLocalizations.of(context)!.storagePermissionRequired,
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge,
+              style: GoogleFonts.outfit(fontSize: 16),
             ),
             const SizedBox(height: 32),
             if (_isPermanentlyDenied)
@@ -538,8 +552,8 @@ class _SongsScreenState extends State<SongsScreen>
                     );
                   }
                 },
-                icon: const Icon(Icons.settings),
-                label: Text(AppLocalizations.of(context)!.openSettings),
+                icon: PhosphorIcon(PhosphorIcons.gear()),
+                label: Text(AppLocalizations.of(context)!.openSettings, style: GoogleFonts.outfit()),
               )
             else
               FilledButton.icon(
@@ -550,10 +564,10 @@ class _SongsScreenState extends State<SongsScreen>
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Icon(Icons.settings),
+                    : PhosphorIcon(PhosphorIcons.gear()),
                 label: Text(_isRequestingPermission 
                     ? AppLocalizations.of(context)!.loading 
-                    : AppLocalizations.of(context)!.grantPermission),
+                    : AppLocalizations.of(context)!.grantPermission, style: GoogleFonts.outfit()),
               ),
           ],
         ),
@@ -573,20 +587,20 @@ class _SongsScreenState extends State<SongsScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.music_off,
+          PhosphorIcon(
+            PhosphorIcons.musicNote(), // musicNoteSlash is missing, using musicNote
             size: 80,
-            color: Colors.white.withValues(alpha: 0.5),
+            color: Colors.white24,
           ),
           const SizedBox(height: 24),
           Text(
             AppLocalizations.of(context)!.noSongs,
-            style: theme.textTheme.headlineSmall,
+            style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: _loadSongs,
-            icon: const Icon(Icons.refresh),
+            icon: PhosphorIcon(PhosphorIcons.arrowsClockwise()),
             label: Text(AppLocalizations.of(context)!.retry),
           ),
         ],
@@ -618,10 +632,10 @@ class _SongsScreenState extends State<SongsScreen>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-             _buildBarAction(Icons.play_arrow_rounded, l10n.play, _playSelected),
-             _buildBarAction(Icons.playlist_add_rounded, l10n.addToPlaylist, _addToPlaylistSelected),
-             _buildBarAction(Icons.share_rounded, l10n.share, _shareSelected),
-             _buildBarAction(Icons.delete_forever_rounded, l10n.delete, _deleteSelected, isDestructive: true),
+             _buildBarAction(PhosphorIcons.play(), l10n.play, _playSelected),
+             _buildBarAction(PhosphorIcons.playlist(), l10n.addToPlaylist, _addToPlaylistSelected),
+             _buildBarAction(PhosphorIcons.shareNetwork(), l10n.share, _shareSelected),
+             _buildBarAction(PhosphorIcons.trash(), l10n.delete, _deleteSelected, isDestructive: true),
           ],
         ),
       ),
@@ -640,7 +654,7 @@ class _SongsScreenState extends State<SongsScreen>
          child: Column(
            mainAxisSize: MainAxisSize.min,
            children: [
-             Icon(icon, color: color, size: 24),
+             PhosphorIcon(icon, color: color, size: 24),
              const SizedBox(height: 4),
              Text(
                label,
@@ -680,7 +694,7 @@ class _SongsScreenState extends State<SongsScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.add),
+              leading: PhosphorIcon(PhosphorIcons.plus()),
               title: Text(l10n.createPlaylist),
               onTap: () async {
                 Navigator.pop(ctx);
@@ -705,9 +719,9 @@ class _SongsScreenState extends State<SongsScreen>
                 itemBuilder: (_, i) {
                   final p = playlists[i];
                   return ListTile(
-                    leading: const Icon(Icons.queue_music),
-                    title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    subtitle: Text(l10n.songCount(p.songIds.length)),
+                    leading: PhosphorIcon(PhosphorIcons.playlist()),
+                    title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.outfit()),
+                    subtitle: Text(l10n.songCount(p.songIds.length), style: GoogleFonts.outfit()),
                     onTap: () {
                       for (final s in selectedSongs) {
                          cubit.addSongToUserPlaylist(p.id, s.id);
@@ -739,8 +753,8 @@ class _SongsScreenState extends State<SongsScreen>
           onSubmitted: (_) => Navigator.pop(context, controller.text),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.cancel)),
-          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(AppLocalizations.of(context)!.confirm)),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit())),
+          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(AppLocalizations.of(context)!.confirm, style: GoogleFonts.outfit())),
         ],
       ),
     );
@@ -923,7 +937,7 @@ class _AlphabetScrollState extends State<_AlphabetScroll> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   )
@@ -963,7 +977,7 @@ class _AlphabetScrollState extends State<_AlphabetScroll> {
                         style: TextStyle(
                           fontSize: 12, 
                           fontWeight: FontWeight.bold, 
-                          color: theme.colorScheme.onSurface.withOpacity(0.5) // Subtle dots
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5) // Subtle dots
                         ),
                       ),
                     ),

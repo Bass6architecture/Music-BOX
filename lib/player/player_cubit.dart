@@ -132,6 +132,7 @@ class PlayerStateModel {
     this.hideMetadataSaveWarning = false,
     this.accentPerSong = const <int, int>{},
     this.sleepTimerEndTime,
+    this.isLoading = false,
   });
 
   final List<SongModel> songs; // Current Queue
@@ -154,6 +155,9 @@ class PlayerStateModel {
   
   // ✅ Sleep Timer State
   final DateTime? sleepTimerEndTime;
+  
+  // ✅ Loading State
+  final bool isLoading;
 
   // Helpers
   bool get hasSleepTimer => sleepTimerEndTime != null;
@@ -177,6 +181,7 @@ class PlayerStateModel {
     Map<int, int>? accentPerSong,
     DateTime? sleepTimerEndTime,
     bool clearSleepTimer = false,
+    bool? isLoading,
   }) {
     return PlayerStateModel(
       songs: songs ?? this.songs,
@@ -196,6 +201,7 @@ class PlayerStateModel {
       hideMetadataSaveWarning: hideMetadataSaveWarning ?? this.hideMetadataSaveWarning,
       accentPerSong: accentPerSong ?? this.accentPerSong,
       sleepTimerEndTime: clearSleepTimer ? null : (sleepTimerEndTime ?? this.sleepTimerEndTime),
+      isLoading: isLoading ?? this.isLoading,
     );
   }
 }
@@ -220,6 +226,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
           deletedSongIds: <int>{},
           hideMetadataSaveWarning: false,
           accentPerSong: <int, int>{},
+          isLoading: true, // ✅ Start as loading
         ));
 
   late final AudioPlayer player = AudioPlayer();
@@ -400,6 +407,8 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
 
   Future<void> loadAllSongs() async {
     try {
+      emit(state.copyWith(isLoading: true)); // ✅ Start loading
+      
       final audioQuery = OnAudioQuery();
       if (await Permission.audio.request().isGranted) {
         final songs = await audioQuery.querySongs(
@@ -414,8 +423,11 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         final filteredSongs = filterSongs(validSongs);
         
         // ✅ Populate both songs (queue) and allSongs (library)
-        // Note: allSongs should probably contain EVERYTHING, but for now we filter both to be safe
-        emit(state.copyWith(songs: filteredSongs, allSongs: filteredSongs));
+        emit(state.copyWith(
+          songs: filteredSongs, 
+          allSongs: filteredSongs,
+          isLoading: false, // ✅ Finish loading
+        ));
       
         // ✅ Restore player state (last song, shuffle, loop)
         await _restorePlayerState();
@@ -443,7 +455,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
           androidNotificationIcon: 'drawable/ic_notification',
           androidNotificationClickStartsActivity: true,
           androidShowNotificationBadge: true,
-          preloadArtwork: true,
+          preloadArtwork: false, // ✅ Disable preloading to prevent hangs with large queues
           // ✅ Disable downscaling to keep high quality (we optimize manually to 1024px)
           artDownscaleWidth: null,
           artDownscaleHeight: null,
@@ -471,6 +483,13 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     
     // Configure les contrôles de notification
     player.setAutomaticallyWaitsToMinimizeStalling(true);
+    
+    // ✅ Error logging to catch "No sound" (stuck at 0:00) issues
+    player.playbackEventStream.listen((event) {
+      // Optional: Log state changes if needed for debugging
+    }, onError: (Object e, StackTrace stackTrace) {
+      debugPrint('❌ JustAudio Error: $e');
+    });
 
     // Pause on interruptions and when becoming noisy
     session.interruptionEventStream.listen((event) {
@@ -1324,19 +1343,15 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       artUri = Uri.file(customPath);
     }
     
-    // Fallback to default cover if no custom artwork
+    // Fallback to default cover
     if (artUri == null) {
-       // Check cache first (sync check ok for single item? No, keep it fast)
-       // We rely on pre-caching or _updateQueue to have set this correctly in logical flow,
-       // but here we are creating item from scratch.
-       
        if (_defaultCoverPath != null && _defaultCoverPath!.isNotEmpty) {
           artUri = Uri.file(_defaultCoverPath!);
        }
     }
     
     return MediaItem(
-      id: song.uri ?? '',
+      id: song.uri ?? song.id.toString(), // ✅ URI as ID, fallback to ID string
       title: overridden.title,
       artist: overridden.artist ?? 'Artiste inconnu',
       album: overridden.album ?? 'Album inconnu',
@@ -2389,7 +2404,50 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     if (idx == -1) return;
 
     final current = List<SongModel>.from(state.songs);
+    final oldVersion = current[idx];
     current[idx] = updated;
+
+    // ✅ OPTIMISATION : Modification de métadonnées sans changement d'URI
+    // Au lieu de recharger le player (ce qui cause une coupure), on maj l'état et l'AudioHandler
+    if (oldVersion.uri == updated.uri) {
+      // 1. Mettre à jour l'état (UI)
+      emit(state.copyWith(songs: current));
+      
+      // 2. Mettre à jour l'AudioHandler (Notification)
+      if (_audioHandler != null) {
+        Uri? artUri;
+        final customPath = state.customArtworkPaths[updated.id];
+        if (customPath != null && customPath.isNotEmpty) {
+          artUri = Uri.file(customPath);
+        } else if (_defaultCoverPath != null) {
+          artUri = Uri.file(_defaultCoverPath!);
+        }
+
+        final newItem = MediaItem(
+          id: updated.uri!,
+          title: updated.title,
+          artist: updated.artist ?? 'Artiste inconnu',
+          album: updated.album ?? 'Album inconnu',
+          artUri: artUri,
+          duration: Duration(milliseconds: updated.duration ?? 0),
+          extras: <String, dynamic>{
+            'songId': updated.id,
+          },
+        );
+
+        final queue = _audioHandler!.queue.value;
+        if (idx < queue.length) {
+           final newQueue = List<MediaItem>.from(queue);
+           newQueue[idx] = newItem;
+           _audioHandler!.setQueueItems(newQueue);
+           
+           if (idx == state.currentIndex) {
+              _audioHandler!.setMediaItemWithLikedState(newItem, state.favorites.contains(songId));
+           }
+        }
+      }
+      return; 
+    }
 
     await _updateQueue(current, state.currentIndex, preservePosition: idx == state.currentIndex);
   }
@@ -2566,8 +2624,11 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     
     // Mettre à jour le lecteur (passez la position initiale pour limiter les coupures)
     try {
-      await player.setAudioSources(
-        sources,
+      // ✅ CRITICAL: Re-assign _playlist explicitly
+      _playlist = ConcatenatingAudioSource(children: sources);
+      
+      await player.setAudioSource(
+        _playlist!,
         initialIndex: safeIndex,
         initialPosition: preservePosition ? currentPos : Duration.zero,
       );
@@ -2577,7 +2638,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         player.play();
       }
     } catch (e) {
-      // En cas d'erreur, fallback
+      debugPrint('❌ Erreur setAudioSource dans _updateQueue: $e');
       if (wasPlaying) {
         player.play();
       }
@@ -2722,20 +2783,39 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         if (index != -1) {
           debugPrint('🔄 Restoring last played song: ${state.songs[index].title}');
           
-          final sources = state.songs.map((s) => AudioSource.uri(
-            Uri.parse(s.uri ?? ''),
-            tag: MediaItem(
-              id: s.id.toString(),
-              album: s.album ?? '',
-              title: s.title,
-              artist: s.artist ?? '',
-              artUri: Uri.parse('content://media/external/audio/media/${s.id}/albumart'),
-            ),
-          )).toList();
+          // ✅ Build sources with URI as MediaItem.id (consistent with _updateQueue)
+          final sources = <AudioSource>[];
+          for (final s in state.songs) {
+            if (s.uri != null && s.uri!.isNotEmpty) {
+              Uri? artUri;
+              final customPath = state.customArtworkPaths[s.id];
+              if (customPath != null && customPath.isNotEmpty) {
+                artUri = Uri.file(customPath);
+              } else if (_defaultCoverPath != null) {
+                artUri = Uri.file(_defaultCoverPath!);
+              }
+              
+              sources.add(AudioSource.uri(
+                Uri.parse(s.uri!),
+                tag: MediaItem(
+                  id: s.uri!, // ✅ Use URI as ID (consistent with _updateQueue)
+                  album: s.album ?? '',
+                  title: s.title,
+                  artist: s.artist ?? '',
+                  artUri: artUri,
+                  duration: Duration(milliseconds: s.duration ?? 0),
+                  extras: {'songId': s.id},
+                ),
+              ));
+            }
+          }
+          
+          if (sources.isEmpty) {
+            debugPrint('❌ No valid sources for restore');
+            return;
+          }
 
           // ✅ OPTIMIZATION: Emit state IMMEDIATELY for instant UI feedback
-          // This makes the MiniPlayer show the song "as if we never left"
-          // while the heavy audio player initializes in the background.
           emit(state.copyWith(
             currentIndex: index,
             currentSongId: lastSongId,
@@ -2744,11 +2824,29 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
           // Trigger artwork load in background
           Future.microtask(_refreshCurrentArtworkIfNeeded);
 
+          // ✅ CRITICAL: Store playlist reference so queue operations work
+          _playlist = ConcatenatingAudioSource(children: sources);
+          
           await player.setAudioSource(
-            ConcatenatingAudioSource(children: sources),
+            _playlist!,
             initialIndex: index,
             initialPosition: Duration.zero,
           );
+          
+          // Update AudioHandler with the current MediaItem
+          if (_audioHandler != null && index < sources.length) {
+            final currentItem = (sources[index] as UriAudioSource).tag as MediaItem;
+            final isLiked = state.favorites.contains(lastSongId);
+            _audioHandler!.setMediaItemWithLikedState(currentItem, isLiked);
+            
+            // Also set the full queue for notification
+            final mediaItems = sources
+                .where((s) => s is UriAudioSource && s.tag is MediaItem)
+                .map((s) => (s as UriAudioSource).tag as MediaItem)
+                .toList();
+            _audioHandler!.setQueueItems(mediaItems);
+          }
+          
           // Ensure we don't auto-play
           if (player.playing) await player.pause();
         }

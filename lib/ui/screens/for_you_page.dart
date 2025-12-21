@@ -10,6 +10,10 @@ import '../../player/player_cubit.dart';
 import '../../core/recommendation_engine.dart';
 import '../../widgets/optimized_artwork.dart';
 import '../../core/constants/app_constants.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import '../widgets/modern_widgets.dart';
+import '../../core/theme/app_theme.dart';
 
 class ForYouPage extends StatefulWidget {
   const ForYouPage({super.key});
@@ -77,100 +81,143 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
       listenWhen: (prev, curr) => 
         prev.playCounts != curr.playCounts || 
         prev.lastPlayed != curr.lastPlayed ||
+        prev.lastPlayed != curr.lastPlayed ||
         prev.allSongs.length != curr.allSongs.length ||
+        prev.isLoading != curr.isLoading || // ✅ Listen to loading state
         prev.hiddenFolders != curr.hiddenFolders, 
       listener: (context, state) {
         _loadRecommendations(); 
       },
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: !_isInit 
-            ? const Center(child: CircularProgressIndicator())
-            : RefreshIndicator(
-                onRefresh: () async => _loadRecommendations(),
-                child: CustomScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  slivers: [
-                    // Top Padding
-                    const SliverGap(16),
-                    
-                    // 1. Compact Hero Card (Quick Play)
-                    if (_quickPlayMix.isNotEmpty)
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: _buildCompactHero(context),
-                        ),
-                      ),
-                    
-                    const SliverGap(24),
+      child: BlocBuilder<PlayerCubit, PlayerStateModel>(
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: Colors.transparent,
+            body: !_isInit 
+                ? const Center(child: CircularProgressIndicator())
+                : RefreshIndicator(
+                    onRefresh: () async => _loadRecommendations(),
+                    child: (state.isLoading) 
+                      ? const Center(child: CircularProgressIndicator())
+                      : ( _quickPlayMix.isEmpty && _habits.isEmpty && _suggestions.isEmpty && _allTimeHits.isEmpty && _forgottenGems.isEmpty && _freshArrivals.isEmpty )
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(24),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                                  shape: BoxShape.circle,
+                                ),
+                                  child: PhosphorIcon(
+                                    PhosphorIcons.musicNoteSlash(),
+                                    size: 48,
+                                    color: Colors.white,
+                                  ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                AppLocalizations.of(context)!.noSongs,
+                                style: GoogleFonts.outfit(
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                AppLocalizations.of(context)!.addSongsToPlaylistDesc, // Using this as a generic "Add songs" msg
+                                style: GoogleFonts.outfit(
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : CustomScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      slivers: [
+                        // Top Padding
+                        const SliverGap(16),
+                        
+                        // 1. Compact Hero Card (Quick Play)
+                        if (_quickPlayMix.isNotEmpty)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: _buildCompactHero(context),
+                            ),
+                          ),
+                        
+                        const SliverGap(24),
 
-                    // 2a. Habits / Cycles (Albums)
-                    if (_habits.isNotEmpty) ...[
-                      SliverToBoxAdapter(
-                        child: _buildSectionTitle(context, AppLocalizations.of(context)!.listeningHabits),
-                      ),
-                      SliverToBoxAdapter(
-                        child: _buildHorizontalList(context, _habits, isAlbum: true),
-                      ),
-                      const SliverGap(24),
-                    ]
-                    // 2b. Fallback: Explorer (Suggestions)
-                    else if (_suggestions.isNotEmpty) ...[
-                       SliverToBoxAdapter(
-                        child: _buildSectionTitle(context, AppLocalizations.of(context)!.explore),
-                      ),
-                      SliverToBoxAdapter(
-                        child: _buildHorizontalList(context, _suggestions, isAlbum: true),
-                      ),
-                      const SliverGap(24),
-                    ],
+                        // 2a. Habits / Cycles (Albums)
+                        if (_habits.isNotEmpty) ...[
+                          SliverToBoxAdapter(
+                            child: _buildSectionTitle(context, AppLocalizations.of(context)!.listeningHabits),
+                          ),
+                          SliverToBoxAdapter(
+                            child: _buildHorizontalList(context, _habits, isAlbum: true),
+                          ),
+                          const SliverGap(24),
+                        ]
+                        // 2b. Fallback: Explorer (Suggestions)
+                        else if (_suggestions.isNotEmpty) ...[
+                           SliverToBoxAdapter(
+                            child: _buildSectionTitle(context, AppLocalizations.of(context)!.explore),
+                          ),
+                          SliverToBoxAdapter(
+                            child: _buildHorizontalList(context, _suggestions, isAlbum: true),
+                          ),
+                          const SliverGap(24),
+                        ],
 
-                    // 3. New: All Time Hits (Timeless)
-                    if (_allTimeHits.isNotEmpty) ...[
-                       SliverToBoxAdapter(
-                        child: _buildSectionTitle(context, AppLocalizations.of(context)!.allTimeHits),
-                      ),
-                      SliverToBoxAdapter(
-                        child: _buildHorizontalList(context, _allTimeHits, showRank: true),
-                      ),
-                      const SliverGap(24),
-                    ],
+                        // 3. New: All Time Hits (Timeless)
+                        if (_allTimeHits.isNotEmpty) ...[
+                           SliverToBoxAdapter(
+                            child: _buildSectionTitle(context, AppLocalizations.of(context)!.allTimeHits),
+                          ),
+                          SliverToBoxAdapter(
+                            child: _buildHorizontalList(context, _allTimeHits, showRank: true),
+                          ),
+                          const SliverGap(24),
+                        ],
 
-                    // 4. Forgotten Gems
-                    if (_forgottenGems.isNotEmpty) ...[
-                      SliverToBoxAdapter(
-                        child: _buildSectionTitle(context, AppLocalizations.of(context)!.forgottenGems),
-                      ),
-                      SliverToBoxAdapter(
-                        child: _buildHorizontalList(context, _forgottenGems, desaturate: true),
-                      ),
-                      const SliverGap(24),
-                    ],
+                        // 4. Forgotten Gems
+                        if (_forgottenGems.isNotEmpty) ...[
+                          SliverToBoxAdapter(
+                            child: _buildSectionTitle(context, AppLocalizations.of(context)!.forgottenGems),
+                          ),
+                          SliverToBoxAdapter(
+                            child: _buildHorizontalList(context, _forgottenGems, desaturate: true),
+                          ),
+                          const SliverGap(24),
+                        ],
 
-                    // 5. Fresh Arrivals (Vertical List - Only 30 days)
-                    if (_freshArrivals.isNotEmpty) ...[
-                      SliverToBoxAdapter(
-                        child: _buildSectionTitle(context, AppLocalizations.of(context)!.recentlyAdded),
-                      ),
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final song = _freshArrivals[index];
-                            return _CompactSongRow(
-                              song: song,
-                              queue: _freshArrivals,
-                              index: index,
-                            );
-                          },
-                          childCount: _freshArrivals.length,
-                        ),
-                      ),
-                       const SliverGap(100), // Bottom padding
-                    ],
-                  ],
-                ),
-              ),
+                        // 5. Fresh Arrivals (Vertical List - Only 30 days)
+                        if (_freshArrivals.isNotEmpty) ...[
+                          SliverToBoxAdapter(
+                            child: _buildSectionTitle(context, AppLocalizations.of(context)!.recentlyAdded),
+                          ),
+                          SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final song = _freshArrivals[index];
+                                return _CompactSongRow(
+                                  song: song,
+                                  queue: _freshArrivals,
+                                  index: index,
+                                );
+                              },
+                              childCount: _freshArrivals.length,
+                            ),
+                          ),
+                           const SliverGap(100), // Bottom padding
+                        ],
+                      ],
+                    ),
+                  ),
+          );
+        },
       ),
     );
   }
@@ -179,21 +226,10 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
     final theme = Theme.of(context);
     final seedSong = _quickPlayMix.first;
 
-    return Container(
-      height: 180, // Much more compact
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+    return ModernCard(
+      padding: EdgeInsets.zero,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -227,38 +263,34 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
                        children: [
                          Text(
                            AppLocalizations.of(context)!.quickPlay,
-                           style: theme.textTheme.headlineSmall?.copyWith(
+                           style: GoogleFonts.outfit(
                              color: Colors.white,
                              fontWeight: FontWeight.bold,
+                             fontSize: 24,
                            ),
                          ),
                          const SizedBox(height: 4),
-                         Text(
-                           '${_quickPlayMix.length} ${AppLocalizations.of(context)!.songs.toLowerCase()}',
-                           style: theme.textTheme.bodyMedium?.copyWith(
-                             color: Colors.white70,
-                             ),
-                         ),
+                          Text(
+                            '${_quickPlayMix.length} ${AppLocalizations.of(context)!.songs.toLowerCase()}',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 14,
+                              ),
+                          ),
                        ],
                      ),
                    ),
                    
                    // Big Play Button
-                   Material(
-                     color: theme.colorScheme.primary,
-                     shape: const CircleBorder(),
-                     elevation: 8,
-                     child: InkWell(
-                       onTap: () {
-                          HapticFeedback.mediumImpact();
-                          context.read<PlayerCubit>().setQueueAndPlay(_quickPlayMix, 0);
-                       },
-                       customBorder: const CircleBorder(),
-                       child: const Padding(
-                         padding: EdgeInsets.all(16),
-                         child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: 32),
-                       ),
-                     ),
+                   ModernIconButton(
+                     icon: PhosphorIconsFill.play(),
+                     iconColor: Colors.white,
+                     backgroundColor: theme.colorScheme.primary,
+                     onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        context.read<PlayerCubit>().setQueueAndPlay(_quickPlayMix, 0);
+                     },
+                     size: 56,
                    ),
                 ],
               ),
@@ -274,9 +306,10 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+        style: GoogleFonts.outfit(
           fontWeight: FontWeight.bold,
           letterSpacing: 0.5,
+          fontSize: 18,
         ),
       ),
     );
@@ -422,9 +455,10 @@ class _DetailedSongCard extends StatelessWidget {
               isAlbum ? (song.album ?? 'Unknown') : song.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: isActive ? FontWeight.bold : FontWeight.bold,
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold,
                 color: isActive ? theme.colorScheme.primary : null,
+                fontSize: 14,
               ),
             ),
             const SizedBox(height: 2),
@@ -432,8 +466,9 @@ class _DetailedSongCard extends StatelessWidget {
               song.artist ?? 'Artist',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodySmall?.copyWith(
+              style: GoogleFonts.outfit(
                 color: isActive ? theme.colorScheme.primary.withValues(alpha: 0.8) : theme.colorScheme.onSurfaceVariant,
+                fontSize: 12,
               ),
             ),
           ],
@@ -461,73 +496,39 @@ class _CompactSongRow extends StatelessWidget {
     final isPlaying = context.select((PlayerCubit c) => c.state.isPlaying);
     final fgColor = isActive ? theme.colorScheme.primary : theme.colorScheme.onSurface;
 
-    return InkWell(
+    return ModernListTile(
       onTap: () {
         context.read<PlayerCubit>().setQueueAndPlay(queue, index);
       },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6), // Thinner padding
-        child: Row(
-          children: [
-            SizedBox(
-              width: 56, // ✅ Restored to 56
-              height: 56,
-              child: Stack(
-                children: [
-                   ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: OptimizedArtwork.square(
-                      key: ValueKey(song.id),
-                      id: song.id,
-                      type: ArtworkType.AUDIO,
-                      size: 56,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  if (isActive)
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.4),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Center(
-                          child: _MiniEq(animate: isPlaying, color: Colors.white),
-                        ),
-                      ),
-                    ),
-                ],
+      leading: Stack(
+        children: [
+           ClipRRect(
+            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+            child: OptimizedArtwork.square(
+              key: ValueKey(song.id),
+              id: song.id,
+              type: ArtworkType.AUDIO,
+              size: 56,
+              fit: BoxFit.cover,
+            ),
+          ),
+          if (isActive)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                ),
+                child: Center(
+                  child: _MiniEq(animate: isPlaying, color: Colors.white),
+                ),
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    song.title, 
-                    maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                      color: fgColor,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    song.artist ?? 'Unknown',
-                    maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: isActive ? fgColor.withValues(alpha: 0.8) : theme.colorScheme.onSurfaceVariant
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Badge removed per user request
-            const SizedBox.shrink(),
-          ],
-        ),
+        ],
       ),
+      title: song.title,
+      subtitle: song.artist ?? 'Unknown',
+      isActive: isActive,
     );
   }
 }

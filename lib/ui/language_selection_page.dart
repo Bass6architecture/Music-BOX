@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../core/l10n/locale_cubit.dart';
 import '../generated/app_localizations.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../core/theme/app_theme.dart';
 
 class LanguageSelectionPage extends StatelessWidget {
   const LanguageSelectionPage({super.key});
@@ -15,7 +18,7 @@ class LanguageSelectionPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.language),
+        title: Text(l10n.language, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: ListView(
@@ -29,18 +32,23 @@ class LanguageSelectionPage extends StatelessWidget {
               }
             },
             title: Text(
-              l10n.languageSystem, // "Langue du système"
-              style: theme.textTheme.bodyLarge,
+              l10n.languageSystem,
+              style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
             ),
             subtitle: Text(
-              l10n.languageSystemDesc, // "Suit la langue du téléphone"
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              l10n.languageSystemDesc,
+              style: GoogleFonts.outfit(
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                fontSize: 12,
               ),
             ),
-            leading: const Text(
-              '📱',
-              style: TextStyle(fontSize: 24),
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: PhosphorIcon(PhosphorIcons.deviceMobile, color: theme.colorScheme.primary),
             ),
             trailing: Radio<String?>(
               value: null, // null représente le choix "Système"
@@ -69,26 +77,33 @@ class LanguageSelectionPage extends StatelessWidget {
                 : null,
             title: Text(
               localeInfo.name,
-              style: theme.textTheme.bodyLarge?.copyWith(
+              style: GoogleFonts.outfit(
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isAvailable ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                color: isAvailable ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withOpacity(0.5),
               ),
             ),
             subtitle: !isAvailable 
                 ? Text(
                     l10n.languageComingSoon,
-                    style: TextStyle(
-                      fontSize: 12,
+                    style: GoogleFonts.outfit(
+                      fontSize: 11,
                       color: theme.colorScheme.error,
                       fontStyle: FontStyle.italic,
                     ),
                   )
                 : null,
-            leading: Text(
-              localeInfo.flag,
-              style: TextStyle(
-                fontSize: 24,
-                color: isAvailable ? null : theme.colorScheme.onSurface.withValues(alpha: 0.5),
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                localeInfo.flag,
+                style: TextStyle(
+                  fontSize: 20,
+                  color: isAvailable ? null : theme.colorScheme.onSurface.withOpacity(0.5),
+                ),
               ),
             ),
             trailing: Radio<String>(

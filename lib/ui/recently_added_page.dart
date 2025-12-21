@@ -11,6 +11,9 @@ import '../widgets/song_actions.dart';
 import 'now_playing_next_gen.dart';
 import 'widgets/music_box_scaffold.dart';
 import '../core/background/background_cubit.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../core/theme/app_theme.dart';
 
 class RecentlyAddedPage extends StatefulWidget {
   const RecentlyAddedPage({super.key});
@@ -120,9 +123,10 @@ class _RecentlyAddedPageState extends State<RecentlyAddedPage> with AutomaticKee
                             flexibleSpace: FlexibleSpaceBar(
                               title: Text(
                                 AppLocalizations.of(context)!.recentlyAdded,
-                                style: TextStyle(
+                                style: GoogleFonts.outfit(
                                   color: theme.colorScheme.onSurface,
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 22,
                                 ),
                               ),
                               centerTitle: false,
@@ -145,8 +149,8 @@ class _RecentlyAddedPageState extends State<RecentlyAddedPage> with AutomaticKee
                         Positioned(
                           right: -20,
                           bottom: -20,
-                          child: Icon(
-                            Icons.schedule_rounded,
+                          child: PhosphorIcon(
+                            PhosphorIconsFill.clockPlus(),
                             size: 140,
                             color: Colors.blue.withValues(alpha: 0.1),
                           ),
@@ -162,24 +166,25 @@ class _RecentlyAddedPageState extends State<RecentlyAddedPage> with AutomaticKee
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.music_note,
+                        PhosphorIcon(
+                          PhosphorIcons.musicNote(),
                           size: 16,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           AppLocalizations.of(context)!.songCount(songs.length),
-                          style: theme.textTheme.bodyMedium?.copyWith(
+                          style: GoogleFonts.outfit(
                             color: theme.colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                         const Spacer(),
                         // Bouton shuffle
                         FilledButton.tonalIcon(
                           onPressed: songs.isEmpty ? null : () => _playAll(songs, shuffle: true),
-                          icon: const Icon(Icons.shuffle, size: 20),
-                          label: Text(AppLocalizations.of(context)!.shuffleAll),
+                          icon: PhosphorIcon(PhosphorIcons.shuffle(), size: 20),
+                          label: Text(AppLocalizations.of(context)!.shuffleAll, style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
                           style: FilledButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,

@@ -5,7 +5,8 @@ import 'package:music_box/generated/app_localizations.dart';
 import 'package:music_box/player/player_cubit.dart';
 import 'package:music_box/ui/artist_detail_page.dart';
 import 'package:music_box/widgets/optimized_artwork.dart';
-import 'package:music_box/widgets/permission_wrapper.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ArtistsPage extends StatefulWidget {
   const ArtistsPage({super.key, this.embedded = false});
@@ -79,12 +80,15 @@ class _ArtistsPageState extends State<ArtistsPage> {
                     color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.person_outline, size: 64, color: theme.colorScheme.primary),
+                  child: PhosphorIcon(PhosphorIcons.user(), size: 64, color: theme.colorScheme.primary),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   AppLocalizations.of(context)!.noArtists,
-                  style: theme.textTheme.titleMedium,
+                  style: GoogleFonts.outfit(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -110,7 +114,10 @@ class _ArtistsPageState extends State<ArtistsPage> {
                     titlePadding: const EdgeInsetsDirectional.only(start: 16, bottom: 16),
                     title: Text(
                       AppLocalizations.of(context)!.artists,
-                      style: TextStyle(color: theme.colorScheme.onSurface),
+                      style: GoogleFonts.outfit(
+                        color: theme.colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     background: Container(
                       decoration: BoxDecoration(
@@ -202,7 +209,7 @@ class _ArtistCard extends StatelessWidget {
     Widget placeholder(BuildContext _, double side) => Container(
           color: theme.colorScheme.surfaceContainerHighest,
           child: Center(
-            child: Icon(Icons.person_rounded, color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5), size: side * 0.5),
+            child: PhosphorIcon(PhosphorIcons.user(), color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5), size: side * 0.5),
           ),
         );
 
@@ -259,9 +266,10 @@ class _ArtistCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
-                      style: theme.textTheme.titleMedium?.copyWith(
+                      style: GoogleFonts.outfit(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -270,8 +278,9 @@ class _ArtistCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
-                      style: theme.textTheme.bodySmall?.copyWith(
+                      style: GoogleFonts.outfit(
                         color: theme.colorScheme.onSurfaceVariant,
+                        fontSize: 12,
                       ),
                     ),
                   ],

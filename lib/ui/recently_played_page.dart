@@ -11,6 +11,9 @@ import '../widgets/song_actions.dart';
 import 'now_playing_next_gen.dart';
 import 'widgets/music_box_scaffold.dart';
 import '../core/background/background_cubit.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../core/theme/app_theme.dart';
 
 class RecentlyPlayedPage extends StatefulWidget {
   const RecentlyPlayedPage({super.key});
@@ -138,12 +141,12 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> with AutomaticK
                           final ok = await showDialog<bool>(
                             context: context,
                             builder: (ctx) => AlertDialog(
-                              title: Text(AppLocalizations.of(context)!.recentlyPlayed),
-                              content: Text(AppLocalizations.of(context)!.confirmDelete),
-                              actions: [
-                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppLocalizations.of(context)!.cancel)),
-                                FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(AppLocalizations.of(context)!.delete)),
-                              ],
+                                title: Text(AppLocalizations.of(context)!.recentlyPlayed, style: GoogleFonts.outfit()),
+                                content: Text(AppLocalizations.of(context)!.confirmDelete, style: GoogleFonts.outfit()),
+                                actions: [
+                                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit())),
+                                  FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(AppLocalizations.of(context)!.delete, style: GoogleFonts.outfit())),
+                                ],
                             ),
                           );
                           if (ok == true) {
@@ -160,16 +163,17 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> with AutomaticK
                         }
                       },
                       itemBuilder: (ctx) => [
-                        PopupMenuItem(value: 'clear_history', child: Text(AppLocalizations.of(context)!.clearHistory)),
+                        PopupMenuItem(value: 'clear_history', child: Text(AppLocalizations.of(context)!.clearHistory, style: GoogleFonts.outfit())),
                       ],
                     ),
                   ],
                   flexibleSpace: FlexibleSpaceBar(
                     title: Text(
                       AppLocalizations.of(context)!.recentlyPlayed,
-                      style: TextStyle(
+                      style: GoogleFonts.outfit(
                         color: theme.colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
+                        fontSize: 22,
                       ),
                     ),
                     centerTitle: false,
@@ -192,8 +196,8 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> with AutomaticK
                         Positioned(
                           right: -20,
                           bottom: -20,
-                          child: Icon(
-                            Icons.history_rounded,
+                          child: PhosphorIcon(
+                            PhosphorIconsFill.history(),
                             size: 140,
                             color: Colors.purple.withValues(alpha: 0.1),
                           ),
@@ -209,24 +213,25 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> with AutomaticK
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.music_note,
+                        PhosphorIcon(
+                          PhosphorIcons.musicNote(),
                           size: 16,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           AppLocalizations.of(context)!.songCount(songs.length),
-                          style: theme.textTheme.bodyMedium?.copyWith(
+                          style: GoogleFonts.outfit(
                             color: theme.colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                         const Spacer(),
                         // Bouton shuffle
                         FilledButton.tonalIcon(
                           onPressed: songs.isEmpty ? null : () => _playAll(songs, shuffle: true),
-                          icon: const Icon(Icons.shuffle, size: 20),
-                          label: Text(AppLocalizations.of(context)!.shuffleAll),
+                          icon: PhosphorIcon(PhosphorIcons.shuffle(), size: 20),
+                          label: Text(AppLocalizations.of(context)!.shuffleAll, style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
                           style: FilledButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,

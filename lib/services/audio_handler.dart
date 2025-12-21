@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Custom AudioHandler pour gérer les notifications avec boutons personnalisés
 class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
@@ -15,6 +17,9 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
   MusicBoxAudioHandler(this._player) {
     debugPrint('🎵 AudioHandler créé !');
     
+    // Restaurer l'état depuis le stockage (pour affichage immédiat en arrière-plan)
+    _restoreLastState();
+
     // Écouter TOUTES les mises à jour pour diffuser l'état
     _player.playbackEventStream.listen(_broadcastState);
     // ✅ Écouter aussi le changement d'état playing pour la barre de progression
@@ -29,30 +34,6 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
         _broadcastState(null);
       }
     });
-
-    // ✅ Écouter les changements de séquence pour mettre à jour les métadonnées IMMÉDIATEMENT
-    // ✅ Écouter les changements de séquence pour mettre à jour les métadonnées IMMÉDIATEMENT
-    // ⚠️ DESACTIVE : Cela crée des conflits avec PlayerCubit qui gère manuellement les mises à jour
-    // Le PlayerCubit est la source de vérité.
-    /*
-    _player.sequenceStateStream.listen((sequenceState) {
-      // if (sequenceState == null) return; // Analyzer says sequenceState is never null
-      final currentItem = sequenceState.currentSource;
-      if (currentItem is UriAudioSource && currentItem.tag is MediaItem) {
-        final item = currentItem.tag as MediaItem;
-        // Ne mettre à jour que si différent pour éviter les boucles
-        if (mediaItem.value != item) {
-          debugPrint('🎵 AudioHandler: Sync metadata from player source: ${item.title}');
-          mediaItem.add(item);
-          // Récupérer l'état "aimé" depuis les extras si disponible
-          if (item.extras != null && item.extras!.containsKey('isLiked')) {
-             updateLikedState(item.extras!['isLiked'] as bool);
-          }
-          _broadcastState(null);
-        }
-      }
-    });
-    */
 
     // Initialiser le playback state avec systemActions
     playbackState.add(PlaybackState(
@@ -73,6 +54,78 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
     ));
     
     debugPrint('   PlaybackState initial diffusé');
+  }
+
+  /// Restaurer le dernier état connu (chanson) pour éviter la notification vide
+  Future<void> _restoreLastState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final lastSongId = prefs.getInt('last_song_id'); // Key from PlayerCubit
+      
+      debugPrint('🎵 AudioHandler: Attempting to restore last song ID: $lastSongId');
+
+      if (lastSongId != null) {
+        final onAudioQuery = OnAudioQuery();
+        
+        // Optimisation: Try to find specific song
+        List<SongModel> songs = [];
+        try {
+           // On Android, this runs in main isolate so context should be implicit/valid
+           songs = await onAudioQuery.querySongs(
+            ignoreCase: true,
+            orderType: OrderType.ASC_OR_SMALLER,
+            sortType: null,
+            uriType: UriType.EXTERNAL,
+          );
+        } catch (e) {
+           debugPrint('❌ AudioHandler: Query failed: $e');
+        }
+
+        try {
+           final song = songs.firstWhere((s) => s.id == lastSongId, orElse: () => SongModel({}));
+           
+           if (song.id == 0) {
+             debugPrint('❌ AudioHandler: Song $lastSongId not found in library of ${songs.length} songs');
+             return;
+           }
+
+           debugPrint('✅ AudioHandler: Found song: ${song.title}');
+
+           // Create MediaItem for notification
+           final item = MediaItem(
+              id: song.uri ?? song.id.toString(), // Use URI as ID if available
+              title: song.title,
+              artist: song.artist ?? 'Inconnu',
+              album: song.album ?? '',
+              artUri: Uri.parse('content://media/external/audio/media/${song.id}/albumart'),
+              duration: Duration(milliseconds: song.duration ?? 0),
+              extras: {'songId': song.id},
+           );
+           
+           // ✅ Update MediaItem IMMEDIATELY for notification display
+           mediaItem.add(item);
+           
+           // Update state to Ready (Paused) so notification appears correctly
+           playbackState.add(playbackState.value.copyWith(
+              processingState: AudioProcessingState.ready,
+              playing: false,
+              controls: _getControls(false, _isLiked),
+              updatePosition: Duration.zero,
+              bufferedPosition: Duration.zero,
+           ));
+           
+           // ⚠️ DO NOT set audio source here - let PlayerCubit handle it
+           // to avoid race conditions and ensure _playlist is properly tracked.
+           debugPrint('✅ AudioHandler: MediaItem set for notification (source will be loaded by PlayerCubit)');
+        } catch (e) {
+           debugPrint('❌ AudioHandler: Logic error: $e');
+        }
+      } else {
+        debugPrint('ℹ️ AudioHandler: No last song ID found');
+      }
+    } catch (e) {
+      debugPrint('❌ AudioHandler: Error restoring state: $e');
+    }
   }
   
   /// Diffuse l'état complet pour la notification native

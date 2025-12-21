@@ -27,6 +27,12 @@ import 'ui/screens/modern_music_widgets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // ✅ OPTIMISATION RAM: Augmenter le cache d'images pour une fluidité maximale
+  // On utilise 500MB de RAM pour les images (vs 100MB par défaut)
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 500 * 1024 * 1024; 
+  PaintingBinding.instance.imageCache.maximumSize = 5000;
+  
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -183,7 +189,8 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
     final audioQuery = OnAudioQuery();
     
     // Set timeout to prevent infinite splash
-    final timeout = Future.delayed(const Duration(seconds: 5));
+    // Limite de 10s pour le chargement comme demandé
+    final timeout = Future.delayed(const Duration(seconds: 10));
     
     // Wait for songs to be loaded (or timeout)
     final songsLoaded = _waitForSongs(cubit);
@@ -217,10 +224,10 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
         sizePx: 300,
       );
       
-      // Give it max 4 more seconds for artwork (total ~5s splash max)
+      // Give it max 8 more seconds for artwork (total ~10s splash max)
       await Future.any([
         preloadFuture,
-        Future.delayed(const Duration(seconds: 4)),
+        Future.delayed(const Duration(seconds: 8)),
       ]);
       
     } catch (e) {

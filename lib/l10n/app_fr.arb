@@ -10,6 +10,8 @@
   "edit": "Modifier",
   "add": "Ajouter",
   "remove": "Retirer",
+  "removeFromList": "Retirer",
+  "playlistSongRemoved": "Chanson retirée de la playlist",
   "search": "Rechercher",
   "loading": "Chargement...",
   "error": "Erreur",

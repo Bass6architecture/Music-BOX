@@ -4,6 +4,9 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'optimized_artwork.dart';
 import '../player/player_cubit.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../core/theme/app_theme.dart';
 
 /// Unified, customizable tile for displaying a song row across the app.
 ///
@@ -95,18 +98,18 @@ class SongTile extends StatelessWidget {
     final radius = 8.0;   // ✅ Reduced radius
     
     // Slim text styles
-    final baseTitleStyle = theme.textTheme.bodyMedium ?? const TextStyle();
-    final titleStyle = baseTitleStyle.copyWith(
+    // Slim text styles
+    final titleStyle = GoogleFonts.outfit(
       color: isActive ? theme.colorScheme.primary : theme.colorScheme.onSurface,
       fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-      fontSize: 14, // Explicitly control size
+      fontSize: 14,
     );
     
     final subtitleText = subtitle?.trim().isNotEmpty == true
         ? subtitle!.trim()
         : _defaultSubtitleFor(overrideSong);
         
-    final subStyle = theme.textTheme.bodySmall?.copyWith(
+    final subStyle = GoogleFonts.outfit(
       color: isActive ? theme.colorScheme.primary.withValues(alpha: 0.8) : theme.colorScheme.onSurfaceVariant,
       fontSize: 12,
     );
@@ -118,8 +121,8 @@ class SongTile extends StatelessWidget {
         if (isSelectionMode) ...[
           Padding(
             padding: const EdgeInsets.only(right: 12),
-            child: Icon(
-              isSelected ? Icons.check_circle : Icons.circle_outlined,
+            child: PhosphorIcon(
+              isSelected ? PhosphorIcons.fill.checkCircle : PhosphorIcons.regular.circle,
                color: isSelected 
                   ? theme.colorScheme.primary 
                   : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
@@ -136,13 +139,13 @@ class SongTile extends StatelessWidget {
             children: [
               Positioned.fill(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(radius),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   child: OptimizedArtwork.square(
                     id: song.id,
                     type: ArtworkType.AUDIO,
                     size: artSize,
                     fit: BoxFit.cover,
-                    borderRadius: BorderRadius.circular(radius),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                   ),
                 ),
               ),
@@ -169,7 +172,11 @@ class SongTile extends StatelessWidget {
                     ),
                     child: Text(
                       '$index',
-                      style: theme.textTheme.labelSmall,
+                      style: GoogleFonts.outfit(
+                        fontSize: theme.textTheme.labelSmall?.fontSize,
+                        color: theme.textTheme.labelSmall?.color,
+                        fontWeight: theme.textTheme.labelSmall?.fontWeight,
+                      ),
                     ),
                   ),
                 ),
@@ -221,8 +228,8 @@ class SongTile extends StatelessWidget {
           IconButton(
             visualDensity: VisualDensity.compact,
             tooltip: isFavorite! ? 'Retirer des favoris' : 'Ajouter aux favoris',
-            icon: Icon(
-              isFavorite! ? Icons.favorite : Icons.favorite_border,
+            icon: PhosphorIcon(
+              isFavorite! ? PhosphorIcons.fill.heart : PhosphorIcons.regular.heart,
               color: isFavorite!
                   ? theme.colorScheme.primary
                   : theme.iconTheme.color,
@@ -254,12 +261,13 @@ class SongTile extends StatelessWidget {
         if (onMorePressed != null)
           IconButton(
             tooltip: 'Plus',
-            icon: const Icon(Icons.more_vert),
+            icon: PhosphorIcon(PhosphorIcons.regular.dotsThreeVertical, size: 24),
             onPressed: onMorePressed,
           )
         else if (menuBuilder != null)
           PopupMenuButton<dynamic>(
             tooltip: 'Options',
+            icon: PhosphorIcon(PhosphorIcons.regular.dotsThreeVertical, size: 24),
             itemBuilder: (ctx) => menuBuilder!(ctx, song),
             onSelected: onMenuSelected,
           ),

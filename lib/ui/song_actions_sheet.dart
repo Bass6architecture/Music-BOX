@@ -15,6 +15,9 @@ import 'cover_art_search_page.dart';
 
 import '../player/player_cubit.dart';
 import '../widgets/optimized_artwork.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../core/theme/app_theme.dart';
 
 // Channel for native actions we still use (ringtone, delete notifications)
 const MethodChannel _nativeChannel = MethodChannel('com.synergydev.music_box/native');
@@ -118,15 +121,16 @@ Widget _buildActionTile({
                   color: iconColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: iconColor, size: 20),
+                child: PhosphorIcon(icon, color: iconColor, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   title,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontSize: 15,
+                  style: GoogleFonts.outfit(
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -262,7 +266,7 @@ Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
                       if (cubit.state.currentSongId != song.id) ...[
                         _buildActionTile(
                           theme: theme,
-                          icon: Icons.playlist_play_rounded,
+                          icon: PhosphorIcons.playCircle(),
                           iconColor: theme.colorScheme.onSurfaceVariant,
                           title: AppLocalizations.of(context)!.playNext,
                           onTap: () async {
@@ -277,7 +281,7 @@ Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
                         ),
                         _buildActionTile(
                           theme: theme,
-                          icon: Icons.queue_music_rounded,
+                          icon: PhosphorIcons.listPlus(),
                           iconColor: theme.colorScheme.onSurfaceVariant,
                           title: AppLocalizations.of(context)!.addToQueueFull,
                           onTap: () async {
@@ -299,7 +303,7 @@ Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
                       // Section: Personnalisation
                       _buildActionTile(
                         theme: theme,
-                        icon: Icons.playlist_add_rounded,
+                        icon: PhosphorIcons.listPlus(),
                         iconColor: theme.colorScheme.onSurfaceVariant,
                         title: AppLocalizations.of(context)!.addToPlaylist,
                         onTap: () async {
@@ -309,7 +313,7 @@ Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
                       ),
                       _buildActionTile(
                         theme: theme,
-                        icon: Icons.image_rounded,
+                        icon: PhosphorIcons.image(),
                         iconColor: theme.colorScheme.onSurfaceVariant,
                         title: AppLocalizations.of(context)!.changeCover,
                         onTap: () async {
@@ -319,12 +323,11 @@ Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
                       ),
                         _buildActionTile(
                           theme: theme,
-                          icon: Icons.edit_rounded,
+                          icon: PhosphorIcons.pencilLine(),
                           iconColor: theme.colorScheme.onSurfaceVariant,
                           title: AppLocalizations.of(context)!.editMetadata,
                           onTap: () async {
                             Navigator.pop(ctx);
-
                             await _editMetadata(context, cubit, song);
                           },
                         ),
@@ -337,7 +340,7 @@ Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
                       // Section: Actions
                       _buildActionTile(
                         theme: theme,
-                        icon: isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                        icon: isFav ? PhosphorIconsFill.heart() : PhosphorIcons.heart(),
                         iconColor: isFav ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
                         title: isFav ? AppLocalizations.of(context)!.removeFromFavorites : AppLocalizations.of(context)!.addToFavorites,
                         onTap: () {
@@ -347,7 +350,7 @@ Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
                       ),
                       _buildActionTile(
                         theme: theme,
-                        icon: Icons.share_rounded,
+                        icon: PhosphorIcons.shareNetwork(),
                         iconColor: theme.colorScheme.onSurfaceVariant,
                         title: AppLocalizations.of(context)!.share,
                         onTap: () async {
@@ -357,7 +360,7 @@ Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
                       ),
                       _buildActionTile(
                         theme: theme,
-                        icon: Icons.folder_open_rounded,
+                        icon: PhosphorIcons.folderOpen(),
                         iconColor: theme.colorScheme.onSurfaceVariant,
                         title: AppLocalizations.of(context)!.goToAlbum,
                         onTap: () async {
@@ -368,7 +371,7 @@ Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
                       if (Platform.isAndroid)
                         _buildActionTile(
                           theme: theme,
-                          icon: Icons.notifications_rounded,
+                          icon: PhosphorIcons.bellRinging(),
                           iconColor: theme.colorScheme.onSurfaceVariant,
                           title: AppLocalizations.of(context)!.setAsRingtone,
                           onTap: () async {
@@ -404,8 +407,8 @@ Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
                                       color: theme.colorScheme.error.withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    child: Icon(
-                                      Icons.delete_forever_rounded,
+                                    child: PhosphorIcon(
+                                      PhosphorIconsFill.trash(),
                                       color: theme.colorScheme.error,
                                       size: 20,
                                     ),
@@ -463,8 +466,8 @@ Future<void> _openAddToPlaylist(BuildContext context, PlayerCubit cubit, SongMod
         mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
-            leading: const Icon(Icons.add),
-            title: Text(AppLocalizations.of(context)!.createPlaylist),
+            leading: PhosphorIcon(PhosphorIcons.plus()),
+            title: Text(AppLocalizations.of(context)!.createPlaylist, style: GoogleFonts.outfit()),
             onTap: () async {
               Navigator.pop(ctx);
               final l10n = AppLocalizations.of(context)!;
@@ -486,9 +489,9 @@ Future<void> _openAddToPlaylist(BuildContext context, PlayerCubit cubit, SongMod
               itemBuilder: (_, i) {
                 final p = playlists[i];
                 return ListTile(
-                  leading: const Icon(Icons.queue_music),
-                  title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-                  subtitle: Text(AppLocalizations.of(context)!.songCount(p.songIds.length)),
+                  leading: PhosphorIcon(PhosphorIcons.playlist()),
+                  title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.outfit()),
+                  subtitle: Text(AppLocalizations.of(context)!.songCount(p.songIds.length), style: GoogleFonts.outfit()),
                   onTap: () {
                     cubit.addSongToUserPlaylist(p.id, song.id);
                     Navigator.pop(ctx);
@@ -531,13 +534,13 @@ Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel son
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library_rounded),
-              title: Text(l10n.localGallery),
+              leading: PhosphorIcon(PhosphorIcons.image()),
+              title: Text(l10n.localGallery, style: GoogleFonts.outfit()),
               onTap: () => Navigator.pop(ctx, 0), // 0 = Gallery
             ),
             ListTile(
-              leading: const Icon(Icons.public_rounded),
-              title: Text(l10n.searchOnInternet),
+              leading: PhosphorIcon(PhosphorIcons.globe()),
+              title: Text(l10n.searchOnInternet, style: GoogleFonts.outfit()),
               onTap: () => Navigator.pop(ctx, 1), // 1 = Web
             ),
             const SizedBox(height: 16),
@@ -977,9 +980,11 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
                     children: [
                       TextField(
                         controller: titleCtrl,
+                        style: GoogleFonts.outfit(),
                         decoration: InputDecoration(
                           labelText: AppLocalizations.of(context)!.title,
-                          prefixIcon: Icon(Icons.music_note_rounded, color: theme.colorScheme.primary),
+                          labelStyle: GoogleFonts.outfit(),
+                          prefixIcon: PhosphorIcon(PhosphorIcons.musicNote(), color: theme.colorScheme.primary),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -990,9 +995,11 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
                       const SizedBox(height: 16),
                       TextField(
                         controller: artistCtrl,
+                        style: GoogleFonts.outfit(),
                         decoration: InputDecoration(
                           labelText: AppLocalizations.of(context)!.artist,
-                          prefixIcon: Icon(Icons.person_rounded, color: theme.colorScheme.primary),
+                          labelStyle: GoogleFonts.outfit(),
+                          prefixIcon: PhosphorIcon(PhosphorIcons.user(), color: theme.colorScheme.primary),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -1003,9 +1010,11 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
                       const SizedBox(height: 16),
                       TextField(
                         controller: albumCtrl,
+                        style: GoogleFonts.outfit(),
                         decoration: InputDecoration(
                           labelText: AppLocalizations.of(context)!.album,
-                          prefixIcon: Icon(Icons.album_rounded, color: theme.colorScheme.primary),
+                          labelStyle: GoogleFonts.outfit(),
+                          prefixIcon: PhosphorIcon(PhosphorIcons.disc(), color: theme.colorScheme.primary),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -1016,9 +1025,11 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
                       const SizedBox(height: 16),
                       TextField(
                         controller: genreCtrl,
+                        style: GoogleFonts.outfit(),
                         decoration: InputDecoration(
                           labelText: AppLocalizations.of(context)!.genreOptional,
-                          prefixIcon: Icon(Icons.category_rounded, color: theme.colorScheme.secondary),
+                          labelStyle: GoogleFonts.outfit(),
+                          prefixIcon: PhosphorIcon(PhosphorIcons.tag(), color: theme.colorScheme.secondary),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -1029,9 +1040,11 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
                       const SizedBox(height: 16),
                       TextField(
                         controller: yearCtrl,
+                        style: GoogleFonts.outfit(),
                         decoration: InputDecoration(
                           labelText: AppLocalizations.of(context)!.yearOptional,
-                          prefixIcon: Icon(Icons.calendar_today_rounded, color: theme.colorScheme.secondary),
+                          labelStyle: GoogleFonts.outfit(),
+                          prefixIcon: PhosphorIcon(PhosphorIcons.calendar(), color: theme.colorScheme.secondary),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -1189,8 +1202,8 @@ Future<void> _deleteAudioFile(BuildContext context, PlayerCubit cubit, SongModel
     builder: (ctx) => AlertDialog(
       backgroundColor: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      icon: Icon(
-        Icons.delete_forever,
+      icon: PhosphorIcon(
+        PhosphorIconsFill.trash(),
         color: theme.colorScheme.error,
         size: 48,
       ),
@@ -1219,7 +1232,7 @@ Future<void> _deleteAudioFile(BuildContext context, PlayerCubit cubit, SongModel
             ),
             child: Row(
               children: [
-                Icon(Icons.music_note, color: theme.colorScheme.error, size: 20),
+                PhosphorIcon(PhosphorIcons.musicNote(), color: theme.colorScheme.error, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -1277,7 +1290,7 @@ Future<void> _deleteAudioFile(BuildContext context, PlayerCubit cubit, SongModel
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.check_circle, color: Colors.white),
+              PhosphorIcon(PhosphorIcons.checkCircle(), color: Colors.white),
               const SizedBox(width: 12),
               Expanded(child: Text(AppLocalizations.of(context)!.fileDeletedPermanently)),
             ],
@@ -1295,7 +1308,7 @@ Future<void> _deleteAudioFile(BuildContext context, PlayerCubit cubit, SongModel
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.error_outline, color: Colors.white),
+              PhosphorIcon(PhosphorIcons.warningCircle(), color: Colors.white),
               const SizedBox(width: 12),
               Expanded(child: Text(_simplifyErrorMessage(e, context))),
             ],

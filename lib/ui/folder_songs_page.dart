@@ -2,262 +2,536 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:music_box/generated/app_localizations.dart';
-import 'package:path/path.dart' as p;
 
 import '../player/player_cubit.dart';
 import '../player/mini_player.dart';
+import 'now_playing_next_gen.dart';
 import '../widgets/song_tile.dart';
-import '../widgets/song_actions.dart';
-import 'song_actions_sheet.dart';
 import 'widgets/music_box_scaffold.dart';
 import '../core/background/background_cubit.dart';
+import '../widgets/song_actions.dart';
+import 'song_actions_sheet.dart'; 
+import 'package:share_plus/share_plus.dart'; 
+import 'dart:math' as math;
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../core/theme/app_theme.dart';
+import 'widgets/modern_widgets.dart';
 
 class FolderSongsPage extends StatefulWidget {
-  final String folderPath;
-  final int songCount;
+  const FolderSongsPage({super.key, required this.folderName});
 
-  const FolderSongsPage({
-    super.key,
-    required this.folderPath,
-    required this.songCount,
-  });
+  final String folderName;
 
   @override
   State<FolderSongsPage> createState() => _FolderSongsPageState();
 }
 
 class _FolderSongsPageState extends State<FolderSongsPage> {
-  final OnAudioQuery _audioQuery = OnAudioQuery();
-  List<SongModel> _songs = [];
-  bool _loading = true;
+  Future<List<SongModel>>? _future;
+  
+  // Selection Mode State
+  final Set<int> _selectedIds = {};
+  bool _isSelectionMode = false;
+  List<SongModel> _currentSongs = [];
 
   @override
   void initState() {
     super.initState();
-    _loadSongs();
+    _future = _load();
   }
 
-  Future<void> _loadSongs() async {
-    setState(() => _loading = true);
+  Future<List<SongModel>> _load() async {
+    final cubit = context.read<PlayerCubit>();
+    final allSongs = cubit.state.allSongs;
+    
+    final fromFolder = allSongs.where((s) {
+      final path = s.data;
+      final parts = path.split('/');
+      if (parts.length < 2) return false;
+      final fName = parts[parts.length - 2];
+      return fName == widget.folderName;
+    }).toList();
+    
+    final filtered = cubit.filterSongs(fromFolder);
+    _currentSongs = filtered;
+    
+    if (_isSelectionMode) {
+       final currentIds = _currentSongs.map((s) => s.id).toSet();
+       final toRemove = _selectedIds.where((id) => !currentIds.contains(id)).toList();
+       if (toRemove.isNotEmpty) {
+         Future.microtask(() {
+           if (mounted) setState(() => _selectedIds.removeAll(toRemove));
+         });
+       }
+    }
+
+    return filtered;
+  }
+  
+  void _toggleSelection(int id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+        if (_selectedIds.isEmpty) {
+          _isSelectionMode = false;
+        }
+      } else {
+        _selectedIds.add(id);
+        _isSelectionMode = true;
+      }
+    });
+  }
+
+  void _selectAll() {
+    setState(() {
+      if (_selectedIds.length == _currentSongs.length) {
+        _selectedIds.clear();
+        _isSelectionMode = false;
+      } else {
+        _selectedIds.addAll(_currentSongs.map((s) => s.id));
+        _isSelectionMode = true;
+      }
+    });
+  }
+  
+  void _exitSelectionMode() {
+    if (!mounted) return;
+    setState(() {
+      _isSelectionMode = false;
+      _selectedIds.clear();
+    });
+  }
+
+  Future<void> _playAndOpen(List<SongModel> list, int index) async {
+    await context.read<PlayerCubit>().setQueueAndPlay(list, index);
+    if (!mounted) return;
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => openNextGenNowPlaying(context),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+        opaque: false, 
+      ),
+    );
+  }
+
+  void _playAll(List<SongModel> songs, {bool shuffle = false}) async {
+    if (songs.isEmpty) return;
+    final list = List<SongModel>.from(songs);
+    if (shuffle) list.shuffle();
+    if (!mounted) return;
+    await _playAndOpen(list, 0);
+  }
+  
+  void _playSelected() {
+     if (_selectedIds.isEmpty) return;
+     final selectedSongs = _currentSongs.where((s) => _selectedIds.contains(s.id)).toList();
+     context.read<PlayerCubit>().setQueueAndPlay(selectedSongs, 0);
+     _exitSelectionMode();
+  }
+
+  Future<void> _addToPlaylistSelected() async {
+    final selectedSongs = _currentSongs.where((s) => _selectedIds.contains(s.id)).toList();
+    if (selectedSongs.isEmpty) return;
+    
+    final cubit = context.read<PlayerCubit>();
+    final playlists = cubit.state.userPlaylists;
+    final l10n = AppLocalizations.of(context)!;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: false,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: PhosphorIcon(PhosphorIcons.plus()),
+              title: Text(l10n.createPlaylist, style: GoogleFonts.outfit()),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final name = await _promptForText(context, title: l10n.createPlaylist, hint: l10n.playlistNameHint);
+                if (name != null && name.trim().isNotEmpty) {
+                  final id = cubit.createUserPlaylist(name.trim());
+                  for (final s in selectedSongs) {
+                    cubit.addSongToUserPlaylist(id, s.id);
+                  }
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.songAdded)));
+                    _exitSelectionMode();
+                  }
+                }
+              },
+            ),
+            const Divider(height: 1),
+            SizedBox(
+              height: math.min(MediaQuery.of(context).size.height * 0.5, 420),
+              child: ListView.builder(
+                itemCount: playlists.length,
+                itemBuilder: (_, i) {
+                  final p = playlists[i];
+                  return ListTile(
+                    leading: PhosphorIcon(PhosphorIcons.playlist()),
+                    title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.outfit()),
+                    subtitle: Text(l10n.songCount(p.songIds.length), style: GoogleFonts.outfit()),
+                    onTap: () {
+                      for (final s in selectedSongs) {
+                         cubit.addSongToUserPlaylist(p.id, s.id);
+                      }
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.songAdded)));
+                      _exitSelectionMode();
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<String?> _promptForText(BuildContext context, {required String title, String? hint}) async {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title, style: GoogleFonts.outfit()),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: GoogleFonts.outfit(),
+          decoration: InputDecoration(hintText: hint, hintStyle: GoogleFonts.outfit()),
+          onSubmitted: (_) => Navigator.pop(context, controller.text),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit())),
+          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(AppLocalizations.of(context)!.confirm, style: GoogleFonts.outfit())),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _shareSelected() async {
+    final selectedSongs = _currentSongs.where((s) => _selectedIds.contains(s.id)).toList();
+    if (selectedSongs.isEmpty) return;
+
+    final xFiles = <XFile>[];
+    for (final s in selectedSongs) {
+      if ((s.data).isNotEmpty) {
+        xFiles.add(XFile(s.data));
+      }
+    }
+
+    if (xFiles.isEmpty) return;
+
     try {
-      final allSongs = await _audioQuery.querySongs(
-        uriType: UriType.EXTERNAL,
-        ignoreCase: true,
-      );
-      
-      if (!mounted) return;
-      final cubit = context.read<PlayerCubit>();
-      final visibleSongs = cubit.filterSongs(allSongs.where((s) => s.uri != null).toList());
-      
-      // Filtrer les chansons de ce dossier uniquement
-      final folderSongs = visibleSongs.where((s) {
-        if (s.data.isEmpty) return false;
-        final dir = p.dirname(s.data);
-        return dir == widget.folderPath;
-      }).toList();
-      
-      // Trier par titre
-      folderSongs.sort((a, b) => (a.title).compareTo(b.title));
-      
-      if (!mounted) return;
-      setState(() {
-        _songs = folderSongs;
-        _loading = false;
-      });
+      await Share.shareXFiles(xFiles, text: '${xFiles.length} songs');
+      _exitSelectionMode();
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${AppLocalizations.of(context)!.error}: $e')),
-      );
-    } finally {
-      if (mounted && _loading) setState(() => _loading = false); // Ensure loading is false even if error occurs before setState in try block
+      if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error sharing: $e")));
+      }
     }
   }
 
-
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  Future<void> _deleteSelected() async {
+    final selectedSongs = _currentSongs.where((s) => _selectedIds.contains(s.id)).toList();
+    if (selectedSongs.isEmpty) return;
+    
     final l10n = AppLocalizations.of(context)!;
-    final cubit = context.read<PlayerCubit>();
-    final folderName = p.basename(widget.folderPath);
-
-    return MusicBoxScaffold(
-      body: Stack(
-        children: [
-          BlocBuilder<BackgroundCubit, BackgroundType>(
-            builder: (context, backgroundType) {
-              final hasCustomBackground = backgroundType != BackgroundType.none;
-              
-              return CustomScrollView(
-                slivers: [
-          // AppBar avec gradient
-          SliverAppBar(
-            expandedHeight: 200,
-            pinned: true,
-            backgroundColor: hasCustomBackground ? Colors.black.withValues(alpha: 0.7) : theme.scaffoldBackgroundColor,
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                folderName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: theme.colorScheme.onSurface,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (!hasCustomBackground)
-                    Container(
-                      color: theme.colorScheme.surfaceContainerHighest,
-                    ),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-                          hasCustomBackground ? Colors.transparent : theme.colorScheme.surface,
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 60,
-                    left: 0,
-                    right: 0,
-                    child: Icon(
-                      Icons.folder_rounded,
-                      size: 80,
-                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Informations du dossier
-          SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.music_note,
-                    size: 16,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    l10n.songCount(_songs.length),
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const Spacer(),
-                  // Bouton shuffle all
-                  FilledButton.tonalIcon(
-                    onPressed: _songs.isEmpty
-                        ? null
-                        : () async {
-                            // Mélanger et jouer
-                            final shuffled = List<SongModel>.from(_songs)..shuffle();
-                            await cubit.setQueueAndPlay(shuffled, 0);
-                          },
-                    icon: const Icon(Icons.shuffle, size: 20),
-                    label: Text(l10n.shuffleAll),
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Liste des chansons
-          if (_loading)
-            const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (_songs.isEmpty)
-            SliverFillRemaining(
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.music_off,
-                      size: 56,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      l10n.noSongs,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.only(bottom: 100),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (ctx, i) {
-                    final song = _songs[i];
-                    return SongTile(
-                      song: song,
-                      onTap: () async {
-                        await cubit.setQueueAndPlay(_songs, i);
-                      },
-                      onMorePressed: () => openSongActionsSheet(
-                        context,
-                        song,
-                      ),
-                      menuBuilder: (ctx, s) => SongMenu.commonItems(
-                        ctx,
-                        s,
-                        includeRemoveFromPlaylist: false,
-                      ),
-                      onMenuSelected: (value) async {
-                        await SongMenu.onSelected(
-                          context,
-                          song,
-                          value,
-                          refresh: _loadSongs,
-                        );
-                      },
-                    );
-                  },
-                  childCount: _songs.length,
-                ),
-              ),
-            ),
-        ],
-          );
-        },
-      ),
-          // Mini player en bas
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: const MiniPlayer(),
+    
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.deleteSong, style: GoogleFonts.outfit()),
+        content: Text("Voulez-vous vraiment supprimer ${selectedSongs.length} chansons définitivement ?", style: GoogleFonts.outfit()),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel, style: GoogleFonts.outfit())),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.delete, style: GoogleFonts.outfit()),
           ),
         ],
       ),
     );
+    
+    if (confirmed == true && mounted) {
+       _exitSelectionMode();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return BlocListener<PlayerCubit, PlayerStateModel>(
+      listenWhen: (prev, curr) =>
+          prev.hiddenFolders != curr.hiddenFolders ||
+          prev.showHiddenFolders != curr.showHiddenFolders ||
+          prev.deletedSongIds != curr.deletedSongIds,
+      listener: (context, state) {
+        if (mounted) setState(() => _future = _load());
+      },
+      child: PopScope(
+        canPop: !_isSelectionMode,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          if (_isSelectionMode) {
+            _exitSelectionMode();
+          }
+        },
+        child: MusicBoxScaffold(
+          body: Stack(
+            children: [
+              FutureBuilder<List<SongModel>>(
+                future: _future,
+                builder: (context, snap) {
+                  if (snap.connectionState != ConnectionState.done) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final songs = snap.data ?? const <SongModel>[];
+
+                  return BlocBuilder<BackgroundCubit, BackgroundType>(
+                    builder: (context, backgroundType) {
+                      final hasCustomBackground = backgroundType != BackgroundType.none;
+                      
+                      return CustomScrollView(
+                        slivers: [
+                          SliverAppBar(
+                            expandedHeight: _isSelectionMode ? 0 : 200,
+                            pinned: true,
+                            backgroundColor: _isSelectionMode 
+                                ? theme.colorScheme.surface 
+                                : (hasCustomBackground ? Colors.black.withValues(alpha: 0.7) : theme.scaffoldBackgroundColor),
+                            automaticallyImplyLeading: !_isSelectionMode,
+                            title: _isSelectionMode ? Row(
+                                children: [
+                                    IconButton(
+                                      icon: PhosphorIcon(PhosphorIcons.x()), 
+                                      onPressed: _exitSelectionMode,
+                                    ),
+                                   const SizedBox(width: 8),
+                                   Text('${_selectedIds.length}', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold)),
+                                   const Spacer(),
+                                   TextButton.icon(
+                                     onPressed: _selectAll,
+                                     icon: PhosphorIcon(_selectedIds.length == songs.length ? PhosphorIcons.minusSquare() : PhosphorIcons.checkSquare()),
+                                     label: Text(_selectedIds.length == songs.length ? "Désélect. tout" : AppLocalizations.of(context)!.selectAll, style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
+                                   )
+                                ],
+                            ) : null,
+                            flexibleSpace: _isSelectionMode ? null : FlexibleSpaceBar(
+                              titlePadding: const EdgeInsetsDirectional.only(start: 60, bottom: 16),
+                              title: Text(
+                                widget.folderName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.outfit(
+                                  color: theme.colorScheme.onSurface,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              background: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  if (!hasCustomBackground)
+                                    Container(
+                                      color: theme.colorScheme.surfaceContainerHighest,
+                                    ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+                                          hasCustomBackground ? Colors.transparent : theme.colorScheme.surface,
+                                        ],
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 60,
+                                    left: 0,
+                                    right: 0,
+                                    child: PhosphorIcon(
+                                      PhosphorIconsFill.folder(),
+                                      size: 80,
+                                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          if (!_isSelectionMode)
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Row(
+                                  children: [
+                                    PhosphorIcon(
+                                      PhosphorIcons.musicNote(),
+                                      size: 16,
+                                      color: Colors.white70,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      AppLocalizations.of(context)!.songCount(songs.length),
+                                      style: GoogleFonts.outfit(
+                                        color: theme.colorScheme.onSurfaceVariant,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    FilledButton.tonalIcon(
+                                      onPressed: songs.isEmpty ? null : () => _playAll(songs, shuffle: true),
+                                      icon: PhosphorIcon(PhosphorIcons.shuffle(), size: 20),
+                                      label: Text(AppLocalizations.of(context)!.shuffleAll, style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
+                                      style: FilledButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 10,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                          if (songs.isEmpty)
+                            SliverFillRemaining(
+                              hasScrollBody: false,
+                              child: Center(
+                                child: Text(
+                                  AppLocalizations.of(context)!.noSongs,
+                                  style: GoogleFonts.outfit(),
+                                ),
+                              ),
+                            )
+                          else
+                            SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                   if (index >= songs.length) {
+                                      return const SizedBox(height: 100); 
+                                   }
+                                  
+                                  final s = songs[index];
+                                  final subtitle = [s.artist, s.album].where((e) => (e ?? '').isNotEmpty).join(' • ');
+                                  
+                                  return SongTile(
+                                    song: s,
+                                    subtitle: subtitle,
+                                    isSelectionMode: _isSelectionMode,
+                                    isSelected: _selectedIds.contains(s.id),
+                                    onTap: () {
+                                       if (_isSelectionMode) {
+                                         _toggleSelection(s.id);
+                                       } else {
+                                         _playAndOpen(songs, index);
+                                       }
+                                    },
+                                    onLongPress: () {
+                                       if (!_isSelectionMode) {
+                                          _toggleSelection(s.id);
+                                       }
+                                    },
+                                    menuBuilder: _isSelectionMode ? null : (ctx, _) => SongMenu.commonItems(ctx, s),
+                                    onMenuSelected: _isSelectionMode ? null : (value) async {
+                                      await SongMenu.onSelected(context, s, value as String);
+                                    },
+                                  );
+                                },
+                                childCount: songs.length + 1,
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+              
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _isSelectionMode 
+                    ? _buildSelectionBottomBar(context, AppLocalizations.of(context)!)
+                    : const MiniPlayer(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildSelectionBottomBar(BuildContext context, AppLocalizations l10n) {
+    final theme = Theme.of(context);
+    
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+      child: Container(
+        decoration: BoxDecoration(
+           color: theme.colorScheme.surfaceContainer.withValues(alpha: 0.95),
+           borderRadius: BorderRadius.circular(24),
+           boxShadow: [
+             BoxShadow(
+               color: Colors.black.withValues(alpha: 0.2),
+               blurRadius: 16,
+               offset: const Offset(0, 4),
+             ),
+           ],
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+             _buildBarAction(context, PhosphorIconsFill.play(), l10n.play, _playSelected),
+             _buildBarAction(context, PhosphorIconsFill.playlist(), l10n.addToPlaylist, _addToPlaylistSelected),
+             _buildBarAction(context, PhosphorIconsFill.shareNetwork(), l10n.share, _shareSelected),
+             _buildBarAction(context, PhosphorIconsFill.trash(), l10n.delete, _deleteSelected, isDestructive: true),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBarAction(BuildContext context, IconData icon, String label, VoidCallback onTap, {bool isDestructive = false}) {
+     final theme = Theme.of(context);
+     final color = isDestructive ? theme.colorScheme.error : theme.colorScheme.onSurface;
+     
+     return InkWell(
+       onTap: onTap,
+       borderRadius: BorderRadius.circular(16),
+       child: Padding(
+         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+         child: Column(
+           mainAxisSize: MainAxisSize.min,
+           children: [
+             PhosphorIcon(icon, color: color, size: 24),
+             const SizedBox(height: 4),
+             Text(
+               label,
+               style: GoogleFonts.outfit(
+                 color: color,
+                 fontSize: 10,
+               ),
+             ),
+           ],
+         ),
+       ),
+     );
   }
 }

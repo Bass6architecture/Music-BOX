@@ -10,6 +10,9 @@ import '../widgets/optimized_artwork.dart';
 import '../ui/now_playing_next_gen.dart';
 import '../ui/song_actions_sheet.dart';
 import '../ui/widgets/bouncy_button.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../core/theme/app_theme.dart';
 
 class MiniPlayer extends StatefulWidget {
   const MiniPlayer({super.key, this.disableNavigation = false});
@@ -109,17 +112,24 @@ class _MiniPlayerState extends State<MiniPlayer> {
           },
           onLongPress: widget.disableNavigation ? null : () => openSongActionsSheet(context, safeSong),
           child: Container(
-            height: 76,
-            margin: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+            height: 72,
+            margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.35),
-                    border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12)),
-                    borderRadius: BorderRadius.circular(14),
+                    color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
+                    border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08)),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Column(
@@ -156,23 +166,29 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                   safeSong.title.isNotEmpty ? safeSong.title : 'Titre inconnu',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context).colorScheme.onSurface,
+                                  ),
                                 ),
-                                const SizedBox(height: 2),
+                                const SizedBox(height: 1),
                                 Text(
                                   safeSong.artist?.isNotEmpty == true ? safeSong.artist! : 'Artiste inconnu',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75),
-                                      ),
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                          // Contrôles circulaires 48dp
+                           // Contrôles circulaires 48dp
                           _MiniIconButton(
-                            icon: Icons.skip_previous_rounded,
+                            icon: PhosphorIcons.skipBack(),
                             onPressed: () async { try { await player.seekToPrevious(); } catch (_) {} },
                           ),
                           StreamBuilder<PlayerState>(
@@ -180,15 +196,14 @@ class _MiniPlayerState extends State<MiniPlayer> {
                             builder: (_, snap) {
                               final isPlaying = snap.data?.playing == true;
                               return _MiniIconButton(
-                                icon: isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                                big: true,
+                                icon: isPlaying ? PhosphorIconsFill.pause() : PhosphorIconsFill.play(),
                                 accent: acc,
                                 onPressed: () async { if (isPlaying) { await player.pause(); } else { await player.play(); } },
                               );
                             },
                           ),
                           _MiniIconButton(
-                            icon: Icons.skip_next_rounded,
+                            icon: PhosphorIcons.skipForward(),
                             onPressed: () async { try { await player.seekToNext(); } catch (_) {} },
                           ),
                         ],
@@ -228,38 +243,35 @@ class _MiniPlayerState extends State<MiniPlayer> {
 }
 
 class _MiniIconButton extends StatelessWidget {
-  const _MiniIconButton({required this.icon, required this.onPressed, this.big = false, this.accent});
+  const _MiniIconButton({required this.icon, required this.onPressed, this.accent});
   final IconData icon;
   final VoidCallback onPressed;
-  final bool big;
   final Color? accent;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final size = big ? 56.0 : 48.0;
-    final iconSize = big ? 28.0 : 24.0;
+    final size = 44.0;
+    final iconSize = 24.0;
     
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 2.0),
       child: BouncyButton(
         onPressed: onPressed,
-        scaleDown: 0.85,
+        scaleDown: 0.9,
         child: Container(
           width: size,
           height: size,
           decoration: BoxDecoration(
-            color: (big && accent != null)
-                ? accent!.withValues(alpha: 0.18)
-                : theme.colorScheme.surface.withValues(alpha: 0.35),
+            color: accent != null 
+                ? accent!.withValues(alpha: 0.12)
+                : Colors.transparent,
             shape: BoxShape.circle,
           ),
-          child: Icon(
+          child: PhosphorIcon(
             icon,
             size: iconSize,
-            color: (big && accent != null)
-                ? Colors.white
-                : theme.colorScheme.onSurface,
+            color: accent ?? theme.colorScheme.onSurface,
           ),
         ),
       ),

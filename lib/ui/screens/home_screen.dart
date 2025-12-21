@@ -18,6 +18,10 @@ import '../folders_page.dart';
 import 'songs_screen.dart';
 import 'for_you_page.dart';
 import '../widgets/music_box_scaffold.dart';
+import '../background_selection_page.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../widgets/modern_widgets.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -62,38 +66,38 @@ class HomeScreenState extends State<HomeScreen>
     final l10n = AppLocalizations.of(context)!;
     return [
       _NavigationItem(
-        icon: Icons.auto_awesome_outlined,
-        selectedIcon: Icons.auto_awesome,
+        icon: PhosphorIcons.sparkle(),
+        selectedIcon: PhosphorIconsFill.sparkle(),
         label: l10n.forYou,
         page: const ForYouPage(),
       ),
       _NavigationItem(
-        icon: Icons.music_note_outlined,
-        selectedIcon: Icons.music_note_rounded,
+        icon: PhosphorIcons.musicNotes(),
+        selectedIcon: PhosphorIconsFill.musicNotes(),
         label: l10n.songs,
         page: const SongsScreen(),
       ),
       _NavigationItem(
-        icon: Icons.queue_music_outlined,
-        selectedIcon: Icons.queue_music_rounded,
+        icon: PhosphorIcons.playlist(),
+        selectedIcon: PhosphorIconsFill.playlist(),
         label: l10n.playlists,
         page: const PlaylistsPage(embedded: true),
       ),
       _NavigationItem(
-        icon: Icons.album_outlined,
-        selectedIcon: Icons.album_rounded,
+        icon: PhosphorIcons.disc(),
+        selectedIcon: PhosphorIconsFill.disc(),
         label: l10n.albums,
         page: const AlbumsPage(embedded: true),
       ),
       _NavigationItem(
-        icon: Icons.person_outline_rounded,
-        selectedIcon: Icons.person_rounded,
+        icon: PhosphorIcons.users(),
+        selectedIcon: PhosphorIconsFill.users(),
         label: l10n.artists,
         page: const ArtistsPage(embedded: true),
       ),
       _NavigationItem(
-        icon: Icons.folder_outlined,
-        selectedIcon: Icons.folder_rounded,
+        icon: PhosphorIcons.folder(),
+        selectedIcon: PhosphorIconsFill.folder(),
         label: l10n.folders,
         page: const FoldersPage(embedded: true),
       ),
@@ -151,28 +155,39 @@ class HomeScreenState extends State<HomeScreen>
                       children: [
                         // Logo et titre
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: theme.colorScheme.primary,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: theme.colorScheme.primary.withOpacity(0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                          child: const Icon(
-                            Icons.music_note_rounded,
+                          child: PhosphorIcon(
+                            PhosphorIconsFill.musicNote(),
                             color: Colors.white,
+                            size: 24,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 14),
                         Text(
                           AppConstants.appName,
-                          style: theme.textTheme.headlineSmall?.copyWith(
+                          style: GoogleFonts.outfit(
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                            letterSpacing: -0.5,
                           ),
                         ),
                         const Spacer(),
                         
                         // Search Button
                          _buildActionButton(
-                          icon: Icons.search_rounded,
+                          icon: PhosphorIcons.magnifyingGlass(),
                           onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(builder: (_) => const SearchPage()),
@@ -181,19 +196,17 @@ class HomeScreenState extends State<HomeScreen>
                         ),
                         const SizedBox(width: 8),
 
-                        // Actions (search removed)
-                        if (hasCurrentSong) ...[
-                          const SizedBox(width: 8),
-                          _buildActionButton(
-                            icon: Icons.queue_music_rounded,
-                            onPressed: () => _navigateToNowPlaying(context),
-                            tooltip: AppLocalizations.of(context)!.nowPlaying,
-                            highlighted: true,
+                        _buildActionButton(
+                          icon: PhosphorIcons.paintBrush(),
+                          onPressed: () => Navigator.push(
+                            context, 
+                            MaterialPageRoute(builder: (_) => const BackgroundSelectionPage())
                           ),
-                        ],
+                          tooltip: AppLocalizations.of(context)!.background,
+                        ),
                         const SizedBox(width: 8),
                         _buildActionButton(
-                          icon: Icons.settings_outlined,
+                          icon: PhosphorIcons.gear(),
                           onPressed: () => _navigateToSettings(context),
                           tooltip: AppLocalizations.of(context)!.settings,
                         ),
@@ -261,16 +274,14 @@ class HomeScreenState extends State<HomeScreen>
                 labelTextStyle: MaterialStateProperty.resolveWith<TextStyle>(
                   (Set<MaterialState> states) {
                     if (states.contains(MaterialState.selected)) {
-                      return const TextStyle(
+                      return GoogleFonts.outfit(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        overflow: TextOverflow.ellipsis,
                       );
                     }
-                    return const TextStyle(
+                    return GoogleFonts.outfit(
                       fontSize: 11,
                       fontWeight: FontWeight.normal,
-                      overflow: TextOverflow.ellipsis,
                     );
                   },
                 ),
@@ -284,8 +295,8 @@ class HomeScreenState extends State<HomeScreen>
                 indicatorColor: theme.colorScheme.primary,
                 destinations: navigationItems.map((item) {
                   return NavigationDestination(
-                    icon: Icon(item.icon),
-                    selectedIcon: Icon(
+                    icon: PhosphorIcon(item.icon),
+                    selectedIcon: PhosphorIcon(
                       item.selectedIcon,
                       color: Colors.white,
                     ),
@@ -318,7 +329,7 @@ class HomeScreenState extends State<HomeScreen>
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.all(8),
-          child: Icon(
+          child: PhosphorIcon(
             icon,
             color: highlighted
                 ? Colors.white

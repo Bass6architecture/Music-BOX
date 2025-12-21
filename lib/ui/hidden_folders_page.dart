@@ -4,6 +4,9 @@ import 'package:music_box/generated/app_localizations.dart';
 import 'package:path/path.dart' as p;
 
 import '../player/player_cubit.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../core/theme/app_theme.dart';
 
 class HiddenFoldersPage extends StatefulWidget {
   const HiddenFoldersPage({super.key});
@@ -20,7 +23,7 @@ class _HiddenFoldersPageState extends State<HiddenFoldersPage> {
     await cubit.updateHiddenFolders(list);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)!.folderUnhidden)),
+      SnackBar(content: Text(AppLocalizations.of(context)!.folderUnhidden, style: GoogleFonts.outfit())),
     );
     setState(() {});
   }
@@ -31,11 +34,11 @@ class _HiddenFoldersPageState extends State<HiddenFoldersPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.delete),
-        content: Text('${AppLocalizations.of(context)!.confirmDelete}: ${p.basename(folder)}'),
+        title: Text(AppLocalizations.of(context)!.delete, style: GoogleFonts.outfit()),
+        content: Text('${AppLocalizations.of(context)!.confirmDelete}: ${p.basename(folder)}', style: GoogleFonts.outfit()),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppLocalizations.of(context)!.cancel)),
-          FilledButton.tonal(onPressed: () => Navigator.pop(ctx, true), child: Text(AppLocalizations.of(context)!.delete)),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit())),
+          FilledButton.tonal(onPressed: () => Navigator.pop(ctx, true), child: Text(AppLocalizations.of(context)!.delete, style: GoogleFonts.outfit())),
         ],
       ),
     );
@@ -56,9 +59,9 @@ class _HiddenFoldersPageState extends State<HiddenFoldersPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.folder_off, size: 56),
+                  PhosphorIcon(PhosphorIcons.folderNotchSlash(), size: 56),
                   SizedBox(height: 8),
-                  Text(AppLocalizations.of(context)!.noFolders),
+                  Text(AppLocalizations.of(context)!.noFolders, style: GoogleFonts.outfit()),
                 ],
               ),
             ),
@@ -96,8 +99,8 @@ class _HiddenFoldersPageState extends State<HiddenFoldersPage> {
                             color: theme.colorScheme.errorContainer,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(
-                            Icons.folder_off_rounded,
+                          child: PhosphorIcon(
+                            PhosphorIconsFill.folderNotchMinus(),
                             color: theme.colorScheme.onErrorContainer,
                             size: 24,
                           ),
@@ -111,8 +114,9 @@ class _HiddenFoldersPageState extends State<HiddenFoldersPage> {
                                 p.basename(folder),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.titleSmall?.copyWith(
+                                style: GoogleFonts.outfit(
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 14,
                                 ),
                               ),
                               const SizedBox(height: 3),
@@ -120,7 +124,7 @@ class _HiddenFoldersPageState extends State<HiddenFoldersPage> {
                                 folder,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.bodySmall?.copyWith(
+                                style: GoogleFonts.outfit(
                                   color: theme.colorScheme.onSurfaceVariant,
                                   fontSize: 11,
                                 ),
@@ -137,7 +141,7 @@ class _HiddenFoldersPageState extends State<HiddenFoldersPage> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: Text(AppLocalizations.of(context)!.unhideFolder),
+                          child: Text(AppLocalizations.of(context)!.unhideFolder, style: GoogleFonts.outfit()),
                         ),
                       ],
                     ),
@@ -148,7 +152,7 @@ class _HiddenFoldersPageState extends State<HiddenFoldersPage> {
           );
 
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.hiddenFolders)),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.hiddenFolders, style: GoogleFonts.outfit(fontWeight: FontWeight.bold))),
       body: body,
     );
   }

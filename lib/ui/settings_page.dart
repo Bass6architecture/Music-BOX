@@ -5,6 +5,8 @@ import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_box/generated/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'scan_music_page.dart';
 import 'hidden_folders_page.dart';
 import 'language_selection_page.dart';
@@ -96,7 +98,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           _buildSettingTile(
             context,
-            icon: Icons.wallpaper_rounded,
+            icon: PhosphorIcons.image,
             title: l10n.background,
             subtitle: l10n.backgroundDesc,
             onTap: () => Navigator.push(
@@ -110,7 +112,7 @@ class _SettingsPageState extends State<SettingsPage> {
             builder: (context, locale) {
               return _buildSettingTile(
                 context,
-                icon: Icons.language_rounded,
+                icon: PhosphorIcons.translate,
                 title: l10n.language,
                 subtitle: localeCubit.getLocaleName(locale),
                 onTap: () => Navigator.push(
@@ -147,7 +149,7 @@ class _SettingsPageState extends State<SettingsPage> {
               
               return _buildSettingTile(
                 context,
-                icon: Icons.timer_rounded,
+                icon: PhosphorIcons.timer,
                 title: l10n.sleepTimerTitle,
                 subtitle: subtitle,
                 onTap: () {
@@ -161,7 +163,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
            _buildSettingTile(
             context,
-            icon: Icons.equalizer_rounded,
+            icon: PhosphorIcons.equalizer,
             title: l10n.equalizer,
             subtitle: l10n.equalizerDesc,
             onTap: () async {
@@ -203,7 +205,7 @@ class _SettingsPageState extends State<SettingsPage> {
           if (!_isIgnoringBatteryOptimizations && Platform.isAndroid)
             _buildSettingTile(
               context,
-              icon: Icons.battery_charging_full_rounded,
+              icon: PhosphorIcons.batteryChargingVertical,
               title: l10n.backgroundPlayback,
               subtitle: l10n.backgroundPlaybackDesc,
               onTap: () async {
@@ -222,7 +224,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           _buildSettingTile(
             context,
-            icon: Icons.notifications_outlined,
+            icon: PhosphorIcons.bell,
             title: l10n.notifications,
             subtitle: l10n.notificationsDesc,
             onTap: () async {
@@ -262,7 +264,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _buildSection(context, [
           _buildSettingTile(
             context,
-            icon: Icons.save_alt_rounded,
+            icon: PhosphorIcons.export,
             title: l10n.exportData,
             subtitle: l10n.exportDataDesc,
             onTap: () async {
@@ -276,7 +278,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           _buildSettingTile(
             context,
-            icon: Icons.restore_rounded,
+            icon: PhosphorIcons.restore,
             title: l10n.importBackup,
             subtitle: l10n.importBackupDesc,
             onTap: () async {
@@ -344,7 +346,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _buildSection(context, [
           _buildSettingTile(
             context,
-            icon: Icons.radar_rounded,
+            icon: PhosphorIcons.scan,
             title: l10n.scanMusic,
             subtitle: l10n.scanMusicDesc,
             onTap: () {
@@ -355,7 +357,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           _buildSettingTile(
             context,
-            icon: Icons.folder_off_rounded,
+            icon: PhosphorIcons.folderNotchMinus,
             title: l10n.hiddenFolders,
             subtitle: l10n.hiddenFoldersDesc,
             onTap: () {
@@ -374,7 +376,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _buildSection(context, [
           _buildSettingTile(
             context,
-            icon: Icons.music_note_rounded,
+            icon: PhosphorIcons.musicNote,
             title: l10n.appName,
             subtitle: l10n.version('1.0.1'),
             onTap: () {
@@ -388,14 +390,14 @@ class _SettingsPageState extends State<SettingsPage> {
                     color: theme.colorScheme.outline.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(Icons.music_note_rounded, color: theme.colorScheme.onPrimaryContainer, size: 32),
+                  child: PhosphorIcon(PhosphorIcons.musicNote, color: theme.colorScheme.onPrimaryContainer, size: 32),
                 ),
               );
             },
           ),
           _buildSettingTile(
             context,
-            icon: Icons.privacy_tip_outlined,
+            icon: PhosphorIcons.shieldCheck,
             title: l10n.privacyPolicy,
             onTap: () {
               Navigator.push(
@@ -411,7 +413,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           _buildSettingTile(
             context,
-            icon: Icons.email_outlined,
+            icon: PhosphorIcons.envelope,
             title: l10n.contact,
             subtitle: 'synergydevv@gmail.com',
             onTap: () async {
@@ -439,7 +441,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return MusicBoxScaffold(
       appBar: AppBar(
-        title: Text(l10n.settings),
+        title: Text(l10n.settings, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
       ),
       body: content,
@@ -451,9 +453,10 @@ class _SettingsPageState extends State<SettingsPage> {
       padding: const EdgeInsets.only(left: 12, bottom: 8),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurface, // ✅ Neutral color
+        style: GoogleFonts.outfit(
+          color: theme.colorScheme.onSurface,
           fontWeight: FontWeight.w600,
+          fontSize: 16,
         ),
       ),
     );
@@ -495,15 +498,15 @@ class _SettingsPageState extends State<SettingsPage> {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: theme.colorScheme.onSurfaceVariant, size: 20),
+              child: PhosphorIcon(icon, color: theme.colorScheme.onSurfaceVariant, size: 20),
             ),
-            title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-            subtitle: subtitle != null ? Text(subtitle) : null,
+            title: Text(title, style: GoogleFonts.outfit(fontWeight: FontWeight.w500)),
+            subtitle: subtitle != null ? Text(subtitle, style: GoogleFonts.outfit(fontSize: 12)) : null,
             trailing: isDisabled 
                 ? null 
-                : Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5), size: 20),
+                : PhosphorIcon(PhosphorIcons.caretRight, color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5), size: 18),
             onTap: onTap,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
@@ -526,14 +529,14 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.themeDescription),
+        title: Text(l10n.themeDescription, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              title: Text(l10n.themeSystem),
-              subtitle: Text(l10n.themeSystemDesc),
-              leading: const Icon(Icons.brightness_auto),
+              title: Text(l10n.themeSystem, style: GoogleFonts.outfit()),
+              subtitle: Text(l10n.themeSystemDesc, style: GoogleFonts.outfit()),
+              leading: const PhosphorIcon(PhosphorIcons.brightnessAuto),
               trailing: Radio<ThemeMode>(
                 value: ThemeMode.system,
                 // ignore: deprecated_member_use
@@ -552,9 +555,9 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             ListTile(
-              title: Text(l10n.themeLight),
-              subtitle: Text(l10n.themeLightDesc),
-              leading: const Icon(Icons.light_mode),
+              title: Text(l10n.themeLight, style: GoogleFonts.outfit()),
+              subtitle: Text(l10n.themeLightDesc, style: GoogleFonts.outfit()),
+              leading: const PhosphorIcon(PhosphorIcons.sun),
               trailing: Radio<ThemeMode>(
                 value: ThemeMode.light,
                 // ignore: deprecated_member_use
@@ -573,9 +576,9 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             ListTile(
-              title: Text(l10n.themeDark),
-              subtitle: Text(l10n.themeDarkDesc),
-              leading: const Icon(Icons.dark_mode),
+              title: Text(l10n.themeDark, style: GoogleFonts.outfit()),
+              subtitle: Text(l10n.themeDarkDesc, style: GoogleFonts.outfit()),
+              leading: const PhosphorIcon(PhosphorIcons.moon),
               trailing: Radio<ThemeMode>(
                 value: ThemeMode.dark,
                 // ignore: deprecated_member_use

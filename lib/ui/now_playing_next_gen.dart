@@ -16,6 +16,8 @@ import 'song_actions_sheet.dart';
 import 'widgets/bouncy_button.dart';
 import 'widgets/music_box_scaffold.dart';
 import 'widgets/sleep_timer_dialog.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Opens the Next Gen Now Playing page
 Widget openNextGenNowPlaying(BuildContext context) {
@@ -410,14 +412,14 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.keyboard_arrow_down_rounded,
-                                  size: 32, color: Colors.white),
+                              icon: PhosphorIcon(PhosphorIcons.caretDown(),
+                                  size: 28, color: Colors.white),
                               onPressed: () => Navigator.of(context).pop(),
                             ),
                             const Spacer(),
                             IconButton(
-                              icon: const Icon(Icons.more_vert_rounded,
-                                  size: 26, color: Colors.white),
+                              icon: PhosphorIcon(PhosphorIcons.dotsThreeVertical(),
+                                  size: 32, color: Colors.white),
                               onPressed: () => openSongActionsSheet(context, song),
                             ),
                           ],
@@ -530,8 +532,8 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                                           child: child,
                                         );
                                       },
-                                      child: Icon(
-                                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                                      child: PhosphorIcon(
+                                        isFavorite ? PhosphorIconsFill.heart() : PhosphorIcons.heart(),
                                         key: ValueKey(isFavorite),
                                         color: isFavorite ? Colors.red : Colors.white,
                                         size: 32,
@@ -552,8 +554,8 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                                     children: [
                                       IconButton(
                                         onPressed: () => _showSleepTimerSheet(context),
-                                        icon: Icon(
-                                          Icons.timer_outlined,
+                                        icon: PhosphorIcon(
+                                          PhosphorIcons.timer(),
                                           color: Colors.white,
                                           size: 32,
                                         ),
@@ -721,8 +723,8 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                                       final isShuffleOn =
                                           snapshot.data ?? false;
                                       return IconButton(
-                                        icon: Icon(
-                                          Icons.shuffle_rounded,
+                                        icon: PhosphorIcon(
+                                          PhosphorIcons.shuffle(),
                                           size: 26,
                                           color: isShuffleOn
                                               ? _activeButtonColor
@@ -738,8 +740,8 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                                   // Previous
                                   BouncyButton(
                                     onPressed: () => player.seekToPrevious(),
-                                    child: const Icon(
-                                      Icons.skip_previous_rounded,
+                                    child: PhosphorIcon(
+                                      PhosphorIconsFill.skipBack(),
                                       size: 44,
                                       color: Colors.white,
                                     ),
@@ -780,10 +782,10 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                                               ),
                                             ],
                                           ),
-                                          child: Icon(
+                                          child: PhosphorIcon(
                                             isPlaying
-                                                ? Icons.pause_rounded
-                                                : Icons.play_arrow_rounded,
+                                                ? PhosphorIconsFill.pause()
+                                                : PhosphorIconsFill.play(),
                                             size: 40,
                                             color: Colors.white,
                                           ),
@@ -794,8 +796,8 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                                   // Next
                                   BouncyButton(
                                     onPressed: () => player.seekToNext(),
-                                    child: const Icon(
-                                      Icons.skip_next_rounded,
+                                    child: PhosphorIcon(
+                                      PhosphorIconsFill.skipForward(),
                                       size: 44,
                                       color: Colors.white,
                                     ),
@@ -806,9 +808,9 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                                     initialData: player.loopMode,
                                     builder: (context, snapshot) {
                                       final mode = snapshot.data ?? LoopMode.off;
-                                      IconData ic = Icons.repeat_rounded;
+                                      IconData ic = PhosphorIcons.repeat();
                                       if (mode == LoopMode.one) {
-                                        ic = Icons.repeat_one_rounded;
+                                        ic = PhosphorIcons.repeatOnce();
                                       }
                                       final isOn = mode != LoopMode.off;
                                       return BouncyButton(
@@ -827,7 +829,7 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                                             color: Colors.transparent,
                                             shape: BoxShape.circle,
                                           ),
-                                          child: Icon(
+                                          child: PhosphorIcon(
                                             ic,
                                             size: 26,
                                             color: isOn
@@ -851,7 +853,7 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               _GlassButton(
-                                icon: Icons.lyrics_outlined,
+                                icon: PhosphorIcons.textAa,
                                 label: AppLocalizations.of(context)!.lyrics,
                                 onTap: () {
                                   Navigator.of(context).push(
@@ -866,7 +868,7 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                               ),
                               const SizedBox(width: 16),
                               _GlassButton(
-                                icon: Icons.queue_music_rounded,
+                                icon: PhosphorIcons.playlist,
                                 label: AppLocalizations.of(context)!.queue,
                                 onTap: () {
                                   Navigator.of(context).push(
@@ -928,20 +930,20 @@ class _GlassButton extends StatelessWidget {
                 width: 1,
               ),
             ),
-            child: Row(
-              children: [
-                Icon(icon, size: 22, color: Colors.white),
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+              child: Row(
+                children: [
+                  PhosphorIcon(icon, size: 22, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
           ),
         ),
       ),

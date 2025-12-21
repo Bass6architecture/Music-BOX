@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_box/player/player_cubit.dart';
 import 'package:music_box/generated/app_localizations.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SleepTimerDialog extends StatelessWidget {
   const SleepTimerDialog({super.key});
@@ -47,8 +49,8 @@ class SleepTimerDialog extends StatelessWidget {
                        color: colorScheme.primary.withValues(alpha: 0.1),
                        shape: BoxShape.circle,
                      ),
-                     child: Icon(
-                       Icons.timer_outlined,
+                     child: PhosphorIcon(
+                       PhosphorIcons.timer(),
                        color: colorScheme.primary,
                        size: 28,
                      ),
@@ -60,7 +62,7 @@ class SleepTimerDialog extends StatelessWidget {
                        children: [
                          Text(
                            l10n.sleepTimerTitle,
-                           style: TextStyle(
+                           style: GoogleFonts.outfit(
                              fontSize: 20,
                              fontWeight: FontWeight.bold,
                              color: isDark ? Colors.white : Colors.black87,
@@ -95,7 +97,7 @@ class SleepTimerDialog extends StatelessWidget {
                                     final seconds = (remaining.inSeconds % 60).toString().padLeft(2, '0');
                                     return Text(
                                       l10n.sleepTimerActiveRemaining(minutes, seconds),
-                                      style: TextStyle(
+                                      style: GoogleFonts.outfit(
                                         fontSize: 14,
                                         color: colorScheme.primary,
                                         fontWeight: FontWeight.w600,
@@ -143,10 +145,10 @@ class SleepTimerDialog extends StatelessWidget {
                       backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    icon: Icon(Icons.edit_rounded, size: 20, color: colorScheme.primary),
+                    icon: PhosphorIcon(PhosphorIcons.pencilLine(), size: 20, color: colorScheme.primary),
                     label: Text(
                       l10n.customize,
-                      style: TextStyle(
+                      style: GoogleFonts.outfit(
                          color: colorScheme.primary,
                          fontWeight: FontWeight.w600,
                       ),
@@ -165,7 +167,7 @@ class SleepTimerDialog extends StatelessWidget {
                       children: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: Text(l10n.cancel),
+                          child: Text(l10n.cancel, style: GoogleFonts.outfit()),
                         ),
                         if (state.sleepTimerEndTime != null)
                           Padding(
@@ -178,7 +180,7 @@ class SleepTimerDialog extends StatelessWidget {
                                 context.read<PlayerCubit>().cancelSleepTimer();
                                 Navigator.pop(context);
                               },
-                              child: Text(l10n.deactivate),
+                              child: Text(l10n.deactivate, style: GoogleFonts.outfit()),
                             ),
                           ),
                       ],
@@ -259,7 +261,7 @@ class SleepTimerDialog extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             label,
-            style: TextStyle(
+            style: GoogleFonts.outfit(
               fontWeight: FontWeight.w600,
               fontSize: 15,
               color: isDark ? Colors.white : Colors.black87,
@@ -301,7 +303,7 @@ class _CustomTimerPickerState extends State<_CustomTimerPicker> {
         children: [
           Text(
             l10n.customTimer,
-            style: TextStyle(
+            style: GoogleFonts.outfit(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: isDark ? Colors.white : Colors.black87,
@@ -328,7 +330,7 @@ class _CustomTimerPickerState extends State<_CustomTimerPicker> {
                           return Center(
                             child: Text(
                               index.toString().padLeft(2, '0'),
-                              style: TextStyle(
+                              style: GoogleFonts.outfit(
                                 fontSize: isSelected ? 24 : 18,
                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                 color: isSelected 
@@ -372,7 +374,7 @@ class _CustomTimerPickerState extends State<_CustomTimerPicker> {
                           return Center(
                             child: Text(
                               index.toString().padLeft(2, '0'),
-                              style: TextStyle(
+                              style: GoogleFonts.outfit(
                                 fontSize: isSelected ? 24 : 18,
                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                 color: isSelected 
@@ -406,7 +408,7 @@ class _CustomTimerPickerState extends State<_CustomTimerPicker> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
-              child: Text(l10n.setTimer, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              child: Text(l10n.setTimer, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
           ),
           const SizedBox(height: 16), // Bottom padding
