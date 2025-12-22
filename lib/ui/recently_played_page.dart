@@ -1,3 +1,4 @@
+﻿import 'widgets/music_box_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -9,11 +10,11 @@ import '../widgets/song_actions.dart';
 
 
 import 'now_playing_next_gen.dart';
-import 'widgets/music_box_scaffold.dart';
+
 import '../core/background/background_cubit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_theme.dart';
+
 
 class RecentlyPlayedPage extends StatefulWidget {
   const RecentlyPlayedPage({super.key});
@@ -23,7 +24,7 @@ class RecentlyPlayedPage extends StatefulWidget {
 }
 
 class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> with AutomaticKeepAliveClientMixin {
-  final OnAudioQuery _audioQuery = OnAudioQuery();
+
   Future<List<SongModel>>? _future;
 
   @override
@@ -43,7 +44,7 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> with AutomaticK
     final lastMap = cubit.state.lastPlayed;
     if (lastMap.isEmpty) return <SongModel>[];
 
-    // ✅ Optimization: Use cached songs from Cubit
+    // âœ… Optimization: Use cached songs from Cubit
     final allSongs = cubit.state.allSongs;
 
     // Filtrer les fichiers avec des URIs valides
@@ -82,7 +83,7 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> with AutomaticK
           return FadeTransition(opacity: animation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 300),
-        opaque: false, // ✅ Transparent
+        opaque: false, // âœ… Transparent
       ),
     );
   }
@@ -127,7 +128,7 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> with AutomaticK
                       
                       return CustomScrollView(
                         slivers: [
-                          // AppBar épinglée avec gradient
+                          // AppBar Ã©pinglÃ©e avec gradient
                           SliverAppBar(
                             expandedHeight: 180,
                             pinned: true,
@@ -177,7 +178,7 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> with AutomaticK
                       ),
                     ),
                     centerTitle: false,
-                    titlePadding: const EdgeInsetsDirectional.only(start: 60, bottom: 16), // ✅ Fix overlap
+                    titlePadding: const EdgeInsetsDirectional.only(start: 60, bottom: 16), // âœ… Fix overlap
                               background: Stack(
                                 fit: StackFit.expand,
                                 children: [
@@ -197,9 +198,9 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> with AutomaticK
                           right: -20,
                           bottom: -20,
                           child: PhosphorIcon(
-                            PhosphorIconsFill.history(),
-                            size: 140,
-                            color: Colors.purple.withValues(alpha: 0.1),
+                            PhosphorIcons.clockCounterClockwise(PhosphorIconsStyle.fill),
+                            color: theme.colorScheme.onPrimaryContainer,
+                            size: 24,
                           ),
                         ),
                       ],
@@ -265,10 +266,10 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> with AutomaticK
                               final parts = <String>[];
                               final meta = [s.artist, s.album]
                                   .where((e) => (e ?? '').isNotEmpty)
-                                  .join(' • ');
+                                  .join(' â€¢ ');
                               if (meta.isNotEmpty) parts.add(meta);
-                              // ✅ Removed relative time as requested
-                              return parts.join(' • ');
+                              // âœ… Removed relative time as requested
+                              return parts.join(' â€¢ ');
                             }();
                             return Column(
                               children: [
@@ -340,5 +341,7 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> with AutomaticK
 }
 
 // (removed unused _ActionTile)
+
+
 
 

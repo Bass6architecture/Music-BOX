@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/background/background_cubit.dart';
-import '../../core/theme/app_theme.dart';
+
 
 class MusicBoxScaffold extends StatelessWidget {
   final Widget? body;
@@ -46,7 +46,7 @@ class MusicBoxScaffold extends StatelessWidget {
           decoration: isCustomBackground
               ? BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(assetPath!),
+                    image: AssetImage(assetPath),
                     fit: BoxFit.cover,
                   ),
                 )
@@ -67,3 +67,4 @@ class MusicBoxScaffold extends StatelessWidget {
     );
   }
 }
+

@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_theme.dart';
+
 
 class InternalBrowserPage extends StatefulWidget {
   const InternalBrowserPage({
@@ -84,3 +84,5 @@ class _InternalBrowserPageState extends State<InternalBrowserPage> {
     );
   }
 }
+
+

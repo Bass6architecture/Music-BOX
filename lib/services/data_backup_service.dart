@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
@@ -14,7 +14,7 @@ class DataBackupService {
   
   static const String _backupVersion = '1.0';
 
-  /// Créer une sauvegarde et proposer de la partager/sauvegarder
+  /// CrÃ©er une sauvegarde et proposer de la partager/sauvegarder
   static Future<bool> createBackup(BuildContext context) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -45,7 +45,7 @@ class DataBackupService {
         'custom_artwork_paths': prefs.getString('custom_artwork_paths'),
         'metadata_overrides': prefs.getString('metadata_overrides'),
         'hide_meta_warning': prefs.getBool('hide_meta_warning'),
-        'song_metadata_cache': metadataCache, // ✅ Added for migration
+        'song_metadata_cache': metadataCache, // âœ… Added for migration
       };
 
       final jsonString = jsonEncode(allData);
@@ -103,3 +103,5 @@ class DataBackupService {
     }
   }
 }
+
+

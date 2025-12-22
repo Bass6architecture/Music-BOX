@@ -1,4 +1,5 @@
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -202,3 +203,7 @@ class _CoverArtSearchPageState extends State<CoverArtSearchPage> {
     );
   }
 }
+
+
+
+

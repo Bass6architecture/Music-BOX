@@ -1,0 +1,112 @@
+﻿Analyzing music_box...                                          
+
+   info - 'value' is deprecated and shouldn't be used. Use component accessors like .r or .g, or toARGB32 for an explicit conversion - lib\core\utils\music_data_processor.dart:78:30 - deprecated_member_use
+   info - 'value' is deprecated and shouldn't be used. Use component accessors like .r or .g, or toARGB32 for an explicit conversion - lib\core\utils\music_data_processor.dart:79:28 - deprecated_member_use
+   info - 'value' is deprecated and shouldn't be used. Use component accessors like .r or .g, or toARGB32 for an explicit conversion - lib\core\utils\music_data_processor.dart:80:24 - deprecated_member_use
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:902:9 - undefined_identifier
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:905:27 - undefined_identifier
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:906:27 - undefined_identifier
+   info - The 'if' statement could be replaced by a null-aware assignment - lib\player\player_cubit.dart:1245:9 - prefer_conditional_assignment
+warning - The operand can't be 'null', so the condition is always 'true' - lib\player\player_cubit.dart:1250:25 - unnecessary_null_comparison
+warning - The operand can't be 'null', so the condition is always 'true' - lib\player\player_cubit.dart:1256:25 - unnecessary_null_comparison
+   info - The 'if' statement could be replaced by a null-aware assignment - lib\player\player_cubit.dart:1407:7 - prefer_conditional_assignment
+warning - The operand can't be 'null', so the condition is always 'true' - lib\player\player_cubit.dart:1411:22 - unnecessary_null_comparison
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:1481:9 - undefined_identifier
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:1483:15 - undefined_identifier
+warning - The operand can't be 'null', so the condition is always 'true' - lib\player\player_cubit.dart:1494:38 - unnecessary_null_comparison
+   info - Don't invoke 'print' in production code - lib\player\player_cubit.dart:1663:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\player\player_cubit.dart:1710:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\player\player_cubit.dart:1801:7 - avoid_print
+   info - Angle brackets will be interpreted as HTML - lib\player\player_cubit.dart:1865:55 - unintended_html_in_doc_comment
+   info - Don't invoke 'print' in production code - lib\player\player_cubit.dart:1869:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\player\player_cubit.dart:1879:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\player\player_cubit.dart:1884:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\player\player_cubit.dart:1890:7 - avoid_print
+   info - Angle brackets will be interpreted as HTML - lib\player\player_cubit.dart:1922:51 - unintended_html_in_doc_comment
+   info - 'ConcatenatingAudioSource' is deprecated and shouldn't be used. Use AudioPlayer.setAudioSources instead - lib\player\player_cubit.dart:2180:26 - deprecated_member_use
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:2251:9 - undefined_identifier
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:2253:15 - undefined_identifier
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:2333:11 - undefined_identifier
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:2335:17 - undefined_identifier
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:2351:11 - undefined_identifier
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:2353:17 - undefined_identifier
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:2472:9 - undefined_identifier
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:2494:15 - undefined_identifier
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:2624:7 - undefined_identifier
+   info - 'ConcatenatingAudioSource' is deprecated and shouldn't be used. Use AudioPlayer.setAudioSources instead - lib\player\player_cubit.dart:2624:19 - deprecated_member_use
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:2627:9 - undefined_identifier
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:2824:11 - undefined_identifier
+   info - 'ConcatenatingAudioSource' is deprecated and shouldn't be used. Use AudioPlayer.setAudioSources instead - lib\player\player_cubit.dart:2824:23 - deprecated_member_use
+  error - Undefined name '_playlist' - lib\player\player_cubit.dart:2827:13 - undefined_identifier
+   info - The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart' - lib\services\artwork_preloader.dart:1:8 - unnecessary_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\album_detail_page.dart:354:78 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\album_detail_page.dart:369:81 - deprecated_member_use
+warning - Unused import: 'widgets/music_box_scaffold.dart' - lib\ui\background_selection_page.dart:6:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\background_selection_page.dart:140:41 - deprecated_member_use
+warning - The value of the local variable 'theme' isn't used - lib\ui\background_selection_page.dart:333:11 - unused_local_variable
+warning - The declaration '_removeFolder' isn't referenced - lib\ui\hidden_folders_page.dart:31:16 - unused_element
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\ui\language_selection_page.dart:54:15 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\ui\language_selection_page.dart:55:15 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\ui\language_selection_page.dart:111:15 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\ui\language_selection_page.dart:112:15 - deprecated_member_use
+   info - Unnecessary use of 'toList' in a spread - lib\ui\language_selection_page.dart:131:12 - unnecessary_to_list_in_spreads
+warning - The value of the field '_notifiedFound' isn't used - lib\ui\lyrics_page.dart:34:8 - unused_field
+warning - The value of the field '_lyricsSavedAt' isn't used - lib\ui\lyrics_page.dart:44:8 - unused_field
+warning - The value of the field '_fromCache' isn't used - lib\ui\lyrics_page.dart:45:8 - unused_field
+   info - The private field _parsedLyrics could be 'final' - lib\ui\lyrics_page.dart:52:19 - prefer_final_fields
+warning - The operand can't be 'null', so the condition is always 'true' - lib\ui\lyrics_page.dart:152:12 - unnecessary_null_comparison
+   info - Use interpolation to compose strings and values - lib\ui\lyrics_page.dart:152:28 - prefer_interpolation_to_compose_strings
+warning - Dead code - lib\ui\lyrics_page.dart:153:5 - dead_code
+   info - Statements in an if should be enclosed in a block - lib\ui\lyrics_page.dart:173:27 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\ui\lyrics_page.dart:173:57 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\ui\lyrics_page.dart:335:29 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\ui\lyrics_page.dart:335:86 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\ui\lyrics_page.dart:336:29 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\ui\lyrics_page.dart:336:86 - curly_braces_in_flow_control_structures
+   info - Don't use 'BuildContext's across async gaps - lib\ui\lyrics_page.dart:437:34 - use_build_context_synchronously
+warning - The declaration '_formatAgo' isn't referenced - lib\ui\lyrics_page.dart:626:10 - unused_element
+warning - The operand can't be 'null', so the condition is always 'true' - lib\ui\lyrics_page.dart:830:20 - unnecessary_null_comparison
+warning - The '!' will have no effect because the receiver can't be null - lib\ui\lyrics_page.dart:836:56 - unnecessary_non_null_assertion
+warning - Dead code - lib\ui\lyrics_page.dart:840:13 - dead_code
+   info - Statements in an if should be enclosed in a block - lib\ui\lyrics_page.dart:887:43 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\ui\lyrics_page.dart:887:68 - curly_braces_in_flow_control_structures
+   info - Don't use 'BuildContext's across async gaps - lib\ui\lyrics_page.dart:911:43 - use_build_context_synchronously
+warning - The '!' will have no effect because the receiver can't be null - lib\ui\lyrics_page.dart:1191:27 - unnecessary_non_null_assertion
+warning - The '!' will have no effect because the receiver can't be null - lib\ui\lyrics_page.dart:1200:32 - unnecessary_non_null_assertion
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\ui\lyrics_page.dart:1235:38 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\ui\lyrics_page.dart:1236:62 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\ui\lyrics_page.dart:1336:30 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\ui\lyrics_page.dart:1336:95 - use_build_context_synchronously
+warning - The value of the field '_audioQuery' isn't used - lib\ui\most_played_page.dart:26:22 - unused_field
+   info - The private field _colorCache could be 'final' - lib\ui\now_playing_next_gen.dart:64:25 - prefer_final_fields
+   info - The local variable '_lastPositionUpdate' starts with an underscore - lib\ui\now_playing_next_gen.dart:146:15 - no_leading_underscores_for_local_identifiers
+warning - The operand can't be 'null', so the condition is always 'true' - lib\ui\now_playing_next_gen.dart:182:15 - unnecessary_null_comparison
+warning - The operand can't be 'null', so the condition is always 'false' - lib\ui\now_playing_next_gen.dart:204:33 - unnecessary_null_comparison
+warning - The '!' will have no effect because the receiver can't be null - lib\ui\now_playing_next_gen.dart:218:32 - unnecessary_non_null_assertion
+warning - The '!' will have no effect because the receiver can't be null - lib\ui\now_playing_next_gen.dart:234:30 - unnecessary_non_null_assertion
+warning - The '!' will have no effect because the receiver can't be null - lib\ui\now_playing_next_gen.dart:242:30 - unnecessary_non_null_assertion
+warning - The '!' will have no effect because the receiver can't be null - lib\ui\now_playing_next_gen.dart:252:28 - unnecessary_non_null_assertion
+warning - The '!' will have no effect because the receiver can't be null - lib\ui\now_playing_next_gen.dart:261:26 - unnecessary_non_null_assertion
+warning - The declaration '_UserPlaylistTile' isn't referenced - lib\ui\playlists_page.dart:469:7 - unused_element
+warning - A value for optional parameter 'onRename' isn't ever given - lib\ui\playlists_page.dart:474:10 - unused_element_parameter
+warning - A value for optional parameter 'onDelete' isn't ever given - lib\ui\playlists_page.dart:475:10 - unused_element_parameter
+warning - The value of the field '_lastRemovedSong' isn't used - lib\ui\queue_page.dart:23:14 - unused_field
+warning - The value of the field '_lastRemovedIndex' isn't used - lib\ui\queue_page.dart:24:8 - unused_field
+warning - The value of the field '_audioQuery' isn't used - lib\ui\recently_added_page.dart:26:22 - unused_field
+warning - The value of the field '_audioQuery' isn't used - lib\ui\recently_played_page.dart:26:22 - unused_field
+warning - Unused import: '../core/theme/app_theme.dart' - lib\ui\scan_music_page.dart:9:8 - unused_import
+warning - The value of the local variable 'fgColor' isn't used - lib\ui\screens\for_you_page.dart:497:11 - unused_local_variable
+   info - Statements in an if should be enclosed in a block - lib\ui\screens\for_you_page.dart:558:27 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\ui\screens\for_you_page.dart:559:12 - curly_braces_in_flow_control_structures
+warning - The declaration '_navigateToNowPlaying' isn't referenced - lib\ui\screens\home_screen.dart:349:8 - unused_element
+warning - The value of the local variable 'theme' isn't used - lib\ui\screens\songs_screen.dart:595:11 - unused_local_variable
+   info - Don't use 'BuildContext's across async gaps - lib\ui\screens\songs_screen.dart:849:10 - use_build_context_synchronously
+warning - A value for optional parameter 'itemHeight' isn't ever given - lib\ui\screens\songs_screen.dart:881:10 - unused_element_parameter
+   info - Don't use 'BuildContext's across async gaps - lib\ui\screens\splash_screen.dart:69:18 - use_build_context_synchronously
+warning - Unused import: '../core/theme/app_theme.dart' - lib\ui\song_actions_sheet.dart:20:8 - unused_import
+warning - The declaration '_coverCallbacksInitialized' isn't referenced - lib\ui\song_actions_sheet.dart:24:6 - unused_element
+warning - The '!' will have no effect because the receiver can't be null - lib\ui\widgets\music_box_scaffold.dart:49:48 - unnecessary_non_null_assertion
+warning - The value of the local variable 'colorScheme' isn't used - lib\ui\widgets\sleep_timer_dialog.dart:228:11 - unused_local_variable
+warning - The declaration 'cache' isn't referenced - lib\widgets\optimized_artwork.dart:50:38 - unused_element
+   info - The import of 'package:flutter/services.dart' is unnecessary because all of the used elements are also provided by the import of 'dart:ui' - lib\widgets\permission_wrapper.dart:3:8 - unnecessary_import
+

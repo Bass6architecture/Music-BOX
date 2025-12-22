@@ -199,7 +199,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get equalizerDesc => 'Régler les basses et les aigus';
 
   @override
-  String get equalizerEnabled => 'Égaliseur activé';
+  String get equalizerEnabled => 'Activer l\'égaliseur';
 
   @override
   String get equalizerDisabled => 'Égaliseur désactivé';
@@ -1086,6 +1086,36 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get crossfade => 'Fondu enchaîné';
+
+  @override
+  String get crossfadeDesc => 'Transition fluide entre les chansons';
+
+  @override
+  String get crossfadeDisabled => 'Désactivé';
+
+  @override
+  String crossfadeSeconds(int seconds) {
+    return '$seconds s';
+  }
+
+  @override
+  String get gaplessPlayback => 'Sauter les silences';
+
+  @override
+  String get gaplessPlaybackDesc =>
+      'Supprime les blancs dans l\'audio (peut causer des artéfacts)';
+
+  @override
+  String get playbackSpeed => 'Vitesse de lecture';
+
+  @override
+  String get playbackSpeedDesc => 'Ajuster la vitesse audio';
+
+  @override
+  String get defaultSpeed => 'Vitesse par défaut';
+
+  @override
   String get contactSubject => 'Support Music Box';
 
   @override
@@ -1121,4 +1151,19 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get searchOnInternet => 'Rechercher sur Internet';
+
+  @override
+  String get finishCurrentSong => 'Finir la chanson actuelle';
+
+  @override
+  String get sleepTimerFadeOut => 'Fondu enchaîné final (15s)';
+
+  @override
+  String get customEqualizer => 'Égaliseur';
+
+  @override
+  String get equalizerBands => 'Bandes de fréquence';
+
+  @override
+  String get equalizerPresets => 'Préréglages';
 }

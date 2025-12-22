@@ -1,3 +1,4 @@
+﻿import 'widgets/music_box_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -8,15 +9,14 @@ import '../player/mini_player.dart';
 import 'now_playing_next_gen.dart';
 import '../widgets/song_tile.dart';
 import '../widgets/song_actions.dart';
-import 'widgets/music_box_scaffold.dart';
+
 import '../core/background/background_cubit.dart';
-import 'song_actions_sheet.dart'; 
+ 
 import 'package:share_plus/share_plus.dart'; 
 import 'dart:math' as math;
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_theme.dart';
-import 'widgets/modern_widgets.dart';
+
 
 class ArtistDetailPage extends StatefulWidget {
   const ArtistDetailPage({super.key, required this.artistName});
@@ -44,7 +44,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
 
   Future<List<SongModel>> _load() async {
     final cubit = context.read<PlayerCubit>();
-    // ✅ Optimization: Use cached songs
+    // âœ… Optimization: Use cached songs
     final allSongs = cubit.state.allSongs;
     
     // Filter from cached songs
@@ -114,7 +114,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
           return FadeTransition(opacity: animation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 300),
-        opaque: false, // ✅ Transparent
+        opaque: false, // âœ… Transparent
       ),
     );
   }
@@ -250,7 +250,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.deleteSong),
-        content: Text("Voulez-vous vraiment supprimer ${selectedSongs.length} chansons définitivement ?"),
+        content: Text("Voulez-vous vraiment supprimer ${selectedSongs.length} chansons dÃ©finitivement ?"),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
           FilledButton(
@@ -305,7 +305,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
                   
                   return CustomScrollView(
                     slivers: [
-                      // AppBar épinglée avec gradient
+                      // AppBar Ã©pinglÃ©e avec gradient
                       SliverAppBar(
                         expandedHeight: _isSelectionMode ? 0 : 200,
                         pinned: true,
@@ -325,7 +325,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
                                TextButton.icon(
                                  onPressed: _selectAll,
                                  icon: PhosphorIcon(_selectedIds.length == songs.length ? PhosphorIcons.minusSquare() : PhosphorIcons.checkSquare()),
-                                 label: Text(_selectedIds.length == songs.length ? "Désélect. tout" : AppLocalizations.of(context)!.selectAll, style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
+                                 label: Text(_selectedIds.length == songs.length ? "DÃ©sÃ©lect. tout" : AppLocalizations.of(context)!.selectAll, style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
                                )
                             ],
                         ) : null,
@@ -368,7 +368,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
                             left: 0,
                             right: 0,
                             child: PhosphorIcon(
-                              PhosphorIconsFill.user(),
+                              PhosphorIcons.user(PhosphorIconsStyle.fill),
                               size: 80,
                               color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
                             ),
@@ -378,7 +378,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
                     ),
                   ),
     
-                  // Info et boutons (Masqués)
+                  // Info et boutons (MasquÃ©s)
                   if (!_isSelectionMode)
                     SliverToBoxAdapter(
                       child: Padding(
@@ -435,7 +435,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
                            }
                           
                           final s = songs[index];
-                          final subtitle = [s.artist, s.album].where((e) => (e ?? '').isNotEmpty).join(' • ');
+                          final subtitle = [s.artist, s.album].where((e) => (e ?? '').isNotEmpty).join(' â€¢ ');
                           return SongTile(
                             song: s,
                             subtitle: subtitle,
@@ -506,10 +506,10 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-             _buildBarAction(context, PhosphorIconsFill.play(), l10n.play, _playSelected),
-             _buildBarAction(context, PhosphorIconsFill.playlist(), l10n.addToPlaylist, _addToPlaylistSelected),
-             _buildBarAction(context, PhosphorIconsFill.shareNetwork(), l10n.share, _shareSelected),
-             _buildBarAction(context, PhosphorIconsFill.trash(), l10n.delete, _deleteSelected, isDestructive: true),
+             _buildBarAction(context, PhosphorIcons.play(PhosphorIconsStyle.fill), l10n.play, _playSelected),
+             _buildBarAction(context, PhosphorIcons.playlist(PhosphorIconsStyle.fill), l10n.addToPlaylist, _addToPlaylistSelected),
+             _buildBarAction(context, PhosphorIcons.shareNetwork(PhosphorIconsStyle.fill), l10n.share, _shareSelected),
+             _buildBarAction(context, PhosphorIcons.trash(PhosphorIconsStyle.fill), l10n.delete, _deleteSelected, isDestructive: true),
           ],
         ),
       ),
@@ -543,3 +543,5 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
      );
   }
 }
+
+

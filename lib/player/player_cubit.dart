@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:path/path.dart' as path;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 
 import 'package:audio_session/audio_session.dart';
@@ -15,7 +16,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:flutter/services.dart';
+
 
 import 'package:permission_handler/permission_handler.dart';
 
@@ -116,7 +117,7 @@ class LocalMetadataOverrides {
 class PlayerStateModel {
   const PlayerStateModel({
     required this.songs,
-    this.allSongs = const <SongModel>[], // ✅ Full library
+    this.allSongs = const <SongModel>[], // âœ… Full library
     required this.currentIndex,
     this.currentSongId,
     this.hiddenFolders = const <String>[],
@@ -133,10 +134,17 @@ class PlayerStateModel {
     this.accentPerSong = const <int, int>{},
     this.sleepTimerEndTime,
     this.isLoading = false,
+    this.crossfadeDuration = 0,
+    this.gaplessEnabled = false,
+    this.playbackSpeed = 1.0,
+    this.equalizerBands = const [],
+    this.equalizerEnabled = false,
+    this.finishSongBeforeStop = false,
+    this.sleepTimerFadeOut = true,
   });
 
   final List<SongModel> songs; // Current Queue
-  final List<SongModel> allSongs; // ✅ Full Library
+  final List<SongModel> allSongs; // âœ… Full Library
   final int? currentIndex; // index within songs
   final int? currentSongId;
   final bool isPlaying;
@@ -144,7 +152,7 @@ class PlayerStateModel {
   final Map<int, int> playCounts; // songId -> count
   final Map<int, int> lastPlayed; // songId -> timestamp
   final List<UserPlaylist> userPlaylists;
-  // Dossiers masqués
+  // Dossiers masquÃ©s
   final List<String> hiddenFolders;
   final bool showHiddenFolders;
   final Map<int, String> customArtworkPaths;
@@ -153,11 +161,24 @@ class PlayerStateModel {
   final bool hideMetadataSaveWarning;
   final Map<int, int> accentPerSong;
   
-  // ✅ Sleep Timer State
+  // âœ… Sleep Timer State
   final DateTime? sleepTimerEndTime;
   
-  // ✅ Loading State
+  // âœ… Loading State
   final bool isLoading;
+
+  // âœ… New Audio Features
+  final int crossfadeDuration; // 0-12s
+  final bool gaplessEnabled;
+  final double playbackSpeed;
+
+  // âœ… Equalizer State
+  final List<double> equalizerBands; // gain in dB
+  final bool equalizerEnabled;
+
+  // âœ… Enhanced Sleep Timer State
+  final bool finishSongBeforeStop;
+  final bool sleepTimerFadeOut;
 
   // Helpers
   bool get hasSleepTimer => sleepTimerEndTime != null;
@@ -182,6 +203,13 @@ class PlayerStateModel {
     DateTime? sleepTimerEndTime,
     bool clearSleepTimer = false,
     bool? isLoading,
+    int? crossfadeDuration,
+    bool? gaplessEnabled,
+    double? playbackSpeed,
+    List<double>? equalizerBands,
+    bool? equalizerEnabled,
+    bool? finishSongBeforeStop,
+    bool? sleepTimerFadeOut,
   }) {
     return PlayerStateModel(
       songs: songs ?? this.songs,
@@ -202,18 +230,25 @@ class PlayerStateModel {
       accentPerSong: accentPerSong ?? this.accentPerSong,
       sleepTimerEndTime: clearSleepTimer ? null : (sleepTimerEndTime ?? this.sleepTimerEndTime),
       isLoading: isLoading ?? this.isLoading,
+      crossfadeDuration: crossfadeDuration ?? this.crossfadeDuration,
+      gaplessEnabled: gaplessEnabled ?? this.gaplessEnabled,
+      playbackSpeed: playbackSpeed ?? this.playbackSpeed,
+      equalizerBands: equalizerBands ?? this.equalizerBands,
+      equalizerEnabled: equalizerEnabled ?? this.equalizerEnabled,
+      finishSongBeforeStop: finishSongBeforeStop ?? this.finishSongBeforeStop,
+      sleepTimerFadeOut: sleepTimerFadeOut ?? this.sleepTimerFadeOut,
     );
   }
 }
 
 class PlayerCubit extends Cubit<PlayerStateModel> {
-  // ✅ Cache pour la pochette par défaut
+  // âœ… Cache pour la pochette par dÃ©faut
   String? _defaultCoverPath;
 
   PlayerCubit()
       : super(const PlayerStateModel(
           songs: [],
-          allSongs: [], // ✅ Init empty
+          allSongs: [], 
           currentIndex: null,
           currentSongId: null,
           isPlaying: false,
@@ -226,26 +261,40 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
           deletedSongIds: <int>{},
           hideMetadataSaveWarning: false,
           accentPerSong: <int, int>{},
-          isLoading: true, // ✅ Start as loading
+          isLoading: true, 
+          crossfadeDuration: 0,
+          gaplessEnabled: false, 
+          playbackSpeed: 1.0,
+          equalizerBands: [],
+          equalizerEnabled: false,
+          finishSongBeforeStop: false,
+          sleepTimerFadeOut: true,
         ));
 
-  late final AudioPlayer player = AudioPlayer();
+  final AndroidEqualizer _equalizer = AndroidEqualizer();
+  late final AudioPlayer player = AudioPlayer(
+    audioPipeline: AudioPipeline(
+      androidAudioEffects: [
+        _equalizer,
+      ],
+    ),
+  );
 
   final MethodChannel _nativeChannel = const MethodChannel('com.synergydev.music_box/native');
   MusicBoxAudioHandler? _audioHandler;
-  ConcatenatingAudioSource? _playlist;
+
   DateTime? _lastWidgetPush;
   final Set<int> _accentInProgress = <int>{};
   bool _artRefreshInProgress = false;
   Timer? _widgetUpdateTimer;
   DateTime? _ignoreIndexChangesUntil;
   
-  // ✅ Cache for widget artwork to avoid repeated I/O
+  // âœ… Cache for widget artwork to avoid repeated I/O
   String? _cachedWidgetArtPath;
   int? _cachedWidgetArtSongId;
 
   
-  // ✅ Sleep Timer
+  // âœ… Sleep Timer
   Timer? _sleepTimer;
   DateTime? _sleepEndTime;
 
@@ -253,43 +302,58 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
   static const _keyLastSongId = 'last_song_id';
   static const _keyShuffleMode = 'shuffle_mode';
   static const _keyLoopMode = 'loop_mode';
+  // Quick notification restore keys
+  static const _keyLastSongTitle = 'last_song_title';
+  static const _keyLastSongArtist = 'last_song_artist';
+  static const _keyLastSongArtPath = 'last_song_art_path';
+  static const _keyLastSongUri = 'last_song_uri';
+  static const _keyLastSongDuration = 'last_song_duration';
+  
+  // New Audio Features Persistence Keys
+  static const _keyCrossfade = 'crossfade_duration';
+  static const _keyGapless = 'gapless_enabled';
+  static const _keyPlaybackSpeed = 'playback_speed';
+  static const _keyEqEnabled = 'eq_enabled';
+  static const _keyEqBands = 'eq_bands';
+  static const _keyTimerFinishSong = 'timer_finish_song';
+  static const _keyTimerFadeOut = 'timer_fade_out';
 
-  /// Créer une pochette par défaut
+  /// CrÃ©er une pochette par dÃ©faut
   Future<String> _getDefaultCoverPath() async {
     if (_defaultCoverPath != null) return _defaultCoverPath!;
     
     try {
       final tempDir = await getTemporaryDirectory();
-      // ✅ Nouveau nom pour forcer la recréation de la pochette
+      // âœ… Nouveau nom pour forcer la recrÃ©ation de la pochette
       final defaultCover = File(path.join(tempDir.path, 'default_artwork_material_icon.png'));
       
-      // ✅ FORCER la suppression et recréation à chaque fois (temporairement)
+      // âœ… FORCER la suppression et recrÃ©ation Ã  chaque fois (temporairement)
       try {
         final oldCover1 = File(path.join(tempDir.path, 'default_artwork_optimized.png'));
         final oldCover2 = File(path.join(tempDir.path, 'default_artwork_music_note.png'));
         if (await oldCover1.exists()) await oldCover1.delete();
         if (await oldCover2.exists()) await oldCover2.delete();
-        if (await defaultCover.exists()) await defaultCover.delete(); // Recréer à chaque fois
+        if (await defaultCover.exists()) await defaultCover.delete(); // RecrÃ©er Ã  chaque fois
       } catch (_) {}
       
-      // Toujours recréer pour cette version pour appliquer le nouveau style gris
+      // Toujours recrÃ©er pour cette version pour appliquer le nouveau style gris
       if (true) {
-        // ✅ Créer la pochette par défaut avec l'icône Material (comme dans l'app)
+        // âœ… CrÃ©er la pochette par dÃ©faut avec l'icÃ´ne Material (comme dans l'app)
         final recorder = ui.PictureRecorder();
         final canvas = Canvas(recorder);
         final size = 512.0;
         
-        // Fond avec dégradé
-        // ✅ Fond neutre (Gris #212121) pour matcher le widget "Clean Glass"
+        // Fond avec dÃ©gradÃ©
+        // âœ… Fond neutre (Gris #212121) pour matcher le widget "Clean Glass"
         final bgPaint = Paint()..color = const Color(0xFF212121);
         canvas.drawRect(Rect.fromLTWH(0, 0, size, size), bgPaint);
         
-        // Cercle central discret (optionnel, ou juste l'icône)
-        // On le retire pour être 100% "flat" comme le widget
-        // final circlePaint = Paint()..color = Colors.white.withOpacity(0.05);
+        // Cercle central discret (optionnel, ou juste l'icÃ´ne)
+        // On le retire pour Ãªtre 100% "flat" comme le widget
+        // final circlePaint = Paint()..color = Colors.white.withValues(alpha: 0.05);
         // canvas.drawCircle(Offset(size / 2, size / 2), size * 0.35, circlePaint);
         
-        // ✅ Dessiner l'icône Material Icons.music_note_rounded
+        // âœ… Dessiner l'icÃ´ne Material Icons.music_note_rounded
         final iconSize = size * 0.35;
         final iconBuilder = ui.ParagraphBuilder(ui.ParagraphStyle(
           textAlign: TextAlign.center,
@@ -323,7 +387,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       _defaultCoverPath = defaultCover.path;
       return _defaultCoverPath!;
     } catch (e) {
-      debugPrint('❌ Erreur création pochette par défaut: $e');
+      debugPrint('âŒ Erreur crÃ©ation pochette par dÃ©faut: $e');
       return '';
     }
   }
@@ -334,19 +398,19 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       final sourceFile = File(imagePath);
       if (!await sourceFile.exists()) return null;
       
-      // Créer un chemin de cache unique basé sur le fichier ET sa date de modification
+      // CrÃ©er un chemin de cache unique basÃ© sur le fichier ET sa date de modification
       final tempDir = await getTemporaryDirectory();
       final filename = path.basename(imagePath).replaceAll(RegExp(r'[^a-zA-Z0-9.]'), '_');
       final mtime = await sourceFile.lastModified();
       final timestamp = mtime.millisecondsSinceEpoch;
       final cachedFile = File(path.join(tempDir.path, 'artwork_${filename}_$timestamp.png'));
       
-      // Si déjà optimisé avec ce timestamp, retourner
+      // Si dÃ©jÃ  optimisÃ© avec ce timestamp, retourner
       if (await cachedFile.exists()) {
         return cachedFile.path;
       }
       
-      // ✅ Nettoyer SEULEMENT les anciennes versions de CE fichier (pas tous les temp)
+      // âœ… Nettoyer SEULEMENT les anciennes versions de CE fichier (pas tous les temp)
       try {
         final pattern = 'artwork_$filename';
         // Utiliser un pattern glob au lieu de lister tous les fichiers
@@ -361,14 +425,14 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       // Lire l'image source
       final bytes = await sourceFile.readAsBytes();
       
-      // Décoder pour obtenir les dimensions réelles
+      // DÃ©coder pour obtenir les dimensions rÃ©elles
       final codec = await ui.instantiateImageCodec(bytes);
       final frame = await codec.getNextFrame();
       final sourceWidth = frame.image.width;
       final sourceHeight = frame.image.height;
       
-      // ✅ TOUJOURS redimensionner pour garantir la netteté et la performance
-      // Augmenté à 1024 pour un affichage "Naturel" haute qualité
+      // âœ… TOUJOURS redimensionner pour garantir la nettetÃ© et la performance
+      // AugmentÃ© Ã  1024 pour un affichage "Naturel" haute qualitÃ©
       final targetSize = 1024;
       final widthRatio = targetSize / sourceWidth;
       final heightRatio = targetSize / sourceHeight;
@@ -381,16 +445,16 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       if (targetWidth < targetSize) targetWidth = targetSize;
       if (targetHeight < targetSize) targetHeight = targetSize;
       
-      // Redécoder avec la taille optimale et haute qualité
+      // RedÃ©coder avec la taille optimale et haute qualitÃ©
       final optimizedCodec = await ui.instantiateImageCodec(
         bytes,
         targetWidth: targetWidth,
         targetHeight: targetHeight,
-        allowUpscaling: true,  // ✅ Permettre l'upscale pour les petites images
+        allowUpscaling: true,  // âœ… Permettre l'upscale pour les petites images
       );
       final optimizedFrame = await optimizedCodec.getNextFrame();
       
-      // ✅ Utiliser PNG avec compression minimale pour qualité maximale
+      // âœ… Utiliser PNG avec compression minimale pour qualitÃ© maximale
       final pngData = await optimizedFrame.image.toByteData(
         format: ui.ImageByteFormat.png,
       );
@@ -407,7 +471,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
 
   Future<void> loadAllSongs() async {
     try {
-      emit(state.copyWith(isLoading: true)); // ✅ Start loading
+      emit(state.copyWith(isLoading: true)); // âœ… Start loading
       
       final audioQuery = OnAudioQuery();
       if (await Permission.audio.request().isGranted) {
@@ -419,17 +483,17 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         );
         final validSongs = songs.where((s) => s.duration != null && s.duration! > 0).toList();
         
-        // ✅ Filter out hidden folders
+        // âœ… Filter out hidden folders
         final filteredSongs = filterSongs(validSongs);
         
-        // ✅ Populate both songs (queue) and allSongs (library)
+        // âœ… Populate both songs (queue) and allSongs (library)
         emit(state.copyWith(
           songs: filteredSongs, 
           allSongs: filteredSongs,
-          isLoading: false, // ✅ Finish loading
+          isLoading: false, // âœ… Finish loading
         ));
       
-        // ✅ Restore player state (last song, shuffle, loop)
+        // âœ… Restore player state (last song, shuffle, loop)
         await _restorePlayerState();
       }
     } catch (e) {
@@ -443,52 +507,52 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     
     // Initialiser audio_service avec AudioHandler
     try {
-      debugPrint('🎵 Initialisation AudioService...');
+      debugPrint('ðŸŽµ Initialisation AudioService...');
       _audioHandler = await AudioService.init(
         builder: () => MusicBoxAudioHandler(player),
         config: AudioServiceConfig(
           androidNotificationChannelId: 'com.synergydev.music_box.audio',
           androidNotificationChannelName: 'Lecture Audio',
-          androidNotificationChannelDescription: 'Contrôles de lecture musicale',
-          androidNotificationOngoing: true, // ✅ Garder la notif active pour éviter que l'OS ne tue le service
-          androidStopForegroundOnPause: false, // ✅ NE PAS arrêter le service en pause pour permettre la reprise
+          androidNotificationChannelDescription: 'ContrÃ´les de lecture musicale',
+          androidNotificationOngoing: true, // âœ… Garder la notif active pour Ã©viter que l'OS ne tue le service
+          androidStopForegroundOnPause: false, // âœ… NE PAS arrÃªter le service en pause pour permettre la reprise
           androidNotificationIcon: 'drawable/ic_notification',
           androidNotificationClickStartsActivity: true,
           androidShowNotificationBadge: true,
-          preloadArtwork: false, // ✅ Disable preloading to prevent hangs with large queues
-          // ✅ Disable downscaling to keep high quality (we optimize manually to 1024px)
+          preloadArtwork: false, // âœ… Disable preloading to prevent hangs with large queues
+          // âœ… Disable downscaling to keep high quality (we optimize manually to 1024px)
           artDownscaleWidth: null,
           artDownscaleHeight: null,
         ),
       );
       
-      debugPrint('✅ AudioService initialisé : $_audioHandler');
+      debugPrint('âœ… AudioService initialisÃ© : $_audioHandler');
       
       // Connecter le bouton J'aime
       _audioHandler?.onLikePressed = (songId) {
         toggleFavoriteById(songId);
       };
       
-      // ✅ Créer la pochette par défaut au démarrage pour les notifications
+      // âœ… CrÃ©er la pochette par dÃ©faut au dÃ©marrage pour les notifications
       _getDefaultCoverPath().then((path) {
         _defaultCoverPath = path;
-        debugPrint('✅ Pochette par défaut créée : $path');
+        debugPrint('âœ… Pochette par dÃ©faut crÃ©Ã©e : $path');
       }).catchError((e) {
-        debugPrint('❌ Erreur création pochette par défaut : $e');
+        debugPrint('âŒ Erreur crÃ©ation pochette par dÃ©faut : $e');
       });
     } catch (e, stack) {
-      debugPrint('❌ AudioService init failed: $e');
+      debugPrint('âŒ AudioService init failed: $e');
       debugPrint('Stack: $stack');
     }
     
-    // Configure les contrôles de notification
+    // Configure les contrÃ´les de notification
     player.setAutomaticallyWaitsToMinimizeStalling(true);
     
-    // ✅ Error logging to catch "No sound" (stuck at 0:00) issues
+    // âœ… Error logging to catch "No sound" (stuck at 0:00) issues
     player.playbackEventStream.listen((event) {
       // Optional: Log state changes if needed for debugging
     }, onError: (Object e, StackTrace stackTrace) {
-      debugPrint('❌ JustAudio Error: $e');
+      debugPrint('âŒ JustAudio Error: $e');
     });
 
     // Pause on interruptions and when becoming noisy
@@ -507,7 +571,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       _debounceWidgetUpdate();
     });
     
-    // ✅ Save state on changes
+    // âœ… Save state on changes
     player.shuffleModeEnabledStream.listen((_) => _savePlayerState());
     player.loopModeStream.listen((_) => _savePlayerState());
 
@@ -543,39 +607,48 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
           last.remove(sortedKeys.first);
         }
       }
-      // ✅ Toujours émettre currentSongId avec currentIndex
+
+      // âœ… Handle Sleep Timer "Finish current song"
+      if (_sleepEndTime != null && DateTime.now().isAfter(_sleepEndTime!) && state.finishSongBeforeStop) {
+        _stopFromSleepTimer();
+        return; // Don't play the next song
+      }
+
+      // âœ… Toujours Ã©mettre currentSongId avec currentIndex
       emit(state.copyWith(currentIndex: i, currentSongId: s.id, playCounts: counts, lastPlayed: last));
       
       
-      // ✅ Save state when song changes
+      // âœ… Save state when song changes
       _savePlayerState();
 
-      // ⚠️ SUPPRIMÉ : Mise à jour basée sur audioSource.tag (source de conflits)
+      // âš ï¸ SUPPRIMÃ‰ : Mise Ã  jour basÃ©e sur audioSource.tag (source de conflits)
       // Nous utilisons maintenant le listener plus bas (ligne ~660) qui utilise state.songs
-      // et _refreshCurrentArtworkIfNeeded pour garantir que les métadonnées sont à jour.
+      // et _refreshCurrentArtworkIfNeeded pour garantir que les mÃ©tadonnÃ©es sont Ã  jour.
       
       // Defer persistence to avoid blocking UI
       Future.microtask(_persistPlayStats);
       _debounceWidgetUpdate();
       // Trigger accent extraction for the current song (cached)
-      if (s != null) {
-        ensureAccentForSong(s.id);
+      ensureAccentForSong(s.id);
         // Refresh notification artwork in background if needed
-        Future.microtask(_refreshCurrentArtworkIfNeeded);
-        // ✅ Pre-cache next songs to ensure sharp artwork in notification queue
-        // Delayed to avoid blocking UI during transition
-        Future.delayed(const Duration(seconds: 2), () {
-          _preCacheArtworkForNextSongs();
-        });
-      }
+      _refreshCurrentArtworkIfNeeded();
+      // âœ… Pre-cache next songs to ensure sharp artwork in notification queue
+      // Delayed to avoid blocking UI during transition
+      Future.delayed(const Duration(seconds: 2), () {
+        _preCacheArtworkForNextSongs();
+      });
     });
-    // ✅ Periodic position updates -> throttle widget updates (≈1s pour temps réel)
-    player.positionStream.listen((_) {
+    // âœ… Periodic position updates -> throttle widget updates (â‰ˆ1s pour temps rÃ©el)
+    player.positionStream.listen((position) {
       final now = DateTime.now();
-      // Mettre à jour le widget toutes les 1 seconde pendant la lecture
+      
+      // Handle Fade In/Out logic (Crossfade)
+      _handleCrossfade(position);
+
+      // Mettre Ã  jour le widget toutes les 1 seconde pendant la lecture
       if (_lastWidgetPush == null || now.difference(_lastWidgetPush!) > const Duration(seconds: 1)) {
         _lastWidgetPush = now;
-        // Ne mettre à jour que si en lecture (éviter updates inutiles)
+        // Ne mettre Ã  jour que si en lecture (Ã©viter updates inutiles)
         if (player.playing) {
           _pushWidgetUpdate();
         }
@@ -591,12 +664,13 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     await _loadSoftDeletedSongIds();
     await _loadHideMetadataSaveWarning();
     
-    // ✅ Restore state AFTER loading everything else
+    // âœ… Restore state AFTER loading everything else
     // We need songs to be loaded first, which happens in loadAllSongs called from UI or elsewhere.
     // But init() is called early. We might need to hook into loadAllSongs or just wait.
     // Actually, loadAllSongs is usually called by the UI. 
     // We should probably call _restorePlayerState inside loadAllSongs after songs are loaded.
     await _restorePlayerState();
+    await _initEqualizer(); // âœ… Init Equalizer at startup
 
     await loadAllSongs();
 
@@ -643,7 +717,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       }
     });
     
-    // Configure les listeners pour les contrôles de notification
+    // Configure les listeners pour les contrÃ´les de notification
     player.shuffleModeEnabledStream.listen((enabled) {
       _debounceWidgetUpdate();
     });
@@ -652,13 +726,13 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       _debounceWidgetUpdate();
     });
 
-    // ✅ Listen for duration changes to update notification progress bar
+    // âœ… Listen for duration changes to update notification progress bar
     // This supports files where duration is unknown until playback starts
     player.durationStream.listen((duration) {
       if (duration != null && duration.inMilliseconds > 0 && _audioHandler != null) {
         final item = _audioHandler!.mediaItem.value;
         if (item != null && (item.duration == null || item.duration!.inMilliseconds == 0)) {
-          debugPrint('🎵 Mise à jour durée notification: ${duration.inMilliseconds}ms');
+          debugPrint('ðŸŽµ Mise Ã  jour durÃ©e notification: ${duration.inMilliseconds}ms');
           final newItem = item.copyWith(duration: duration);
           _audioHandler!.mediaItem.add(newItem);
           // Force refresh state to ensure seek bar appears
@@ -669,27 +743,27 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       }
     });
 
-    // ✅ CRITICAL FIX: Listen to track changes from notification buttons
+    // âœ… CRITICAL FIX: Listen to track changes from notification buttons
     // This ensures artwork, liked state, and progress bar are updated when user
     // presses Next/Previous in the notification
     player.currentIndexStream.listen((index) async {
       if (index == null) return;
       
-      // ✅ Skip if we just changed the track from within the app (prevents visual jump)
+      // âœ… Skip if we just changed the track from within the app (prevents visual jump)
       if (_ignoreIndexChangesUntil != null && DateTime.now().isBefore(_ignoreIndexChangesUntil!)) {
-        debugPrint('🎵 Ignoring index change (from app, not notification)');
+        debugPrint('ðŸŽµ Ignoring index change (from app, not notification)');
         return;
       }
       
       // Only update if the index actually changed
       if (state.currentIndex != index && index < state.songs.length) {
         final newSong = state.songs[index];
-        debugPrint('🎵 Track changed from notification: ${newSong.title}');
+        debugPrint('ðŸŽµ Track changed from notification: ${newSong.title}');
         
         // Update state
         emit(state.copyWith(currentIndex: index, currentSongId: newSong.id));
         
-        // ✅ Immediately refresh notification with proper artwork and liked state
+        // âœ… Immediately refresh notification with proper artwork and liked state
         if (_audioHandler != null) {
           // Refresh artwork in background (will call setMediaItemWithLikedState when ready)
           Future.microtask(() async {
@@ -711,6 +785,37 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     if (s0 != null) {
       // Fire and forget
       Future.microtask(() => ensureAccentForSong(s0.id));
+    }
+  }
+
+  /// GÃ¨re le fondu (In/Out) en fonction de la position actuelle
+  void _handleCrossfade(Duration position) {
+    if (state.crossfadeDuration <= 0) {
+      if ((player.volume - 1.0).abs() > 0.01) player.setVolume(1.0);
+      return;
+    }
+
+    final duration = player.duration;
+    if (duration == null) return;
+
+    final crossfadeMillis = state.crossfadeDuration * 1000;
+    final remainingMillis = (duration - position).inMilliseconds;
+    final elapsedMillis = position.inMilliseconds;
+
+    double targetVolume = 1.0;
+
+    if (remainingMillis < crossfadeMillis && remainingMillis > 0) {
+      // Fade Out (Fin de chanson)
+      targetVolume = remainingMillis / crossfadeMillis;
+    } else if (elapsedMillis < crossfadeMillis) {
+      // Fade In (DÃ©but de chanson)
+      targetVolume = elapsedMillis / crossfadeMillis;
+    }
+
+    final clampedVolume = targetVolume.clamp(0.0, 1.0);
+    // On ne met Ã  jour que si la diffÃ©rence est significative pour Ã©viter de surcharger le lecteur
+    if ((player.volume - clampedVolume).abs() > 0.01) {
+      player.setVolume(clampedVolume);
     }
   }
 
@@ -747,7 +852,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       }
       if (bytes == null || bytes.isEmpty) return;
 
-      // ✅ Use Isolate for heavy palette extraction
+      // âœ… Use Isolate for heavy palette extraction
       final colorValue = await MusicDataProcessor.extractDominantColor(bytes);
       if (colorValue == null) return;
 
@@ -763,7 +868,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
 
   void _debounceWidgetUpdate() {
     _widgetUpdateTimer?.cancel();
-    // ✅ ZERO DELAY: Update immediately for "instant" feel
+    // âœ… ZERO DELAY: Update immediately for "instant" feel
     // Using microtask to allow current stack frame to finish (e.g. state emission)
     Future.microtask(_pushWidgetUpdate);
   }
@@ -778,7 +883,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       final progress = durMs > 0 ? ((posMs * 100) ~/ durMs).clamp(0, 100) : 0;
       String? artPath;
       if (s != null) {
-        // ✅ Check cache first
+        // âœ… Check cache first
         if (_cachedWidgetArtSongId == s.id && _cachedWidgetArtPath != null) {
           artPath = _cachedWidgetArtPath;
         } else {
@@ -812,7 +917,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
             } catch (_) {}
           }
           
-          // ✅ CRITICAL FIX: Fallback to default cover if still no artwork
+          // âœ… CRITICAL FIX: Fallback to default cover if still no artwork
           if (artPath == null && _defaultCoverPath != null && _defaultCoverPath!.isNotEmpty) {
             artPath = _defaultCoverPath;
           }
@@ -851,6 +956,40 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       await player.setShuffleModeEnabled(enabled);
       await _pushWidgetUpdate();
     } catch (_) {}
+  }
+  
+  // âœ… New Audio Features Methods
+  
+  Future<void> setCrossfadeDuration(int seconds) async {
+    // Note: just_audio direct crossfade support is limited.
+    // Ideally this would configure a crossfade between tracks if supported or custom implementation.
+    // For now we store the preference.
+    emit(state.copyWith(crossfadeDuration: seconds));
+    await _savePlayerState();
+  }
+
+  Future<void> toggleGapless() async {
+    final newValue = !state.gaplessEnabled;
+    emit(state.copyWith(gaplessEnabled: newValue));
+    
+    // Map "Gapless" to Skip Silence for tangible effect, as ConcatenatingAudioSource is already gapless.
+    try {
+      await player.setSkipSilenceEnabled(newValue);
+    } catch (e) {
+      debugPrint('Error setting skip silence: $e');
+    }
+    
+    await _savePlayerState();
+  }
+
+  Future<void> setPlaybackSpeed(double speed) async {
+    emit(state.copyWith(playbackSpeed: speed));
+    try {
+      await player.setSpeed(speed);
+    } catch (e) {
+      debugPrint('Error setting playback speed: $e');
+    }
+    await _savePlayerState();
   }
 
   Future<void> cycleRepeatMode() async {
@@ -900,17 +1039,13 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     // Sort descending
     indicesToRemove.sort((a, b) => b.compareTo(a));
 
-    // 2. Remove from player source (ConcatenatingAudioSource)
-    if (_playlist != null) {
-        try {
-            for (final idx in indicesToRemove) {
-                if (idx < _playlist!.length) {
-                    await _playlist!.removeAt(idx);
-                }
-            }
-        } catch (e) {
-            debugPrint("Error removing from playlist: $e");
+    // 2. Remove from player source (using direct AudioPlayer methods)
+    try {
+        for (final idx in indicesToRemove) {
+            await player.removeAudioSourceAt(idx);
         }
+    } catch (e) {
+        debugPrint("Error removing from playlist: $e");
     }
 
     // 3. Remove from UI Model
@@ -1063,12 +1198,12 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     final idx = state.songs.indexWhere((s) => s.id == songId);
     if (idx != -1) {
       final base = state.songs[idx];
-      // Extraire les valeurs en sécurité (les getters peuvent crasher si null)
+      // Extraire les valeurs en sÃ©curitÃ© (les getters peuvent crasher si null)
       final titleValue = merged.title ?? base.title;
       final artistValue = merged.artist ?? base.artist ?? 'Unknown';
       final albumValue = merged.album ?? base.album ?? '';
       
-      // Accéder aux données brutes du map pour éviter les getters qui crashent
+      // AccÃ©der aux donnÃ©es brutes du map pour Ã©viter les getters qui crashent
       final baseMap = base.getMap;
       final uriValue = baseMap['_uri'] ?? '';
       final durationValue = baseMap['duration'] ?? 0;
@@ -1157,7 +1292,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     await _persistSoftDeletedSongIds();
   }
 
-  // ✅ Basé sur currentSongId pour éviter les désynchronisations pendant drag/drop
+  // âœ… BasÃ© sur currentSongId pour Ã©viter les dÃ©synchronisations pendant drag/drop
   SongModel? get currentSong {
     // D'abord essayer avec l'ID (plus fiable)
     if (state.currentSongId != null) {
@@ -1204,7 +1339,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         sources.add(
           AudioSource.uri(
             Uri.parse(uri),
-            tag: _createMediaItemWithArtwork(s), // ✅ Use helper for consistent metadata
+            tag: _createMediaItemWithArtwork(s), // âœ… Use helper for consistent metadata
           ),
         );
       }
@@ -1215,8 +1350,8 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       targetPlIndex ??= (targetUiIndex.clamp(0, filtered.length - 1));
 
       // Update state BEFORE setting audio sources to avoid listener conflicts
-      // ✅ Toujours émettre currentSongId avec songs et currentIndex
-      final currentSongId = (targetPlIndex != null && targetPlIndex < filtered.length) 
+      // âœ… Toujours Ã©mettre currentSongId avec songs et currentIndex
+      final currentSongId = (targetPlIndex < filtered.length) 
           ? filtered[targetPlIndex].id 
           : null;
       emit(state.copyWith(songs: filtered, currentIndex: targetPlIndex, currentSongId: currentSongId));
@@ -1243,23 +1378,21 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
           } catch (_) {}
         }
         
-        // 3. Fallback par défaut
-        if (artworkPath == null) {
-          artworkPath = await _getDefaultCoverPath();
-        }
+        // 3. Fallback par dÃ©faut
+        artworkPath ??= await _getDefaultCoverPath();
         
         // CRUCIAL : Optimiser l'image pour Android (PNG 512x512)
-        if (artworkPath != null && artworkPath.isNotEmpty) {
+        if (artworkPath.isNotEmpty) {
           final optimized = await _optimizeArtworkForNotification(artworkPath);
           if (optimized != null) artworkPath = optimized;
         }
         
-        // Mettre à jour la source audio avec la pochette optimisée
-        if (artworkPath != null && artworkPath.isNotEmpty && targetPlIndex < sources.length) {
+        // Mettre Ã  jour la source audio avec la pochette optimisÃ©e
+        if (artworkPath.isNotEmpty && targetPlIndex < sources.length) {
           final source = sources[targetPlIndex];
           if (source is UriAudioSource && source.tag is MediaItem) {
             final oldItem = source.tag as MediaItem;
-            // Recréer le source avec la pochette optimisée
+            // RecrÃ©er le source avec la pochette optimisÃ©e
             sources[targetPlIndex] = AudioSource.uri(
               Uri.parse(oldItem.id),
               tag: oldItem.copyWith(artUri: Uri.file(artworkPath)),
@@ -1271,7 +1404,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       // Ignore ALL index changes for the next second to avoid conflicts
       _ignoreIndexChangesUntil = DateTime.now().add(const Duration(milliseconds: 1000));
       
-      // Mettre à jour l'AudioHandler avec les MediaItem AVANT de jouer
+      // Mettre Ã  jour l'AudioHandler avec les MediaItem AVANT de jouer
       if (_audioHandler != null && sources.isNotEmpty) {
         final mediaItems = sources
             .where((s) => s is UriAudioSource && s.tag is MediaItem)
@@ -1279,7 +1412,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
             .toList();
         _audioHandler!.setQueueItems(mediaItems);
         
-        // Mettre à jour le MediaItem courant avec l'état "aimé" AVANT play()
+        // Mettre Ã  jour le MediaItem courant avec l'Ã©tat "aimÃ©" AVANT play()
         if (targetPlIndex < mediaItems.length) {
           final currentMediaItem = mediaItems[targetPlIndex];
           final songId = currentMediaItem.extras?['songId'] as int?;
@@ -1289,9 +1422,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       }
       
       // Now set the audio sources and play
-      // ✅ Create and store ConcatenatingAudioSource explicitly
-      _playlist = ConcatenatingAudioSource(children: sources);
-      await player.setAudioSource(_playlist!, initialIndex: targetPlIndex, initialPosition: Duration.zero);
+      await player.setAudioSources(sources, initialIndex: targetPlIndex, initialPosition: Duration.zero);
       await player.play();
     } catch (e) {
       // Log error silently and continue
@@ -1331,7 +1462,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
   // Queue maintenance
   // -----------------------------
 
-  /// ✅ Helper: Create MediaItem with artwork fallback to default cover
+  /// âœ… Helper: Create MediaItem with artwork fallback to default cover
   /// This ensures notifications ALWAYS show an image, even for songs without embedded artwork
   MediaItem _createMediaItemWithArtwork(SongModel song) {
     final overridden = applyOverrides(song);
@@ -1351,7 +1482,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     }
     
     return MediaItem(
-      id: song.uri ?? song.id.toString(), // ✅ URI as ID, fallback to ID string
+      id: song.uri ?? song.id.toString(), // âœ… URI as ID, fallback to ID string
       title: overridden.title,
       artist: overridden.artist ?? 'Artiste inconnu',
       album: overridden.album ?? 'Album inconnu',
@@ -1407,17 +1538,15 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         } catch (_) {}
       }
       
-      // Si toujours rien, utiliser la pochette par défaut
-      if (targetPath == null) {
-        targetPath = await _getDefaultCoverPath();
-      }
+      // Si toujours rien, utiliser la pochette par dÃ©faut
+      targetPath ??= await _getDefaultCoverPath();
 
-      if (targetPath != null && targetPath.isNotEmpty) {
+      if (targetPath.isNotEmpty) {
         // Optimiser pour Android
         final optimized = await _optimizeArtworkForNotification(targetPath);
         if (optimized != null) targetPath = optimized;
         
-        // Mettre à jour UNIQUEMENT le MediaItem courant sans toucher au player
+        // Mettre Ã  jour UNIQUEMENT le MediaItem courant sans toucher au player
         if (_audioHandler != null) {
           final isLiked = state.favorites.contains(s.id);
           final mediaItem = MediaItem(
@@ -1434,7 +1563,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         
 
         
-        // ✅ Update widget cache immediately
+        // âœ… Update widget cache immediately
         _cachedWidgetArtSongId = s.id;
         _cachedWidgetArtPath = targetPath;
       }
@@ -1479,23 +1608,16 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       nextIndex = cur;
     }
 
-    // 3. ✅ OPTIMIZATION: Remove from player directly without rebuilding
-    // 3. ✅ OPTIMIZATION: Remove from player directly without rebuilding
-    // Use explicit _playlist reference to avoid wrapper issues
-    if (_playlist != null) {
-      try {
-        await _playlist!.removeAt(idx);
-      } catch (e) {
-        // Fallback
-        await _updateQueue(current, nextIndex, preservePosition: true);
-      }
-    } else {
-      // Fallback if playlist not initialized
+    // 3. âœ… OPTIMIZATION: Remove from player directly without rebuilding
+    try {
+      await player.removeAudioSourceAt(idx);
+    } catch (e) {
+      // Fallback
       await _updateQueue(current, nextIndex, preservePosition: true);
     }
 
     // 4. Update state
-    final currentSongId = (nextIndex != null && nextIndex < current.length) 
+    final currentSongId = (nextIndex < current.length) 
         ? current[nextIndex].id 
         : null;
         
@@ -1529,24 +1651,121 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
   // -----------------------------
   // Sleep Timer
   // -----------------------------
-  void startSleepTimer(Duration duration) {
+  // -----------------------------
+  // Sleep Timer
+  // -----------------------------
+  bool _isSleepTimerFadeStarted = false;
+
+  void startSleepTimer(Duration duration, {bool? finishSong, bool? fadeOut}) {
     _sleepTimer?.cancel();
     _sleepEndTime = DateTime.now().add(duration);
+    _isSleepTimerFadeStarted = false;
     
-    // Broadcast state update so UI knows timer is active
-    emit(state.copyWith(sleepTimerEndTime: _sleepEndTime));
+    final newState = state.copyWith(
+      sleepTimerEndTime: _sleepEndTime,
+      finishSongBeforeStop: finishSong ?? state.finishSongBeforeStop,
+      sleepTimerFadeOut: fadeOut ?? state.sleepTimerFadeOut,
+    );
+    emit(newState);
     
-    _sleepTimer = Timer(duration, () async {
-      await player.pause();
-      cancelSleepTimer(); // Cleanup
+    // We use a periodic timer to check for fade out and completion
+    _sleepTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+      final now = DateTime.now();
+      if (_sleepEndTime == null) {
+        timer.cancel();
+        return;
+      }
+
+      final remaining = _sleepEndTime!.difference(now);
+
+      // Handle Fade Out (15s before end)
+      if (state.sleepTimerFadeOut && remaining.inSeconds <= 15 && remaining.inSeconds > 0) {
+        _isSleepTimerFadeStarted = true;
+        final volume = remaining.inMilliseconds / 15000.0;
+        player.setVolume(volume.clamp(0.0, 1.0));
+      }
+
+      if (now.isAfter(_sleepEndTime!)) {
+        if (state.finishSongBeforeStop) {
+          // Wait for song to finish - handled in currentIndexStream listener
+          // But we can also check if we are already at the very end
+           final pos = player.position;
+           final dur = player.duration;
+           if (dur != null && (dur - pos).inSeconds < 1) {
+             await _stopFromSleepTimer();
+           }
+        } else {
+          await _stopFromSleepTimer();
+        }
+      }
     });
+  }
+
+  Future<void> _stopFromSleepTimer() async {
+    await player.pause();
+    cancelSleepTimer();
+    player.setVolume(1.0); // Reset volume for next use
   }
 
   void cancelSleepTimer() {
     _sleepTimer?.cancel();
     _sleepTimer = null;
     _sleepEndTime = null;
+    _isSleepTimerFadeStarted = false;
+    player.setVolume(1.0);
     emit(state.copyWith(clearSleepTimer: true));
+  }
+
+  void toggleSleepTimerFinishSong(bool value) {
+    emit(state.copyWith(finishSongBeforeStop: value));
+  }
+
+  void toggleSleepTimerFadeOut(bool value) {
+    emit(state.copyWith(sleepTimerFadeOut: value));
+  }
+
+  // -----------------------------
+  // Equalizer Controls
+  // -----------------------------
+  
+  Future<void> toggleEqualizer(bool enabled) async {
+    emit(state.copyWith(equalizerEnabled: enabled));
+    await _equalizer.setEnabled(enabled);
+    _savePlayerState();
+  }
+
+  Future<void> setEqualizerBand(int bandIndex, double gain) async {
+    final bands = List<double>.from(state.equalizerBands);
+    if (bandIndex < bands.length) {
+      bands[bandIndex] = gain;
+      emit(state.copyWith(equalizerBands: bands));
+      
+      final parameters = await _equalizer.parameters;
+      final band = parameters.bands[bandIndex];
+      await band.setGain(gain);
+      _savePlayerState();
+    }
+  }
+
+  Future<void> _initEqualizer() async {
+    try {
+      final parameters = await _equalizer.parameters;
+      final bandsCount = parameters.bands.length;
+      
+      List<double> savedBands = state.equalizerBands;
+      if (savedBands.length != bandsCount) {
+        savedBands = List.filled(bandsCount, 0.0);
+      }
+      
+      emit(state.copyWith(equalizerBands: savedBands));
+      await _equalizer.setEnabled(state.equalizerEnabled);
+      
+      for (int i = 0; i < bandsCount; i++) {
+        await parameters.bands[i].setGain(savedBands[i]);
+      }
+    } catch (e) {
+      debugPrint('Error initializing equalizer: $e');
+    }
   }
 
   // -----------------------------
@@ -1639,7 +1858,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     emit(state.copyWith(favorites: next));
     _persistFavorites();
     
-    // Mettre à jour l'AudioHandler si c'est la chanson courante
+    // Mettre Ã  jour l'AudioHandler si c'est la chanson courante
     if (_audioHandler != null) {
       final currentSongId = currentSong?.id;
       if (currentSongId == songId) {
@@ -1657,14 +1876,14 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         emit(state.copyWith(favorites: set));
       }
 
-      // Charger les dossiers masqués
+      // Charger les dossiers masquÃ©s
       final hiddenFoldersJson = prefs.getString('hidden_folders');
       if (hiddenFoldersJson != null) {
         try {
           final List<dynamic> list = jsonDecode(hiddenFoldersJson);
           emit(state.copyWith(hiddenFolders: list.cast<String>().toList()));
         } catch (e) {
-          print('Error loading hidden folders: $e');
+          debugPrint('Error loading hidden folders: $e');
         }
       }
       
@@ -1711,11 +1930,11 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('hidden_folders', jsonEncode(state.hiddenFolders));
     } catch (e) {
-      print('Error saving hidden folders: $e');
+      debugPrint('Error saving hidden folders: $e');
     }
   }
   
-  // Vérifie si un fichier est dans un dossier masqué
+  // VÃ©rifie si un fichier est dans un dossier masquÃ©
   bool isPathInHiddenFolder(String filePath) {
     if (state.hiddenFolders.isEmpty) return false;
     
@@ -1723,11 +1942,11 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     final normalizedFilePath = path.normalize(filePath);
     final dir = path.dirname(normalizedFilePath);
     
-    // Vérifier si le fichier est dans un dossier masqué
+    // VÃ©rifier si le fichier est dans un dossier masquÃ©
     for (final hidden in state.hiddenFolders) {
       final normalizedHidden = path.normalize(hidden);
       
-      // Vérifier si le dossier du fichier est le dossier masqué ou un sous-dossier
+      // VÃ©rifier si le dossier du fichier est le dossier masquÃ© ou un sous-dossier
       if (dir == normalizedHidden || 
           path.isWithin(normalizedHidden, dir) ||
           path.isWithin(normalizedHidden, normalizedFilePath)) {
@@ -1738,12 +1957,12 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     return false;
   }
   
-  // Met à jour la liste des dossiers masqués
+  // Met Ã  jour la liste des dossiers masquÃ©s
   Future<void> updateHiddenFolders(List<String> folders) async {
     emit(state.copyWith(hiddenFolders: folders));
     await _persistHiddenFolders();
 
-    // Refiltrer la file de lecture actuelle pour retirer les titres masqués
+    // Refiltrer la file de lecture actuelle pour retirer les titres masquÃ©s
     final current = List<SongModel>.from(state.songs);
     if (current.isEmpty) return;
 
@@ -1764,7 +1983,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     }
 
     if (newSongs.length != current.length) {
-      // Si la chanson en cours a été masquée, choisir un index proche
+      // Si la chanson en cours a Ã©tÃ© masquÃ©e, choisir un index proche
       newCurrentIndex ??= newSongs.isEmpty
           ? null
           : (curIdx == null ? 0 : curIdx.clamp(0, newSongs.length - 1));
@@ -1773,8 +1992,8 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     }
   }
 
-  /// Met à jour la file d'attente avec une nouvelle liste.
-  /// Cette méthode est publique pour être utilisée par l'UI (ex: suppression multiple).
+  /// Met Ã  jour la file d'attente avec une nouvelle liste.
+  /// Cette mÃ©thode est publique pour Ãªtre utilisÃ©e par l'UI (ex: suppression multiple).
   Future<void> updateQueue(List<SongModel> newQueue) async {
       // Calculer le nouvel index de la chanson en cours
       final currentId = state.currentSongId;
@@ -1790,7 +2009,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       await _updateQueue(newQueue, newIndex, preservePosition: true);
   }
   
-  // Toggle pour afficher/masquer les dossiers masqués
+  // Toggle pour afficher/masquer les dossiers masquÃ©s
   Future<void> toggleShowHiddenFolders() async {
     emit(state.copyWith(showHiddenFolders: !state.showHiddenFolders));
     await _persistShowHiddenFolders();
@@ -1802,11 +2021,11 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('show_hidden_folders', state.showHiddenFolders);
     } catch (e) {
-      print('Error saving show hidden folders setting: $e');
+      debugPrint('Error saving show hidden folders setting: $e');
     }
   }
   
-  // Filtre les chansons en excluant celles des dossiers masqués
+  // Filtre les chansons en excluant celles des dossiers masquÃ©s
   List<SongModel> filterSongs(List<SongModel> songs) {
     if (state.hiddenFolders.isEmpty) {
       return List<SongModel>.from(songs);
@@ -1866,11 +2085,11 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     } catch (_) {}
   }
 
-  /// Copy [sourcePath] to app documents under covers/<songId>.(ext) and update state.
+  /// Copy [sourcePath] to app documents under covers/[songId].[ext] and update state.
   Future<void> setCustomArtwork(int songId, String sourcePath) async {
     try {
       // Debug logs to diagnose potential crashes when copying artwork files
-      print('[setCustomArtwork] songId=$songId sourcePath=$sourcePath');
+      debugPrint('[setCustomArtwork] songId=$songId sourcePath=$sourcePath');
       final docs = await getApplicationDocumentsDirectory();
       final coversDir = Directory(path.join(docs.path, 'covers'));
       if (!await coversDir.exists()) {
@@ -1880,25 +2099,25 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       final ext = path.extension(sourcePath);
       final safeExt = (ext.isNotEmpty ? ext : '.jpg');
       final targetPath = path.join(coversDir.path, '$songId$safeExt');
-      print('[setCustomArtwork] targetPath=$targetPath');
+      debugPrint('[setCustomArtwork] targetPath=$targetPath');
 
       // Copy/overwrite
       final srcFile = File(sourcePath);
       final exists = await srcFile.exists();
-      print('[setCustomArtwork] source exists=$exists');
+      debugPrint('[setCustomArtwork] source exists=$exists');
       if (!exists) {
         // Some providers return temporary or virtual paths; attempt a streamed copy as a fallback
         // (still using File API here; logs will help determine if a content:// handling is needed)
       }
       await srcFile.copy(targetPath);
-      print('[setCustomArtwork] copy succeeded');
+      debugPrint('[setCustomArtwork] copy succeeded');
 
       final next = Map<int, String>.from(state.customArtworkPaths);
       next[songId] = targetPath;
       emit(state.copyWith(customArtworkPaths: next));
       await _persistCustomArtworkPaths();
 
-      // Si c'est la chanson en cours, mettre à jour seulement le MediaItem courant
+      // Si c'est la chanson en cours, mettre Ã  jour seulement le MediaItem courant
       final currentSongModel = currentSong;
       if (currentSongModel != null && currentSongModel.id == songId && _audioHandler != null) {
         final optimized = await _optimizeArtworkForNotification(targetPath);
@@ -1916,14 +2135,14 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         _audioHandler!.setMediaItemWithLikedState(mediaItem, isLiked);
       }
       
-      // ✅ Update widget cache immediately
+      // âœ… Update widget cache immediately
       if (_cachedWidgetArtSongId == songId) {
          _cachedWidgetArtPath = targetPath;
       }
     } catch (_) {}
   }
 
-  /// Write [bytes] to app documents under covers/<songId>.(ext) and update state.
+  /// Write [bytes] to app documents under covers/[songId].[ext] and update state.
   Future<void> setCustomArtworkBytes(int songId, Uint8List bytes, {String ext = '.jpg'}) async {
     try {
       final docs = await getApplicationDocumentsDirectory();
@@ -1943,7 +2162,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       emit(state.copyWith(customArtworkPaths: next));
       await _persistCustomArtworkPaths();
 
-      // Si c'est la chanson en cours, mettre à jour seulement le MediaItem courant
+      // Si c'est la chanson en cours, mettre Ã  jour seulement le MediaItem courant
       final currentSongModel = currentSong;
       if (currentSongModel != null && currentSongModel.id == songId && _audioHandler != null) {
         final optimized = await _optimizeArtworkForNotification(targetPath);
@@ -1961,7 +2180,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         _audioHandler!.setMediaItemWithLikedState(mediaItem, isLiked);
       }
       
-      // ✅ Update widget cache immediately
+      // âœ… Update widget cache immediately
       if (_cachedWidgetArtSongId == songId) {
          _cachedWidgetArtPath = targetPath;
       }
@@ -1986,10 +2205,10 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       emit(state.copyWith(customArtworkPaths: next));
       await _persistCustomArtworkPaths();
 
-      // Si c'est la chanson en cours, rafraîchir la pochette en arrière-plan
+      // Si c'est la chanson en cours, rafraÃ®chir la pochette en arriÃ¨re-plan
       final currentSongModel = currentSong;
       if (currentSongModel != null && currentSongModel.id == songId) {
-        // ✅ Invalidate cache
+        // âœ… Invalidate cache
         if (_cachedWidgetArtSongId == songId) {
            _cachedWidgetArtPath = null;
         }
@@ -2094,7 +2313,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     _persistUserPlaylists();
   }
 
-  /// Réorganise l'ordre des titres dans une playlist utilisateur
+  /// RÃ©organise l'ordre des titres dans une playlist utilisateur
   void reorderUserPlaylist(String id, int oldIndex, int newIndex) {
     if (oldIndex == newIndex) return;
     final list = List<UserPlaylist>.from(state.userPlaylists);
@@ -2103,9 +2322,9 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
 
     final p = list[idx];
     if (oldIndex < 0 || oldIndex >= p.songIds.length) return;
-    // Lorsque newIndex vient de ReorderableListView, il est déjà ajusté (l'API Flutter
+    // Lorsque newIndex vient de ReorderableListView, il est dÃ©jÃ  ajustÃ© (l'API Flutter
     // fournit newIndex tel quel). On applique l'ajustement standard: si newIndex > oldIndex,
-    // insérer à newIndex - 1 pour conserver la sémantique.
+    // insÃ©rer Ã  newIndex - 1 pour conserver la sÃ©mantique.
     var target = newIndex;
     if (target > oldIndex) target -= 1;
     target = target.clamp(0, p.songIds.length - 1);
@@ -2119,7 +2338,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     _persistUserPlaylists();
   }
 
-  /// Mélange la file d'attente en maintenant la chanson en cours
+  /// MÃ©lange la file d'attente en maintenant la chanson en cours
   Future<void> shuffleQueue() async {
     if (state.songs.length <= 1) return;
     
@@ -2129,16 +2348,16 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     // Sauvegarder la chanson actuelle
     final currentSong = state.songs[currentIndex];
     
-    // Créer une nouvelle liste sans la chanson actuelle
+    // CrÃ©er une nouvelle liste sans la chanson actuelle
     final newSongs = List<SongModel>.from(state.songs)..removeAt(currentIndex);
     
-    // Mélanger le reste
+    // MÃ©langer le reste
     newSongs.shuffle();
     
-    // Reconstruire la liste avec la chanson actuelle en première position
+    // Reconstruire la liste avec la chanson actuelle en premiÃ¨re position
     newSongs.insert(0, currentSong);
     
-    // Mettre à jour la file d'attente
+    // Mettre Ã  jour la file d'attente
     await _updateQueue(newSongs, 0);
   }
   
@@ -2165,7 +2384,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       return;
     }
     
-    // Ajuster l'index courant si nécessaire
+    // Ajuster l'index courant si nÃ©cessaire
     int? newIndex = state.currentIndex;
     final isRemovingCurrentSong = position == state.currentIndex;
     
@@ -2178,14 +2397,12 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       }
     }
     
-    // ✅ OPTIMISATION: Si on ne supprime PAS la chanson en cours, juste retirer de la séquence
+    // âœ… OPTIMISATION: Si on ne supprime PAS la chanson en cours, juste retirer de la sÃ©quence
     if (!isRemovingCurrentSong) {
-      final audioSource = player.audioSource;
-      if (audioSource is ConcatenatingAudioSource) {
-        try {
-          await audioSource.removeAt(position);
+      try {
+        await player.removeAudioSourceAt(position);
           
-          // Mettre à jour uniquement l'état (sans recharger le player)
+          // Mettre Ã  jour uniquement l'Ã©tat (sans recharger le player)
           final currentSongId = (newIndex != null && newIndex < newSongs.length) ? newSongs[newIndex].id : null;
           emit(state.copyWith(
             songs: newSongs,
@@ -2193,23 +2410,22 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
             currentSongId: currentSongId,
           ));
           
-          // Mettre à jour les MediaItems dans l'AudioHandler
+          // Mettre Ã  jour les MediaItems dans l'AudioHandler
           if (_audioHandler != null) {
             final allMediaItems = newSongs.map((s) => _createMediaItemWithArtwork(s)).toList();
             _audioHandler!.setQueueItems(allMediaItems);
           }
           return;
         } catch (e) {
-          // Fallback si la suppression échoue
-        }
+          // Fallback si la suppression Ã©choue
       }
     }
     
-    // Si on supprime la chanson en cours OU si l'optimisation a échoué, recharger tout
+    // Si on supprime la chanson en cours OU si l'optimisation a Ã©chouÃ©, recharger tout
     await _updateQueue(newSongs, newIndex, preservePosition: !isRemovingCurrentSong);
   }
   
-  /// Réorganise la file d'attente
+  /// RÃ©organise la file d'attente
   Future<void> reorderQueue(int oldIndex, int newIndex) async {
     if (oldIndex == newIndex || 
         oldIndex < 0 || 
@@ -2223,7 +2439,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     final item = newSongs.removeAt(oldIndex);
     newSongs.insert(newIndex, item);
 
-    // Mettre à jour l'index courant si nécessaire
+    // Mettre Ã  jour l'index courant si nÃ©cessaire
     int? newCurrentIndex = state.currentIndex;
     
     if (newCurrentIndex != null) {
@@ -2250,26 +2466,18 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       currentSongId: currentSongId,
     ));
 
-    // ✅ OPTIMISATION: Utiliser move() directement sur le player
-    // Use explicit _playlist reference
-    if (_playlist != null) {
-      try {
-        await _playlist!.move(oldIndex, newIndex);
-      } catch (e) {
-        // Fallback: rebuild if move fails
-        // Note: This will emit a new state, correcting any discrepancy
-        await _updateQueue(newSongs, newCurrentIndex, preservePosition: true);
-        return;
-      }
-    } else {
-       // Fallback if playlist not initialized
-       await _updateQueue(newSongs, newCurrentIndex, preservePosition: true);
-       return;
+    // âœ… OPTIMISATION: Utiliser removeAudioSourceAt directement sur le player
+    try {
+      await player.moveAudioSource(oldIndex, newIndex);
+    } catch (e) {
+      // Fallback: rebuild if move fails
+      await _updateQueue(newSongs, newCurrentIndex, preservePosition: true);
+      return;
     }
     
-    // Mettre à jour la queue du AudioHandler pour les notifications
-    // Mettre à jour la queue du AudioHandler pour les notifications
-    // ✅ OPTIMISATION: Faire cela en background pour ne pas bloquer l'UI pendant le drag & drop
+    // Mettre Ã  jour la queue du AudioHandler pour les notifications
+    // Mettre Ã  jour la queue du AudioHandler pour les notifications
+    // âœ… OPTIMISATION: Faire cela en background pour ne pas bloquer l'UI pendant le drag & drop
     if (_audioHandler != null) {
       Future.microtask(() {
         final mediaItems = newSongs.map((s) {
@@ -2287,8 +2495,8 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     }
   }
   
-  /// Ajoute des chansons à la file d'attente sans interrompre la lecture.
-  /// Si [playNext] est vrai, insère les titres juste après la chanson en cours.
+  /// Ajoute des chansons Ã  la file d'attente sans interrompre la lecture.
+  /// Si [playNext] est vrai, insÃ¨re les titres juste aprÃ¨s la chanson en cours.
   Future<void> addToQueue(List<SongModel> songsToAdd, {bool playNext = false}) async {
     if (songsToAdd.isEmpty) return;
 
@@ -2302,7 +2510,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     final current = List<SongModel>.from(state.songs);
     int? cur = state.currentIndex;
     
-    // Créer les nouvelles sources audio pour les chansons ajoutées
+    // CrÃ©er les nouvelles sources audio pour les chansons ajoutÃ©es
     final newSources = <AudioSource>[];
     for (final s in valid) {
       Uri? artUri;
@@ -2327,47 +2535,33 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       );
     }
 
-    // Ajouter à la liste de chansons
+    // Ajouter Ã  la liste de chansons
     if (playNext && cur != null) {
       final insertAt = (cur + 1).clamp(0, current.length);
       current.insertAll(insertAt, valid);
       
-      // Insérer dans la playlist du lecteur (sans stopper la lecture)
-      // Use explicit _playlist reference
-      if (_playlist != null) {
-        try {
-          await _playlist!.insertAll(insertAt, newSources);
-        } catch (e) {
-          // Fallback si l'insertion échoue
-          await _updateQueue(current, cur, preservePosition: true);
-          return;
-        }
-      } else {
-        // Pas de playlist initialisée, fallback
+      // InsÃ©rer dans la playlist du lecteur (sans stopper la lecture)
+      try {
+        await player.insertAudioSources(insertAt, newSources);
+      } catch (e) {
+        // Fallback si l'insertion Ã©choue
         await _updateQueue(current, cur, preservePosition: true);
         return;
       }
     } else {
       current.addAll(valid);
       
-      // Ajouter à la fin de la playlist (sans stopper la lecture)
-      // Use explicit _playlist reference
-      if (_playlist != null) {
-        try {
-          await _playlist!.addAll(newSources);
-        } catch (e) {
-          // Fallback si l'ajout échoue
-          await _updateQueue(current, cur, preservePosition: true);
-          return;
-        }
-      } else {
-        // Pas de playlist initialisée, fallback
+      // Ajouter Ã  la fin de la playlist (sans stopper la lecture)
+      try {
+        await player.addAudioSources(newSources);
+      } catch (e) {
+        // Fallback si l'ajout Ã©choue
         await _updateQueue(current, cur, preservePosition: true);
         return;
       }
     }
     
-    // Mettre à jour uniquement l'état (sans recharger le player)
+    // Mettre Ã  jour uniquement l'Ã©tat (sans recharger le player)
     final currentSongId = (cur != null && cur < current.length) ? current[cur].id : null;
     emit(state.copyWith(
       songs: current,
@@ -2375,7 +2569,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       currentSongId: currentSongId,
     ));
     
-    // Mettre à jour les MediaItems dans l'AudioHandler
+    // Mettre Ã  jour les MediaItems dans l'AudioHandler
     if (_audioHandler != null) {
       final allMediaItems = current.map((s) {
         Uri? artUri;
@@ -2397,8 +2591,8 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     }
   }
 
-  /// Met à jour une chanson existante dans la file d'attente (ex: métadonnées).
-  /// Préserve la position de lecture si la chanson en cours n'est pas changée.
+  /// Met Ã  jour une chanson existante dans la file d'attente (ex: mÃ©tadonnÃ©es).
+  /// PrÃ©serve la position de lecture si la chanson en cours n'est pas changÃ©e.
   Future<void> updateSongInQueue(int songId, SongModel updated) async {
     final idx = state.songs.indexWhere((s) => s.id == songId);
     if (idx == -1) return;
@@ -2407,13 +2601,13 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     final oldVersion = current[idx];
     current[idx] = updated;
 
-    // ✅ OPTIMISATION : Modification de métadonnées sans changement d'URI
-    // Au lieu de recharger le player (ce qui cause une coupure), on maj l'état et l'AudioHandler
+    // âœ… OPTIMISATION : Modification de mÃ©tadonnÃ©es sans changement d'URI
+    // Au lieu de recharger le player (ce qui cause une coupure), on maj l'Ã©tat et l'AudioHandler
     if (oldVersion.uri == updated.uri) {
-      // 1. Mettre à jour l'état (UI)
+      // 1. Mettre Ã  jour l'Ã©tat (UI)
       emit(state.copyWith(songs: current));
       
-      // 2. Mettre à jour l'AudioHandler (Notification)
+      // 2. Mettre Ã  jour l'AudioHandler (Notification)
       if (_audioHandler != null) {
         Uri? artUri;
         final customPath = state.customArtworkPaths[updated.id];
@@ -2452,11 +2646,11 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     await _updateQueue(current, state.currentIndex, preservePosition: idx == state.currentIndex);
   }
 
-  /// Réinsère une chanson dans la file d'attente à l'index donné.
-  /// Utilisé notamment pour l'action "Annuler" après une suppression.
+  /// RÃ©insÃ¨re une chanson dans la file d'attente Ã  l'index donnÃ©.
+  /// UtilisÃ© notamment pour l'action "Annuler" aprÃ¨s une suppression.
   /// Conserve la piste en cours et la position de lecture.
   Future<void> insertIntoQueueAt(SongModel song, int index) async {
-    // Valider le titre (URI requise et non supprimé localement)
+    // Valider le titre (URI requise et non supprimÃ© localement)
     if (song.uri == null || song.uri!.isEmpty) return;
     if (isSoftDeleted(song.id)) return;
 
@@ -2465,15 +2659,15 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     final insertAt = index.clamp(0, current.length);
     current.insert(insertAt, song);
 
-    // Ajuster l'index courant pour conserver la même piste en cours
+    // Ajuster l'index courant pour conserver la mÃªme piste en cours
     int? newCurrentIndex = state.currentIndex;
     if (newCurrentIndex != null && insertAt <= newCurrentIndex) {
       newCurrentIndex += 1;
     }
 
-    // ✅ OPTIMIZATION: Insert directly into player
+    // âœ… OPTIMIZATION: Insert directly into player
     // Use explicit _playlist reference
-    if (_playlist != null && song.uri != null) {
+    if (song.uri != null) {
       try {
         // Prepare source
         Uri? artUri;
@@ -2495,7 +2689,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
           ),
         );
         
-        await _playlist!.insert(insertAt, source);
+        await player.insertAudioSource(insertAt, source);
         
         // Update state
         final currentSongId = (newCurrentIndex != null && newCurrentIndex < current.length) 
@@ -2522,7 +2716,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     await _updateQueue(current, newCurrentIndex, preservePosition: true);
   }
 
-  /// Met à jour la file d'attente avec une nouvelle liste de chansons
+  /// Met Ã  jour la file d'attente avec une nouvelle liste de chansons
   Future<void> _updateQueue(List<SongModel> newSongs, int? newCurrentIndex, {bool preservePosition = false}) async {
     if (newSongs.isEmpty) {
       await player.stop();
@@ -2536,17 +2730,17 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     final wasPlaying = player.playing;
     final currentPos = preservePosition ? player.position : Duration.zero;
     
-    // Créer les sources audio avec pochettes pour TOUTES les chansons
+    // CrÃ©er les sources audio avec pochettes pour TOUTES les chansons
     final sources = <AudioSource>[];
     
-    // ✅ Cache directory path for reuse
+    // âœ… Cache directory path for reuse
     String? coversDirPath;
     try {
       final docs = await getApplicationDocumentsDirectory();
       coversDirPath = path.join(docs.path, 'covers');
     } catch (_) {}
 
-    // ✅ Optimisation : Charger uniquement les pochettes custom déjà vérifiées
+    // âœ… Optimisation : Charger uniquement les pochettes custom dÃ©jÃ  vÃ©rifiÃ©es
     for (var idx = 0; idx < newSongs.length; idx++) {
       final s = newSongs[idx];
       if (s.uri != null && s.uri!.isNotEmpty) {
@@ -2569,11 +2763,11 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         
         // 3. Fallback to standard album art URI if no cache
         if (artUri == null && _defaultCoverPath != null) {
-          // ✅ Fallback to generated default cover if no albumId
+          // âœ… Fallback to generated default cover if no albumId
           artUri = Uri.file(_defaultCoverPath!);
         }
         
-        // Les pochettes du cache seront chargées en arrière-plan par _refreshCurrentArtworkIfNeeded
+        // Les pochettes du cache seront chargÃ©es en arriÃ¨re-plan par _refreshCurrentArtworkIfNeeded
 
         sources.add(
           AudioSource.uri(
@@ -2594,7 +2788,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       }
     }
     
-    // Mettre à jour l'état AVANT le lecteur
+    // Mettre Ã  jour l'Ã©tat AVANT le lecteur
     final currentSongId = (safeIndex < newSongs.length) ? newSongs[safeIndex].id : null;
     emit(state.copyWith(
       songs: newSongs,
@@ -2605,7 +2799,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     // Ignore index changes for next second
     _ignoreIndexChangesUntil = DateTime.now().add(const Duration(milliseconds: 1000));
     
-    // Mettre à jour l'AudioHandler avec les MediaItem AVANT de jouer
+    // Mettre Ã  jour l'AudioHandler avec les MediaItem AVANT de jouer
     if (_audioHandler != null && sources.isNotEmpty) {
       final mediaItems = sources
           .where((s) => s is UriAudioSource && s.tag is MediaItem)
@@ -2613,7 +2807,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
           .toList();
       _audioHandler!.setQueueItems(mediaItems);
       
-      // Mettre à jour le MediaItem courant avec l'état "aimé" AVANT play()
+      // Mettre Ã  jour le MediaItem courant avec l'Ã©tat "aimÃ©" AVANT play()
       if (safeIndex < mediaItems.length) {
         final currentMediaItem = mediaItems[safeIndex];
         final songId = currentMediaItem.extras?['songId'] as int?;
@@ -2622,23 +2816,20 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       }
     }
     
-    // Mettre à jour le lecteur (passez la position initiale pour limiter les coupures)
+    // Mettre Ã  jour le lecteur (passez la position initiale pour limiter les coupures)
     try {
-      // ✅ CRITICAL: Re-assign _playlist explicitly
-      _playlist = ConcatenatingAudioSource(children: sources);
-      
-      await player.setAudioSource(
-        _playlist!,
+      await player.setAudioSources(
+        sources,
         initialIndex: safeIndex,
         initialPosition: preservePosition ? currentPos : Duration.zero,
       );
       
-      // Reprendre la lecture immédiatement sans await pour réduire la pause
+      // Reprendre la lecture immÃ©diatement sans await pour rÃ©duire la pause
       if (wasPlaying) {
         player.play();
       }
     } catch (e) {
-      debugPrint('❌ Erreur setAudioSource dans _updateQueue: $e');
+      debugPrint('âŒ Erreur setAudioSource dans _updateQueue: $e');
       if (wasPlaying) {
         player.play();
       }
@@ -2648,7 +2839,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     Future.microtask(_preCacheArtworkForNextSongs);
   }
 
-  // ✅ Smart Pre-caching for Next Songs
+  // âœ… Smart Pre-caching for Next Songs
   // Fetches high-res artwork for the next few songs in the queue to ensure
   // notifications show sharp images when user skips tracks.
   Future<void> _preCacheArtworkForNextSongs() async {
@@ -2718,19 +2909,19 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     } catch (_) {}
   }
   
-  // ✅ Sleep Timer - Démarrer le minuteur
+  // âœ… Sleep Timer - DÃ©marrer le minuteur
 
 
 
 
-  // ✅ Sleep Timer - Temps restant
+  // âœ… Sleep Timer - Temps restant
   Duration? get sleepTimeRemaining {
     if (_sleepEndTime == null) return null;
     final remaining = _sleepEndTime!.difference(DateTime.now());
     return remaining.isNegative ? Duration.zero : remaining;
   }
 
-  // ✅ Sleep Timer - Est actif ?
+  // âœ… Sleep Timer - Est actif ?
   bool get isSleepTimerActive => _sleepTimer?.isActive ?? false;
 
   Future<void> _savePlayerState() async {
@@ -2746,12 +2937,44 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       if (player.loopMode == LoopMode.all) loopModeStr = 'all';
       await prefs.setString(_keyLoopMode, loopModeStr);
       
-      // Save Last Song ID
+      // Save New Audio Features
+      await prefs.setInt(_keyCrossfade, state.crossfadeDuration);
+      await prefs.setBool(_keyGapless, state.gaplessEnabled);
+      await prefs.setDouble(_keyPlaybackSpeed, state.playbackSpeed);
+      
+      // Save Equalizer
+      await prefs.setBool(_keyEqEnabled, state.equalizerEnabled);
+      await prefs.setStringList(_keyEqBands, state.equalizerBands.map((e) => e.toString()).toList());
+      
+      // Save Timer Features
+      await prefs.setBool(_keyTimerFinishSong, state.finishSongBeforeStop);
+      await prefs.setBool(_keyTimerFadeOut, state.sleepTimerFadeOut);
+      
+      // Save Last Song ID and Metadata for quick notification restore
       if (state.currentSongId != null) {
         await prefs.setInt(_keyLastSongId, state.currentSongId!);
+        
+        // Save metadata for immediate notification display
+        final song = currentSong;
+        if (song != null) {
+          await prefs.setString(_keyLastSongTitle, song.title);
+          await prefs.setString(_keyLastSongArtist, song.artist ?? '');
+          
+          // Save artwork path if available
+          final artPath = state.customArtworkPaths[state.currentSongId!] ?? _defaultCoverPath;
+          if (artPath != null) {
+            await prefs.setString(_keyLastSongArtPath, artPath);
+          }
+          
+          // Save URI and duration for quick playback restore
+          if (song.uri != null && song.uri!.isNotEmpty) {
+            await prefs.setString(_keyLastSongUri, song.uri!);
+            await prefs.setInt(_keyLastSongDuration, song.duration ?? 0);
+          }
+        }
       }
     } catch (e) {
-      debugPrint('❌ Error saving player state: $e');
+      debugPrint('âŒ Error saving player state: $e');
     }
   }
 
@@ -2774,6 +2997,45 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         await player.setLoopMode(loop);
       }
       
+      // Restore New Audio Features
+      final crossfade = prefs.getInt(_keyCrossfade) ?? 0;
+      final gapless = prefs.getBool(_keyGapless) ?? false;
+      final speed = prefs.getDouble(_keyPlaybackSpeed) ?? 1.0;
+      
+      // Restore Equalizer
+      final eqEnabled = prefs.getBool(_keyEqEnabled) ?? false;
+      final eqBandsStr = prefs.getStringList(_keyEqBands);
+      List<double> eqBands = [];
+      if (eqBandsStr != null) {
+        eqBands = eqBandsStr.map((e) => double.tryParse(e) ?? 0.0).toList();
+      }
+      
+      // Restore Timer
+      final timerFinish = prefs.getBool(_keyTimerFinishSong) ?? false;
+      final timerFade = prefs.getBool(_keyTimerFadeOut) ?? true;
+      
+      emit(state.copyWith(
+        crossfadeDuration: crossfade,
+        gaplessEnabled: gapless,
+        playbackSpeed: speed, // 1.0 = normal
+        equalizerEnabled: eqEnabled,
+        equalizerBands: eqBands,
+        finishSongBeforeStop: timerFinish,
+        sleepTimerFadeOut: timerFade,
+      ));
+      
+      // Apply restored settings
+      try {
+        if (gapless != player.skipSilenceEnabled) {
+             await player.setSkipSilenceEnabled(gapless);
+        }
+        if (speed != 1.0) {
+          await player.setSpeed(speed);
+        }
+      } catch (e) {
+        debugPrint('Error applying restored audio settings: $e');
+      }
+      
       // Restore Last Song
       if (player.playing || state.songs.isEmpty) return;
       
@@ -2781,9 +3043,9 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       if (lastSongId != null) {
         final index = state.songs.indexWhere((s) => s.id == lastSongId);
         if (index != -1) {
-          debugPrint('🔄 Restoring last played song: ${state.songs[index].title}');
+          debugPrint('ðŸ”„ Restoring last played song: ${state.songs[index].title}');
           
-          // ✅ Build sources with URI as MediaItem.id (consistent with _updateQueue)
+          // âœ… Build sources with URI as MediaItem.id (consistent with _updateQueue)
           final sources = <AudioSource>[];
           for (final s in state.songs) {
             if (s.uri != null && s.uri!.isNotEmpty) {
@@ -2798,7 +3060,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
               sources.add(AudioSource.uri(
                 Uri.parse(s.uri!),
                 tag: MediaItem(
-                  id: s.uri!, // ✅ Use URI as ID (consistent with _updateQueue)
+                  id: s.uri!, // âœ… Use URI as ID (consistent with _updateQueue)
                   album: s.album ?? '',
                   title: s.title,
                   artist: s.artist ?? '',
@@ -2811,11 +3073,11 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
           }
           
           if (sources.isEmpty) {
-            debugPrint('❌ No valid sources for restore');
+            debugPrint('âŒ No valid sources for restore');
             return;
           }
 
-          // ✅ OPTIMIZATION: Emit state IMMEDIATELY for instant UI feedback
+          // âœ… OPTIMIZATION: Emit state IMMEDIATELY for instant UI feedback
           emit(state.copyWith(
             currentIndex: index,
             currentSongId: lastSongId,
@@ -2824,11 +3086,8 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
           // Trigger artwork load in background
           Future.microtask(_refreshCurrentArtworkIfNeeded);
 
-          // ✅ CRITICAL: Store playlist reference so queue operations work
-          _playlist = ConcatenatingAudioSource(children: sources);
-          
-          await player.setAudioSource(
-            _playlist!,
+          await player.setAudioSources(
+            sources,
             initialIndex: index,
             initialPosition: Duration.zero,
           );
@@ -2852,7 +3111,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         }
       }
     } catch (e) {
-      debugPrint('❌ Error restoring player state: $e');
+      debugPrint('âŒ Error restoring player state: $e');
     }
   }
 
@@ -2984,4 +3243,58 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       debugPrint('[Restore] Error restoring data: $e');
     }
   }
+
+  /// Restore notification immediately with cached metadata (before songs are loaded)
+  Future<void> _restoreNotificationQuickly() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      final lastTitle = prefs.getString(_keyLastSongTitle);
+      final lastArtist = prefs.getString(_keyLastSongArtist);
+      final lastArtPath = prefs.getString(_keyLastSongArtPath);
+      final lastUri = prefs.getString(_keyLastSongUri);
+      final lastDuration = prefs.getInt(_keyLastSongDuration) ?? 0;
+      
+      if (lastTitle == null || _audioHandler == null) return;
+      
+      debugPrint('[PlayerCubit] Quick restore: $lastTitle by $lastArtist');
+      
+      // Create the MediaItem with full info
+      final mediaItem = MediaItem(
+        id: lastUri ?? 'temp_restore',
+        title: lastTitle,
+        artist: lastArtist ?? '',
+        artUri: lastArtPath != null ? Uri.file(lastArtPath) : null,
+        duration: Duration(milliseconds: lastDuration),
+      );
+      
+      // Update notification immediately
+      _audioHandler!.setMediaItemWithLikedState(mediaItem, false);
+      
+      // If we have a valid URI, set up the audio source for playback
+      if (lastUri != null && lastUri.isNotEmpty) {
+        try {
+          await player.setAudioSource(
+            AudioSource.uri(
+              Uri.parse(lastUri),
+              tag: mediaItem,
+            ),
+          );
+          debugPrint('[PlayerCubit] Quick restore: Audio source ready');
+          
+          // Update widget with current state
+          await _pushWidgetUpdate();
+        } catch (e) {
+          debugPrint('[PlayerCubit] Quick restore audio source error: $e');
+        }
+      }
+    } catch (e) {
+      debugPrint('[PlayerCubit] Quick notification restore error: $e');
+    }
+  }
 }
+
+
+
+
+

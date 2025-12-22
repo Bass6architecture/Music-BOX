@@ -130,10 +130,20 @@ class SimpleCompactWidget : AppWidgetProvider() {
             
             // Get saved data
             val prefs = context.getSharedPreferences("widget_data", Context.MODE_PRIVATE)
-            val title = prefs.getString("title", "Music Box") ?: "Music Box"
-            // Use "Appuyez pour ouvrir" if artist is missing/default to encourage interaction
+            val titleRaw = prefs.getString("title", null)
+            // Use localized "No song" text if no title stored
+            val title = if (titleRaw.isNullOrEmpty() || titleRaw == "Music Box") {
+                context.getString(R.string.widget_no_song)
+            } else {
+                titleRaw
+            }
+            // Use localized "Tap to open" if artist is missing/default
             val artistRaw = prefs.getString("artist", null)
-            val artist = if (artistRaw == "Artist" || artistRaw.isNullOrEmpty()) "Appuyez pour ouvrir" else artistRaw
+            val artist = if (artistRaw == "Artist" || artistRaw.isNullOrEmpty()) {
+                context.getString(R.string.widget_tap_to_open)
+            } else {
+                artistRaw
+            }
             val isPlaying = prefs.getBoolean("isPlaying", false)
             val artPath = prefs.getString("artPath", null)
             

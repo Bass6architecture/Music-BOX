@@ -1,3 +1,4 @@
+﻿import 'widgets/music_box_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -9,11 +10,11 @@ import '../widgets/song_actions.dart';
 
 
 import 'now_playing_next_gen.dart';
-import 'widgets/music_box_scaffold.dart';
+
 import '../core/background/background_cubit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_theme.dart';
+
 
 class MostPlayedPage extends StatefulWidget {
   const MostPlayedPage({super.key});
@@ -23,7 +24,6 @@ class MostPlayedPage extends StatefulWidget {
 }
 
 class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAliveClientMixin {
-  final OnAudioQuery _audioQuery = OnAudioQuery();
   Future<List<SongModel>>? _future;
 
   @override
@@ -42,19 +42,19 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
     final counts = cubit.state.playCounts;
     if (counts.isEmpty) return <SongModel>[];
 
-    // ✅ Optimization: Use cached songs from Cubit
+    // âœ… Optimization: Use cached songs from Cubit
     final allSongs = cubit.state.allSongs;
 
-    // Filtrer les dossiers masqués
+    // Filtrer les dossiers masquÃ©s
     final filteredSongs = cubit.filterSongs(allSongs);
 
-    // Créer une map pour un accès rapide par ID
+    // CrÃ©er une map pour un accÃ¨s rapide par ID
     final songMap = <int, SongModel>{};
     for (final song in filteredSongs) {
       songMap[song.id] = song;
     }
 
-    // Trier par count décroissant et récupérer les chansons
+    // Trier par count dÃ©croissant et rÃ©cupÃ©rer les chansons
     final sortedEntries = counts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
@@ -81,7 +81,7 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
           return FadeTransition(opacity: animation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 300),
-        opaque: false, // ✅ Transparent
+        opaque: false, // âœ… Transparent
       ),
     );
   }
@@ -126,7 +126,7 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
                       
                       return CustomScrollView(
                         slivers: [
-                          // AppBar épinglée avec gradient
+                          // AppBar Ã©pinglÃ©e avec gradient
                           SliverAppBar(
                             expandedHeight: 180,
                             pinned: true,
@@ -161,7 +161,7 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
                                   Positioned(
                                     right: -20,
                                     top: 20,child: PhosphorIcon(
-                            PhosphorIconsFill.chartLineUp(), 
+                            PhosphorIcons.chartLineUp(PhosphorIconsStyle.fill), 
                             size: 140,
                             color: Colors.orange.withValues(alpha: 0.1),
                           ),
@@ -228,14 +228,14 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
                             final count = inner.select((PlayerCubit c) => c.state.playCounts[s.id] ?? 0);
                             final subtitle = [s.artist, s.album]
                                 .where((e) => (e ?? '').isNotEmpty)
-                                .join(' • ');
+                                .join(' â€¢ ');
                             
                             return Column(
                               children: [
                                 SongTile(
                                   song: s,
                                   subtitle: subtitle,
-                                  // ✅ Move count to trailing widget
+                                  // âœ… Move count to trailing widget
                                   trailing: count > 0 ? Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
@@ -301,6 +301,8 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
     );
   }
 }
+
+
 
 
 

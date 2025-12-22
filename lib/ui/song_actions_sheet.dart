@@ -1,3 +1,5 @@
+﻿import 'package:flutter/services.dart';
+
 import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -6,7 +8,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:android_intent_plus/android_intent.dart';
-import 'package:flutter/services.dart';
+
 import 'package:image_cropper/image_cropper.dart';
 import 'package:music_box/generated/app_localizations.dart';
 // Cover Art
@@ -17,17 +19,17 @@ import '../player/player_cubit.dart';
 import '../widgets/optimized_artwork.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_theme.dart';
+
 
 // Channel for native actions we still use (ringtone, delete notifications)
 const MethodChannel _nativeChannel = MethodChannel('com.synergydev.music_box/native');
-bool _coverCallbacksInitialized = false;
+
 
 void _ensureCoverCallbacks(BuildContext context) {
   // Always update handler to use the latest context
-  debugPrint('🔄 Mise à jour des callbacks avec le contexte actuel...');
+  debugPrint('ðŸ”„ Mise Ã  jour des callbacks avec le contexte actuel...');
   _nativeChannel.setMethodCallHandler((call) async {
-    debugPrint('🔔 Callback reçu: ${call.method} avec arguments: ${call.arguments}');
+    debugPrint('ðŸ”” Callback reÃ§u: ${call.method} avec arguments: ${call.arguments}');
     switch (call.method) {
       case 'onDeleteCompleted':
         if (context.mounted) {
@@ -38,22 +40,22 @@ void _ensureCoverCallbacks(BuildContext context) {
         break;
       case 'onAlbumArtWritten':
         final success = call.arguments['success'] as bool?;
-        debugPrint('🔔 onAlbumArtWritten: success=$success, context.mounted=${context.mounted}');
+        debugPrint('ðŸ”” onAlbumArtWritten: success=$success, context.mounted=${context.mounted}');
         if (context.mounted) {
           final l10n = AppLocalizations.of(context)!;
           if (success == true) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('✅ ${l10n.coverSaved}'),
+                content: Text('âœ… ${l10n.coverSaved}'),
                 backgroundColor: Colors.green,
               ),
             );
           } else {
-            // Échec système (ex: AAC/FLAC ou permission refusée),
-            // mais l'image locale est sauvegardée. On rassure l'utilisateur.
+            // Ã‰chec systÃ¨me (ex: AAC/FLAC ou permission refusÃ©e),
+            // mais l'image locale est sauvegardÃ©e. On rassure l'utilisateur.
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('✅ ${l10n.coverSaved}'),
+                content: Text('âœ… ${l10n.coverSaved}'),
                 backgroundColor: Colors.teal,
               ),
             );
@@ -62,23 +64,23 @@ void _ensureCoverCallbacks(BuildContext context) {
         break;
       case 'onMetadataWritten':
         final success = call.arguments['success'] as bool?;
-        debugPrint('🔔 onMetadataWritten: success=$success, context.mounted=${context.mounted}');
+        debugPrint('ðŸ”” onMetadataWritten: success=$success, context.mounted=${context.mounted}');
         if (context.mounted) {
           final l10n = AppLocalizations.of(context)!;
           if (success == true) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('✅ ${l10n.metadataSaved}'),
+                content: Text('âœ… ${l10n.metadataSaved}'),
                 backgroundColor: Colors.green,
               ),
             );
           } else {
-            // Échec système (ex: format AAC/FLAC non supporté par mp3agic)
-            // Mais l'override local est déjà appliqué, donc on affiche "Succès (App)"
+            // Ã‰chec systÃ¨me (ex: format AAC/FLAC non supportÃ© par mp3agic)
+            // Mais l'override local est dÃ©jÃ  appliquÃ©, donc on affiche "SuccÃ¨s (App)"
             // pour ne pas paniquer l'utilisateur.
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('✅ ${l10n.metadataSaved}'),
+                content: Text('âœ… ${l10n.metadataSaved}'),
                 backgroundColor: Colors.teal,
               ),
             );
@@ -87,12 +89,12 @@ void _ensureCoverCallbacks(BuildContext context) {
       case 'onRequestPermissionResult':
         // Just log for now, or use if we keep the callback approach.
         // But better to switch to Future-based approach.
-        debugPrint('🔔 Authorization result: ${call.arguments}');
+        debugPrint('ðŸ”” Authorization result: ${call.arguments}');
         break;
     }
   });
-  _coverCallbacksInitialized = true;
-  debugPrint('✅ Callbacks initialisés');
+
+  debugPrint('âœ… Callbacks initialisÃ©s');
 }
 
 // System-wide metadata updates removed on user request (Android 14/15 restrictions).
@@ -143,7 +145,7 @@ Widget _buildActionTile({
 }
 
 Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
-  // Initialiser les callbacks dès l'ouverture
+  // Initialiser les callbacks dÃ¨s l'ouverture
   _ensureCoverCallbacks(context);
   
   final cubit = context.read<PlayerCubit>();
@@ -171,7 +173,7 @@ Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // FIXED HEADER: Handle personnalisé
+              // FIXED HEADER: Handle personnalisÃ©
               const SizedBox(height: 12),
               Container(
                 width: 32,
@@ -340,7 +342,7 @@ Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
                       // Section: Actions
                       _buildActionTile(
                         theme: theme,
-                        icon: isFav ? PhosphorIconsFill.heart() : PhosphorIcons.heart(),
+                        icon: isFav ? PhosphorIcons.heart(PhosphorIconsStyle.fill) : PhosphorIcons.heart(),
                         iconColor: isFav ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
                         title: isFav ? AppLocalizations.of(context)!.removeFromFavorites : AppLocalizations.of(context)!.addToFavorites,
                         onTap: () {
@@ -408,7 +410,7 @@ Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: PhosphorIcon(
-                                      PhosphorIconsFill.trash(),
+                                      PhosphorIcons.trash(PhosphorIconsStyle.fill),
                                       color: theme.colorScheme.error,
                                       size: 20,
                                     ),
@@ -612,26 +614,26 @@ Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel son
     // D'abord appliquer localement dans l'app
     await cubit.setCustomArtworkBytes(song.id, bytes, ext: '.jpg');
     
-    // Vider le cache d'images pour forcer le rafraîchissement
+    // Vider le cache d'images pour forcer le rafraÃ®chissement
     if (context.mounted) {
       PaintingBinding.instance.imageCache.clear();
       PaintingBinding.instance.imageCache.clearLiveImages();
-      // Force les widgets à se reconstruire avec la nouvelle pochette
+      // Force les widgets Ã  se reconstruire avec la nouvelle pochette
       cubit.forceArtworkRefresh(song.id);
     }
     
-    // Enregistrer directement dans le système (pas de choix)
+    // Enregistrer directement dans le systÃ¨me (pas de choix)
     if (context.mounted && Platform.isAndroid) {
       try {
-        debugPrint('📸 Appel writeAlbumArt pour song.id=${song.id}');
+        debugPrint('ðŸ“¸ Appel writeAlbumArt pour song.id=${song.id}');
         final success = await _nativeChannel.invokeMethod('writeAlbumArt', {
           'audioId': song.id,
           'imagePath': path,
         });
         
-        debugPrint('📸 Résultat writeAlbumArt: $success');
+        debugPrint('ðŸ“¸ RÃ©sultat writeAlbumArt: $success');
         
-        // Si success == false, échec immédiat
+        // Si success == false, Ã©chec immÃ©diat
         if (context.mounted && success == false) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -642,12 +644,12 @@ Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel son
         }
         // Si success == null, on attend la permission (le callback affichera le message)
       } catch (e) {
-        debugPrint('❌ Erreur technique lors de l\'écriture (MP3 uniquement?) : $e');
-        // On affiche quand même un succès car l'override local a fonctionné
+        debugPrint('âŒ Erreur technique lors de l\'Ã©criture (MP3 uniquement?) : $e');
+        // On affiche quand mÃªme un succÃ¨s car l'override local a fonctionnÃ©
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('✅ ${l10n.coverSaved}'),
+              content: Text('âœ… ${l10n.coverSaved}'),
               backgroundColor: Colors.teal,
             ),
           );
@@ -663,7 +665,7 @@ Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel son
   }
 } // End _changeCover
 
-// plus de recadrage automatique — l'utilisateur choisit la zone en 1:1 via ImageCropper
+// plus de recadrage automatique â€” l'utilisateur choisit la zone en 1:1 via ImageCropper
 
 Future<void> _shareSong(BuildContext context, SongModel song) async {
   try {
@@ -718,7 +720,7 @@ Future<void> _openInFiles(BuildContext context, SongModel song) async {
   
   // Extraire le chemin du dossier depuis l'URI
   try {
-    // Obtenir le chemin réel via le canal natif
+    // Obtenir le chemin rÃ©el via le canal natif
     final realPath = await _nativeChannel.invokeMethod<String>('getRealPath', {'uri': uri});
     
     if (realPath == null || realPath.isEmpty) {
@@ -734,12 +736,12 @@ Future<void> _openInFiles(BuildContext context, SongModel song) async {
     final file = File(realPath);
     final folder = file.parent.path;
     
-    debugPrint('📂 Ouverture du dossier: $folder');
+    debugPrint('ðŸ“‚ Ouverture du dossier: $folder');
     
     // Essayer d'ouvrir dans l'explorateur de fichiers
     bool intentLaunched = false;
     
-    // Méthode 1: Utiliser ACTION_VIEW avec le fichier pour ouvrir son dossier
+    // MÃ©thode 1: Utiliser ACTION_VIEW avec le fichier pour ouvrir son dossier
     try {
       final intent = AndroidIntent(
         action: 'android.intent.action.VIEW',
@@ -749,15 +751,15 @@ Future<void> _openInFiles(BuildContext context, SongModel song) async {
       );
       await intent.launch();
       intentLaunched = true;
-      debugPrint('✅ Dossier ouvert avec ACTION_VIEW');
+      debugPrint('âœ… Dossier ouvert avec ACTION_VIEW');
     } catch (e1) {
-      debugPrint('❌ Méthode 1 (VIEW) échouée: $e1');
+      debugPrint('âŒ MÃ©thode 1 (VIEW) Ã©chouÃ©e: $e1');
       
-      // Méthode 2: Construire l'URI Documents correctement
+      // MÃ©thode 2: Construire l'URI Documents correctement
       try {
         // Encoder le chemin correctement pour Documents UI
         String documentPath = folder.replaceFirst('/storage/emulated/0/', '');
-        // URL encoder le chemin pour éviter les problèmes avec les caractères spéciaux
+        // URL encoder le chemin pour Ã©viter les problÃ¨mes avec les caractÃ¨res spÃ©ciaux
         documentPath = Uri.encodeComponent(documentPath);
         
         final intent = AndroidIntent(
@@ -768,11 +770,11 @@ Future<void> _openInFiles(BuildContext context, SongModel song) async {
         );
         await intent.launch();
         intentLaunched = true;
-        debugPrint('✅ Dossier ouvert avec Documents UI');
+        debugPrint('âœ… Dossier ouvert avec Documents UI');
       } catch (e2) {
-        debugPrint('❌ Méthode 2 (Documents) échouée: $e2');
+        debugPrint('âŒ MÃ©thode 2 (Documents) Ã©chouÃ©e: $e2');
         
-        // Méthode 3: Ouvrir le gestionnaire de fichiers générique
+        // MÃ©thode 3: Ouvrir le gestionnaire de fichiers gÃ©nÃ©rique
         try {
           final intent = AndroidIntent(
             action: 'android.intent.action.VIEW',
@@ -781,14 +783,14 @@ Future<void> _openInFiles(BuildContext context, SongModel song) async {
           );
           await intent.launch();
           intentLaunched = true;
-          debugPrint('✅ Gestionnaire de fichiers ouvert');
+          debugPrint('âœ… Gestionnaire de fichiers ouvert');
         } catch (e3) {
-          debugPrint('❌ Méthode 3 (gestionnaire) échouée: $e3');
+          debugPrint('âŒ MÃ©thode 3 (gestionnaire) Ã©chouÃ©e: $e3');
         }
       }
     }
     
-    // Si aucun intent n'a marché, afficher le chemin
+    // Si aucun intent n'a marchÃ©, afficher le chemin
     if (!intentLaunched) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -886,9 +888,9 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
   // Initialiser les callbacks en premier
   _ensureCoverCallbacks(context);
   
-  // Avertissement supprimé: on ouvre directement l'éditeur (modification locale uniquement).
+  // Avertissement supprimÃ©: on ouvre directement l'Ã©diteur (modification locale uniquement).
 
-  // 1) Formulaire d'édition (pré-rempli)
+  // 1) Formulaire d'Ã©dition (prÃ©-rempli)
   final applied = cubit.applyOverrides(song);
   final titleCtrl = TextEditingController(text: applied.title);
   final artistCtrl = TextEditingController(text: applied.artist);
@@ -919,7 +921,7 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Handle personnalisé
+                // Handle personnalisÃ©
                 const SizedBox(height: 12),
                 Center(
                   child: Container(
@@ -1104,7 +1106,7 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
 
   if (confirmed != true) return;
 
-  // 2) Appliquer immédiatement dans l'app (fluide)
+  // 2) Appliquer immÃ©diatement dans l'app (fluide)
   final overrides = LocalMetadataOverrides(
     title: titleCtrl.text.trim().isEmpty ? null : titleCtrl.text.trim(),
     artist: artistCtrl.text.trim().isEmpty ? null : artistCtrl.text.trim(),
@@ -1113,13 +1115,13 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
     year: int.tryParse(yearCtrl.text.trim()),
   );
   await cubit.setMetadataOverride(song.id, overrides);
-  // Force les widgets à se reconstruire avec les nouvelles métadonnées
+  // Force les widgets Ã  se reconstruire avec les nouvelles mÃ©tadonnÃ©es
   cubit.forceArtworkRefresh(song.id);
 
-  // 3) Enregistrer directement dans le système (pas de choix)
+  // 3) Enregistrer directement dans le systÃ¨me (pas de choix)
   if (context.mounted && Platform.isAndroid) {
     try {
-      debugPrint('📝 Appel writeMetadata pour song.id=${song.id}');
+      debugPrint('ðŸ“ Appel writeMetadata pour song.id=${song.id}');
       final success = await _nativeChannel.invokeMethod('writeMetadata', {
         'audioId': song.id,
         'title': titleCtrl.text.trim(),
@@ -1129,7 +1131,7 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
         'year': yearCtrl.text.trim(),
       });
 
-      debugPrint('📝 Résultat writeMetadata: $success');
+      debugPrint('ðŸ“ RÃ©sultat writeMetadata: $success');
 
       if (context.mounted && success == false) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1141,12 +1143,12 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
       }
       // Si success == null, on attend la permission (le callback affichera le message)
     } catch (e) {
-      debugPrint('📝 Erreur technique writeMetadata: $e');
-      // Override local OK, on affiche un succès discret
+      debugPrint('ðŸ“ Erreur technique writeMetadata: $e');
+      // Override local OK, on affiche un succÃ¨s discret
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
            SnackBar(
-            content: Text('✅ ${AppLocalizations.of(context)!.metadataSaved}'),
+            content: Text('âœ… ${AppLocalizations.of(context)!.metadataSaved}'),
             backgroundColor: Colors.teal,
           ),
         );
@@ -1203,7 +1205,7 @@ Future<void> _deleteAudioFile(BuildContext context, PlayerCubit cubit, SongModel
       backgroundColor: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       icon: PhosphorIcon(
-        PhosphorIconsFill.trash(),
+        PhosphorIcons.trash(PhosphorIconsStyle.fill),
         color: theme.colorScheme.error,
         size: 48,
       ),
@@ -1282,7 +1284,7 @@ Future<void> _deleteAudioFile(BuildContext context, PlayerCubit cubit, SongModel
     // Utiliser le canal natif pour supprimer via MediaStore
     await _nativeChannel.invokeMethod('deleteAudio', {'audioId': song.id});
     
-    // Retirer de la queue si présent et de la playlist (Robust)
+    // Retirer de la queue si prÃ©sent et de la playlist (Robust)
     await cubit.removeSongsById([song.id]);
     
     if (context.mounted) {
@@ -1346,3 +1348,9 @@ String _simplifyErrorMessage(dynamic error, BuildContext context) {
   
   return l10n.errorGeneric;
 }
+
+
+
+
+
+

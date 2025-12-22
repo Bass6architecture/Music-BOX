@@ -1,15 +1,16 @@
+﻿import 'package:flutter/services.dart';
 
-import 'dart:ui';
+
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:music_box/generated/app_localizations.dart';
 import '../../player/player_cubit.dart';
 import '../../core/recommendation_engine.dart';
 import '../../widgets/optimized_artwork.dart';
-import '../../core/constants/app_constants.dart';
+
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../widgets/modern_widgets.dart';
@@ -43,8 +44,20 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
   }
 
   Future<void> _loadRecommendations() async {
+    if (!context.mounted) return;
     final cubit = context.read<PlayerCubit>();
     final state = cubit.state;
+
+    // If songs aren't loaded yet, don't proceed (let spinner show until songs arrive)
+    if (state.allSongs.isEmpty) {
+      if (!state.isLoading) {
+        setState(() => _isInit = true);
+      }
+      debugPrint('[ForYouPage] Waiting for songs to load...');
+      return;
+    }
+    
+    // print('[ForYouPage] Loading... Songs: ${state.allSongs.length}');
     
     // Create input DTO
     final inputs = RecommendationInputs(
@@ -56,20 +69,27 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
       showHiddenFolders: state.showHiddenFolders,
     );
 
-    // Run calculation in background isolate
-    // This prevents UI jank when processing thousands of songs
-    final results = await RecommendationEngine.computeRecommendations(inputs);
+    try {
+      // Run calculation in background isolate
+      final results = await RecommendationEngine.computeRecommendations(inputs);
 
-    if (mounted) {
-      setState(() {
-        _quickPlayMix = results.quickPlay;
-        _forgottenGems = results.forgotten;
-        _habits = results.habits; 
-        _suggestions = results.suggestions;
-        _freshArrivals = results.fresh;
-        _allTimeHits = results.hits;
-        _isInit = true;
-      });
+      if (context.mounted) {
+        setState(() {
+          _quickPlayMix = results.quickPlay;
+          _forgottenGems = results.forgotten;
+          _habits = results.habits; 
+          _suggestions = results.suggestions;
+          _freshArrivals = results.fresh;
+          _allTimeHits = results.hits;
+          _isInit = true;
+          // print('[ForYouPage] Loaded. Quick: ${_quickPlayMix.length}, Habits: ${_habits.length}, Fresh: ${_freshArrivals.length}');
+        });
+      }
+    } catch (e) {
+      debugPrint('[ForYouPage] Recommendations error: $e');
+      if (context.mounted) {
+        setState(() => _isInit = true); // Allow showing empty state instead of spinner
+      }
     }
   }
 
@@ -81,9 +101,8 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
       listenWhen: (prev, curr) => 
         prev.playCounts != curr.playCounts || 
         prev.lastPlayed != curr.lastPlayed ||
-        prev.lastPlayed != curr.lastPlayed ||
         prev.allSongs.length != curr.allSongs.length ||
-        prev.isLoading != curr.isLoading || // ✅ Listen to loading state
+        prev.isLoading != curr.isLoading || 
         prev.hiddenFolders != curr.hiddenFolders, 
       listener: (context, state) {
         _loadRecommendations(); 
@@ -96,42 +115,44 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
                 ? const Center(child: CircularProgressIndicator())
                 : RefreshIndicator(
                     onRefresh: () async => _loadRecommendations(),
-                    child: (state.isLoading) 
-                      ? const Center(child: CircularProgressIndicator())
-                      : ( _quickPlayMix.isEmpty && _habits.isEmpty && _suggestions.isEmpty && _allTimeHits.isEmpty && _forgottenGems.isEmpty && _freshArrivals.isEmpty )
-                      ? Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(24),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                                  shape: BoxShape.circle,
-                                ),
-                                  child: PhosphorIcon(
-                                    PhosphorIcons.musicNoteSlash(),
-                                    size: 48,
-                                    color: Colors.white,
+                    child: (_quickPlayMix.isEmpty && _habits.isEmpty && _suggestions.isEmpty && _allTimeHits.isEmpty && _forgottenGems.isEmpty && _freshArrivals.isEmpty)
+                      ? Builder(
+                          builder: (context) {
+                            return Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(24),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: PhosphorIcon(
+                                      PhosphorIcons.musicNote(),
+                                      size: 48,
+                                      color: Colors.white,
+                                    ),
                                   ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    AppLocalizations.of(context)!.noSongs,
+                                    style: GoogleFonts.outfit(
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    AppLocalizations.of(context)!.addSongsToPlaylistDesc,
+                                    style: GoogleFonts.outfit(
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 16),
-                              Text(
-                                AppLocalizations.of(context)!.noSongs,
-                                style: GoogleFonts.outfit(
-                                  color: Theme.of(context).colorScheme.onSurface,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                AppLocalizations.of(context)!.addSongsToPlaylistDesc, // Using this as a generic "Add songs" msg
-                                style: GoogleFonts.outfit(
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
+                            );
+                          },
                         )
                       : CustomScrollView(
                       physics: const BouncingScrollPhysics(),
@@ -226,7 +247,9 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
     final theme = Theme.of(context);
     final seedSong = _quickPlayMix.first;
 
-    return ModernCard(
+    return AspectRatio(
+      aspectRatio: 1.5,
+      child: ModernCard(
       padding: EdgeInsets.zero,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
@@ -283,8 +306,8 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
                    
                    // Big Play Button
                    ModernIconButton(
-                     icon: PhosphorIconsFill.play(),
-                     iconColor: Colors.white,
+                     icon: PhosphorIcons.play(PhosphorIconsStyle.fill),
+                     color: Colors.white,
                      backgroundColor: theme.colorScheme.primary,
                      onPressed: () {
                         HapticFeedback.mediumImpact();
@@ -298,6 +321,7 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -491,10 +515,8 @@ class _CompactSongRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final isActive = context.select((PlayerCubit c) => c.state.currentSongId == song.id);
     final isPlaying = context.select((PlayerCubit c) => c.state.isPlaying);
-    final fgColor = isActive ? theme.colorScheme.primary : theme.colorScheme.onSurface;
 
     return ModernListTile(
       onTap: () {
@@ -526,9 +548,8 @@ class _CompactSongRow extends StatelessWidget {
             ),
         ],
       ),
-      title: song.title,
-      subtitle: song.artist ?? 'Unknown',
-      isActive: isActive,
+      title: Text(song.title),
+      subtitle: Text(song.artist ?? 'Unknown'),
     );
   }
 }
@@ -556,8 +577,11 @@ class _MiniEqState extends State<_MiniEq> with SingleTickerProviderStateMixin {
   void didUpdateWidget(_MiniEq oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.animate != oldWidget.animate) {
-      if (widget.animate) _controller.repeat();
-      else _controller.stop();
+      if (widget.animate) {
+        _controller.repeat();
+      } else {
+        _controller.stop();
+      }
     }
   }
 
@@ -599,3 +623,5 @@ class SliverGap extends StatelessWidget {
     return SliverToBoxAdapter(child: SizedBox(height: size));
   }
 }
+
+

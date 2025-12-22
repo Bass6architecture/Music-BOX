@@ -498,6 +498,26 @@
       }
     }
   },
+
+  "crossfade": "Fondu enchaîné",
+  "crossfadeDesc": "Transition fluide entre les chansons",
+  "crossfadeDisabled": "Désactivé",
+  "crossfadeSeconds": "{seconds} s",
+  "@crossfadeSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "gaplessPlayback": "Sauter les silences",
+  "gaplessPlaybackDesc": "Supprime les blancs dans l'audio (peut causer des artéfacts)",
+  
+  "playbackSpeed": "Vitesse de lecture",
+  "playbackSpeedDesc": "Ajuster la vitesse audio",
+  "defaultSpeed": "Vitesse par défaut",
+
   "contactSubject": "Support Music Box",
   "sortNewest": "Récent",
   "sortOldest": "Ancien",
@@ -510,5 +530,11 @@
   "preview": "Aperçu",
   "useThisImageQuestion": "Utiliser cette image ?",
   "useImage": "Utiliser l'image",
-  "searchOnInternet": "Rechercher sur Internet"
+  "searchOnInternet": "Rechercher sur Internet",
+  "finishCurrentSong": "Finir la chanson actuelle",
+  "sleepTimerFadeOut": "Fondu enchaîné final (15s)",
+  "customEqualizer": "Égaliseur",
+  "equalizerEnabled": "Activer l'égaliseur",
+  "equalizerBands": "Bandes de fréquence",
+  "equalizerPresets": "Préréglages"
 }

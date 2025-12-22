@@ -469,6 +469,26 @@
       }
     }
   },
+
+  "crossfade": "Crossfade",
+  "crossfadeDesc": "Smooth transition between songs",
+  "crossfadeDisabled": "Disabled",
+  "crossfadeSeconds": "{seconds} s",
+  "@crossfadeSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "gaplessPlayback": "Skip silence",
+  "gaplessPlaybackDesc": "Automatically skip silent parts (experimental, may cause noise)",
+  
+  "playbackSpeed": "Playback Speed",
+  "playbackSpeedDesc": "Adjust audio speed",
+  "defaultSpeed": "Default Speed",
+
   "contactSubject": "Music Box Support",
   "sortNewest": "Newest",
   "sortOldest": "Oldest",
@@ -481,5 +501,11 @@
   "preview": "Preview",
   "useThisImageQuestion": "Use this image?",
   "useImage": "Use Image",
-  "searchOnInternet": "Search on Internet"
+  "searchOnInternet": "Search on Internet",
+  "finishCurrentSong": "Finish current song",
+  "sleepTimerFadeOut": "Final fade out (15s)",
+  "customEqualizer": "Equalizer",
+  "equalizerEnabled": "Enable Equalizer",
+  "equalizerBands": "Frequency Bands",
+  "equalizerPresets": "Presets"
 }

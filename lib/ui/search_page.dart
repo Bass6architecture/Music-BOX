@@ -1,3 +1,4 @@
+﻿import 'widgets/music_box_scaffold.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,7 +10,7 @@ import 'package:music_box/widgets/song_tile.dart';
 import 'package:music_box/widgets/song_actions.dart';
 import '../player/player_cubit.dart';
 import '../player/mini_player.dart';
-import 'widgets/music_box_scaffold.dart';
+
 import '../core/background/background_cubit.dart';
 
 class SearchPage extends StatefulWidget {
@@ -56,7 +57,7 @@ class _SearchPageState extends State<SearchPage> {
       final cubit = context.read<PlayerCubit>();
       List<SongModel> songs;
       
-      // ✅ Optimization: Use cached songs if available
+      // âœ… Optimization: Use cached songs if available
       if (cubit.state.allSongs.isNotEmpty) {
         songs = cubit.state.allSongs;
       } else {
@@ -70,7 +71,7 @@ class _SearchPageState extends State<SearchPage> {
       // Filtrer les fichiers avec des URIs valides
       final validSongs = songs.where((song) => song.uri != null).toList();
       
-      // Filtrer les dossiers masqués
+      // Filtrer les dossiers masquÃ©s
       if (!mounted) return;
       final filteredSongs = cubit.filterSongs(validSongs);
       setState(() {
@@ -130,7 +131,7 @@ class _SearchPageState extends State<SearchPage> {
           return FadeTransition(opacity: animation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 300),
-        opaque: false, // ✅ Transparent
+        opaque: false, // âœ… Transparent
       ),
     );
   }
@@ -163,7 +164,7 @@ class _SearchPageState extends State<SearchPage> {
             ),
             const SizedBox(width: 8),
             Text(
-              '${_songs.length} résultat${_songs.length > 1 ? "s" : ""} pour "$_query"',
+              '${_songs.length} rÃ©sultat${_songs.length > 1 ? "s" : ""} pour "$_query"',
               style: theme.textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
@@ -189,7 +190,7 @@ class _SearchPageState extends State<SearchPage> {
       itemCount: _songs.length,
       itemBuilder: (context, i) {
         final s = _songs[i];
-        final subtitle = [s.artist, s.album].where((e) => (e ?? '').isNotEmpty).join(' • ');
+        final subtitle = [s.artist, s.album].where((e) => (e ?? '').isNotEmpty).join(' â€¢ ');
 
         return SongTile(
           song: s,
@@ -299,7 +300,7 @@ class _SearchPageState extends State<SearchPage> {
               prev.showHiddenFolders != curr.showHiddenFolders ||
               prev.deletedSongIds != curr.deletedSongIds,
           listener: (context, state) {
-            // Recharger l'index de recherche pour refléter le masquage/démasquage
+            // Recharger l'index de recherche pour reflÃ©ter le masquage/dÃ©masquage
             if (_hasPermission) {
               _init();
             }
@@ -317,3 +318,5 @@ class _SearchPageState extends State<SearchPage> {
     super.dispose();
   }
 }
+
+

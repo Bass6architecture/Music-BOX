@@ -1,3 +1,4 @@
+﻿import 'widgets/music_box_scaffold.dart';
 import 'package:flutter/material.dart';
 
 import 'dart:io';
@@ -18,8 +19,9 @@ import '../core/background/background_cubit.dart';
 import '../player/player_cubit.dart';
 import '../services/battery_optimization_service.dart';
 import '../services/data_backup_service.dart';
-import 'widgets/music_box_scaffold.dart';
+
 import 'widgets/sleep_timer_dialog.dart';
+import 'screens/equalizer_screen.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key, this.embedded = false});
@@ -98,7 +100,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           _buildSettingTile(
             context,
-            icon: PhosphorIcons.image,
+            icon: PhosphorIcons.image(),
             title: l10n.background,
             subtitle: l10n.backgroundDesc,
             onTap: () => Navigator.push(
@@ -112,7 +114,7 @@ class _SettingsPageState extends State<SettingsPage> {
             builder: (context, locale) {
               return _buildSettingTile(
                 context,
-                icon: PhosphorIcons.translate,
+                icon: PhosphorIcons.sun(),
                 title: l10n.language,
                 subtitle: localeCubit.getLocaleName(locale),
                 onTap: () => Navigator.push(
@@ -133,7 +135,7 @@ class _SettingsPageState extends State<SettingsPage> {
         // Section: Audio
         _buildSectionHeader(context, l10n.audio),
         _buildSection(context, [
-          // ✅ Sleep Timer Tile
+          // âœ… Sleep Timer Tile
           BlocBuilder<PlayerCubit, PlayerStateModel>(
             builder: (context, state) {
               String subtitle = l10n.sleepTimerDesc;
@@ -149,7 +151,7 @@ class _SettingsPageState extends State<SettingsPage> {
               
               return _buildSettingTile(
                 context,
-                icon: PhosphorIcons.timer,
+                icon: PhosphorIcons.timer(),
                 title: l10n.sleepTimerTitle,
                 subtitle: subtitle,
                 onTap: () {
@@ -161,51 +163,22 @@ class _SettingsPageState extends State<SettingsPage> {
               );
             },
           ),
-           _buildSettingTile(
+          _buildSettingTile(
             context,
-            icon: PhosphorIcons.equalizer,
-            title: l10n.equalizer,
+            icon: PhosphorIcons.equalizer(),
+            title: l10n.customEqualizer,
             subtitle: l10n.equalizerDesc,
-            onTap: () async {
-              if (Platform.isAndroid) {
-                try {
-                  final cubit = context.read<PlayerCubit>();
-                  final audioSessionId = cubit.player.androidAudioSessionId;
-                  
-                  if (audioSessionId != null) {
-                    final intent = AndroidIntent(
-                      action: 'android.media.action.DISPLAY_AUDIO_EFFECT_CONTROL_PANEL',
-                      arguments: <String, dynamic>{
-                        'android.media.extra.AUDIO_SESSION': audioSessionId,
-                      },
-                    );
-                    await intent.launch();
-                  } else {
-                    const intent = AndroidIntent(
-                      action: 'android.media.action.DISPLAY_AUDIO_EFFECT_CONTROL_PANEL',
-                    );
-                    await intent.launch();
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(l10n.noEqualizerFound)),
-                    );
-                  }
-                }
-              } else {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.androidOnly)),
-                  );
-                }
-              }
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const EqualizerScreen()),
+              );
             },
           ),
           if (!_isIgnoringBatteryOptimizations && Platform.isAndroid)
             _buildSettingTile(
               context,
-              icon: PhosphorIcons.batteryChargingVertical,
+              icon: PhosphorIcons.batteryChargingVertical(),
               title: l10n.backgroundPlayback,
               subtitle: l10n.backgroundPlaybackDesc,
               onTap: () async {
@@ -222,9 +195,66 @@ class _SettingsPageState extends State<SettingsPage> {
                 }
               },
             ),
+
+          // âœ… Crossfade
+          BlocBuilder<PlayerCubit, PlayerStateModel>(
+            builder: (context, state) {
+              final seconds = state.crossfadeDuration;
+              return _buildSettingTile(
+                context,
+                icon: PhosphorIcons.faders(),
+                title: l10n.crossfade,
+                subtitle: seconds == 0 ? l10n.crossfadeDisabled : l10n.crossfadeSeconds(seconds),
+                onTap: () {
+                   _showCrossfadeDialog(context, seconds);
+                },
+              );
+            },
+          ),
+
+          // âœ… Gapless Playback
+          BlocBuilder<PlayerCubit, PlayerStateModel>(
+            builder: (context, state) {
+              return SwitchListTile(
+                 activeColor: Theme.of(context).colorScheme.primary,
+                 title: Text(l10n.gaplessPlayback, style: GoogleFonts.outfit(fontWeight: FontWeight.w500)),
+                 subtitle: Text(l10n.gaplessPlaybackDesc, style: GoogleFonts.outfit(fontSize: 12)),
+                 secondary: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: PhosphorIcon(PhosphorIcons.link(), 
+                      color: Theme.of(context).colorScheme.onSurfaceVariant, 
+                      size: 20
+                    ),
+                 ),
+                 value: state.gaplessEnabled,
+                 onChanged: (value) {
+                    context.read<PlayerCubit>().toggleGapless();
+                 },
+              );
+            },
+          ),
+
+          // âœ… Default Playback Speed
+          BlocBuilder<PlayerCubit, PlayerStateModel>(
+            builder: (context, state) {
+              return _buildSettingTile(
+                context,
+                icon: PhosphorIcons.speedometer(),
+                title: l10n.defaultSpeed,
+                subtitle: '${state.playbackSpeed}x',
+                onTap: () {
+                   _showSpeedDialog(context, state.playbackSpeed);
+                },
+              );
+            },
+          ),
           _buildSettingTile(
             context,
-            icon: PhosphorIcons.bell,
+            icon: PhosphorIcons.bell(),
             title: l10n.notifications,
             subtitle: l10n.notificationsDesc,
             onTap: () async {
@@ -264,7 +294,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _buildSection(context, [
           _buildSettingTile(
             context,
-            icon: PhosphorIcons.export,
+            icon: PhosphorIcons.export(),
             title: l10n.exportData,
             subtitle: l10n.exportDataDesc,
             onTap: () async {
@@ -278,7 +308,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           _buildSettingTile(
             context,
-            icon: PhosphorIcons.restore,
+            icon: PhosphorIcons.arrowClockwise(), // replaced restore which was missing
             title: l10n.importBackup,
             subtitle: l10n.importBackupDesc,
             onTap: () async {
@@ -341,12 +371,12 @@ class _SettingsPageState extends State<SettingsPage> {
         
         const SizedBox(height: 24),
 
-        // Section: Bibliothèque
+        // Section: BibliothÃ¨que
         _buildSectionHeader(context, l10n.library),
         _buildSection(context, [
           _buildSettingTile(
             context,
-            icon: PhosphorIcons.scan,
+            icon: PhosphorIcons.scan(),
             title: l10n.scanMusic,
             subtitle: l10n.scanMusicDesc,
             onTap: () {
@@ -357,7 +387,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           _buildSettingTile(
             context,
-            icon: PhosphorIcons.folderNotchMinus,
+            icon: PhosphorIcons.folderMinus(),
             title: l10n.hiddenFolders,
             subtitle: l10n.hiddenFoldersDesc,
             onTap: () {
@@ -371,12 +401,12 @@ class _SettingsPageState extends State<SettingsPage> {
         
         const SizedBox(height: 24),
 
-        // Section: À propos
+        // Section: Ã€ propos
         _buildSectionHeader(context, l10n.about),
         _buildSection(context, [
           _buildSettingTile(
             context,
-            icon: PhosphorIcons.musicNote,
+            icon: PhosphorIcons.musicNote(),
             title: l10n.appName,
             subtitle: l10n.version('1.0.1'),
             onTap: () {
@@ -390,14 +420,14 @@ class _SettingsPageState extends State<SettingsPage> {
                     color: theme.colorScheme.outline.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: PhosphorIcon(PhosphorIcons.musicNote, color: theme.colorScheme.onPrimaryContainer, size: 32),
+                  child: PhosphorIcon(PhosphorIcons.musicNote(), color: theme.colorScheme.onPrimaryContainer, size: 32),
                 ),
               );
             },
           ),
           _buildSettingTile(
             context,
-            icon: PhosphorIcons.shieldCheck,
+            icon: PhosphorIcons.shieldCheck(),
             title: l10n.privacyPolicy,
             onTap: () {
               Navigator.push(
@@ -413,7 +443,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           _buildSettingTile(
             context,
-            icon: PhosphorIcons.envelope,
+            icon: PhosphorIcons.envelope(),
             title: l10n.contact,
             subtitle: 'synergydevv@gmail.com',
             onTap: () async {
@@ -449,6 +479,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
   
   Widget _buildSectionHeader(BuildContext context, String title) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(left: 12, bottom: 8),
       child: Text(
@@ -506,7 +537,7 @@ class _SettingsPageState extends State<SettingsPage> {
             subtitle: subtitle != null ? Text(subtitle, style: GoogleFonts.outfit(fontSize: 12)) : null,
             trailing: isDisabled 
                 ? null 
-                : PhosphorIcon(PhosphorIcons.caretRight, color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5), size: 18),
+                : PhosphorIcon(PhosphorIcons.caretRight(), color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5), size: 18),
             onTap: onTap,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
@@ -522,6 +553,90 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
   
+  void _showCrossfadeDialog(BuildContext context, int currentSeconds) {
+    final l10n = AppLocalizations.of(context)!;
+    int selected = currentSeconds;
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: Text(l10n.crossfade, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  selected == 0 ? l10n.crossfadeDisabled : l10n.crossfadeSeconds(selected),
+                  style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 16),
+                Slider(
+                  value: selected.toDouble(),
+                  min: 0,
+                  max: 12,
+                  divisions: 12,
+                  onChanged: (value) {
+                    setState(() {
+                      selected = value.round();
+                    });
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.cancel),
+              ),
+              TextButton(
+                onPressed: () {
+                  context.read<PlayerCubit>().setCrossfadeDuration(selected);
+                  Navigator.pop(ctx);
+                },
+                child: Text(l10n.ok),
+              ),
+            ],
+          );
+        }
+      ),
+    );
+  }
+
+  void _showSpeedDialog(BuildContext context, double currentSpeed) {
+    final l10n = AppLocalizations.of(context)!;
+    final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.playbackSpeed, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: speeds.map((speed) {
+            return RadioListTile<double>(
+              title: Text('${speed}x', style: GoogleFonts.outfit()),
+              value: speed,
+              groupValue: currentSpeed,
+              onChanged: (value) {
+                if (value != null) {
+                  context.read<PlayerCubit>().setPlaybackSpeed(value);
+                  Navigator.pop(ctx);
+                }
+              },
+            );
+          }).toList(),
+        ),
+        actions: [
+           TextButton(
+             onPressed: () => Navigator.pop(ctx),
+             child: Text(l10n.cancel),
+           ),
+        ],
+      ),
+    );
+  }
+
   void _showThemeDialog(BuildContext context) {
     final themeCubit = context.read<ThemeCubit>();
     final l10n = AppLocalizations.of(context)!;
@@ -536,7 +651,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ListTile(
               title: Text(l10n.themeSystem, style: GoogleFonts.outfit()),
               subtitle: Text(l10n.themeSystemDesc, style: GoogleFonts.outfit()),
-              leading: const PhosphorIcon(PhosphorIcons.brightnessAuto),
+              leading: PhosphorIcon(PhosphorIcons.sun()),
               trailing: Radio<ThemeMode>(
                 value: ThemeMode.system,
                 // ignore: deprecated_member_use
@@ -557,7 +672,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ListTile(
               title: Text(l10n.themeLight, style: GoogleFonts.outfit()),
               subtitle: Text(l10n.themeLightDesc, style: GoogleFonts.outfit()),
-              leading: const PhosphorIcon(PhosphorIcons.sun),
+              leading: PhosphorIcon(PhosphorIcons.sun()),
               trailing: Radio<ThemeMode>(
                 value: ThemeMode.light,
                 // ignore: deprecated_member_use
@@ -578,7 +693,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ListTile(
               title: Text(l10n.themeDark, style: GoogleFonts.outfit()),
               subtitle: Text(l10n.themeDarkDesc, style: GoogleFonts.outfit()),
-              leading: const PhosphorIcon(PhosphorIcons.moon),
+              leading: PhosphorIcon(PhosphorIcons.moon()),
               trailing: Radio<ThemeMode>(
                 value: ThemeMode.dark,
                 // ignore: deprecated_member_use
@@ -602,4 +717,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 }  
+
+
 

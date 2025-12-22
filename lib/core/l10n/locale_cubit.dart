@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui' as ui;
@@ -44,13 +44,13 @@ class LocaleCubit extends Cubit<Locale> {
       );
       
       if (isSupported) {
-        debugPrint('🌍 Langue du système détectée: ${systemLocale.languageCode}');
+        debugPrint('🌐 Langue du système détectée: ${systemLocale.languageCode}');
         return Locale(systemLocale.languageCode);
       }
     }
     
     // Fallback: anglais par défaut (universel)
-    debugPrint('🌍 Langue du système non supportée, utilisation de l\'anglais');
+    debugPrint('🌐 Langue du système non supportée, utilisation de l\'anglais');
     return const Locale('en');
   }
 
@@ -72,7 +72,6 @@ class LocaleCubit extends Cubit<Locale> {
     }
   }
 
-  /// Langues supportées
   /// Langues supportées - ONLY FR/EN as requested
   static const List<Locale> supportedLocales = [
     Locale('fr'), // Français

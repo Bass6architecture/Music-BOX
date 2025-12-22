@@ -479,7 +479,7 @@ abstract class AppLocalizations {
   /// No description provided for @equalizerEnabled.
   ///
   /// In fr, this message translates to:
-  /// **'Égaliseur activé'**
+  /// **'Activer l\'égaliseur'**
   String get equalizerEnabled;
 
   /// No description provided for @equalizerDisabled.
@@ -2132,6 +2132,60 @@ abstract class AppLocalizations {
   /// **'Voici ma sauvegarde Music Box du {date}.'**
   String backupBody(String date);
 
+  /// No description provided for @crossfade.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fondu enchaîné'**
+  String get crossfade;
+
+  /// No description provided for @crossfadeDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'Transition fluide entre les chansons'**
+  String get crossfadeDesc;
+
+  /// No description provided for @crossfadeDisabled.
+  ///
+  /// In fr, this message translates to:
+  /// **'Désactivé'**
+  String get crossfadeDisabled;
+
+  /// No description provided for @crossfadeSeconds.
+  ///
+  /// In fr, this message translates to:
+  /// **'{seconds} s'**
+  String crossfadeSeconds(int seconds);
+
+  /// No description provided for @gaplessPlayback.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sauter les silences'**
+  String get gaplessPlayback;
+
+  /// No description provided for @gaplessPlaybackDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprime les blancs dans l\'audio (peut causer des artéfacts)'**
+  String get gaplessPlaybackDesc;
+
+  /// No description provided for @playbackSpeed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vitesse de lecture'**
+  String get playbackSpeed;
+
+  /// No description provided for @playbackSpeedDesc.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajuster la vitesse audio'**
+  String get playbackSpeedDesc;
+
+  /// No description provided for @defaultSpeed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vitesse par défaut'**
+  String get defaultSpeed;
+
   /// No description provided for @contactSubject.
   ///
   /// In fr, this message translates to:
@@ -2203,6 +2257,36 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Rechercher sur Internet'**
   String get searchOnInternet;
+
+  /// No description provided for @finishCurrentSong.
+  ///
+  /// In fr, this message translates to:
+  /// **'Finir la chanson actuelle'**
+  String get finishCurrentSong;
+
+  /// No description provided for @sleepTimerFadeOut.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fondu enchaîné final (15s)'**
+  String get sleepTimerFadeOut;
+
+  /// No description provided for @customEqualizer.
+  ///
+  /// In fr, this message translates to:
+  /// **'Égaliseur'**
+  String get customEqualizer;
+
+  /// No description provided for @equalizerBands.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bandes de fréquence'**
+  String get equalizerBands;
+
+  /// No description provided for @equalizerPresets.
+  ///
+  /// In fr, this message translates to:
+  /// **'Préréglages'**
+  String get equalizerPresets;
 }
 
 class _AppLocalizationsDelegate

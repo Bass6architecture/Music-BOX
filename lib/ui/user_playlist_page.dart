@@ -13,11 +13,10 @@ import '../player/player_cubit.dart';
 import '../player/mini_player.dart';
 import 'song_picker_page.dart';
 import 'now_playing_next_gen.dart';
-import 'song_actions_sheet.dart';
+
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_theme.dart';
-import 'widgets/modern_widgets.dart';
+
 
 
 class UserPlaylistPage extends StatefulWidget {
@@ -211,7 +210,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: PhosphorIcon(PhosphorIcons.plus),
+              leading: PhosphorIcon(PhosphorIcons.plus()),
               title: Text(l10n.createPlaylist, style: GoogleFonts.outfit()),
               onTap: () async {
                 Navigator.pop(ctx);
@@ -236,7 +235,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
                 itemBuilder: (_, i) {
                   final p = playlists[i];
                   return ListTile(
-                    leading: PhosphorIcon(PhosphorIcons.playlist),
+                    leading: PhosphorIcon(PhosphorIcons.playlist()),
                     title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.outfit()),
                     subtitle: Text(l10n.songCount(p.songIds.length), style: GoogleFonts.outfit()),
                     onTap: () {
@@ -370,7 +369,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
                             title: _isSelectionMode ? Row(
                                 children: [
                                     IconButton(
-                                      icon: PhosphorIcon(PhosphorIcons.x), 
+                                      icon: PhosphorIcon(PhosphorIcons.x()), 
                                      onPressed: _exitSelectionMode,
                                    ),
                                    const SizedBox(width: 8),
@@ -378,7 +377,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
                                    const Spacer(),
                                    TextButton.icon(
                                      onPressed: _selectAll,
-                                     icon: PhosphorIcon(_selectedIds.length == songs.length ? PhosphorIcons.minusCircle.fill : PhosphorIcons.checkSquareOffset),
+                                     icon: PhosphorIcon(_selectedIds.length == songs.length ? PhosphorIcons.minusCircle(PhosphorIconsStyle.fill) : PhosphorIcons.checkSquareOffset()),
                                      label: Text(_selectedIds.length == songs.length ? "Désélect. tout" : l10n.selectAll, style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
                                    )
                                 ],
@@ -387,12 +386,12 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
 
                             actions: _isSelectionMode ? null : [
                              IconButton(
-                               icon: PhosphorIcon(PhosphorIcons.pencilLine, size: 20),
+                               icon: PhosphorIcon(PhosphorIcons.pencilLine(), size: 20),
                                onPressed: _rename,
                                tooltip: l10n.renamePlaylist,
                              ),
                              IconButton(
-                               icon: PhosphorIcon(PhosphorIcons.trash, size: 20),
+                               icon: PhosphorIcon(PhosphorIcons.trash(), size: 20),
                                onPressed: _delete,
                                tooltip: l10n.delete,
                              ),
@@ -428,10 +427,10 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
                                   right: -20,
                                   bottom: -20,
                                   child: PhosphorIcon(
-                                  PhosphorIcons.playlist,
+                                  PhosphorIcons.playlist(),
                                   size: 140,
                                   color: theme.colorScheme.primary.withValues(alpha: 0.05),
-                                ),  ),
+                                ),
                                 ),
                               ],
                             ),
@@ -455,7 +454,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       PhosphorIcon(
-                                        PhosphorIcons.musicNote,
+                                        PhosphorIcons.musicNote(),
                                         size: 16,
                                         color: theme.colorScheme.onSecondaryContainer,
                                       ),
@@ -478,7 +477,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
                                       : () async {
                                           await _playAndOpen(songs, 0);
                                         },
-                                   icon: PhosphorIcon(PhosphorIcons.play, size: 20),
+                                   icon: PhosphorIcon(PhosphorIcons.play(), size: 20),
                                    label: Text(l10n.playAll, style: GoogleFonts.outfit()),
                                  ),
                                 const SizedBox(width: 8),
@@ -489,7 +488,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
                                            final random = List<SongModel>.from(songs)..shuffle();
                                            await _playAndOpen(random, 0);
                                          },
-                                   icon: PhosphorIcon(PhosphorIcons.shuffle, size: 24),
+                                   icon: PhosphorIcon(PhosphorIcons.shuffle(), size: 24),
                                    tooltip: l10n.shuffleAll,
                                  ),
                               ],
@@ -515,7 +514,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
                                       shape: BoxShape.circle,
                                     ),
                                     child: PhosphorIcon(
-                                      PhosphorIcons.musicNote, // Replace musicNoteSlash with musicNote
+                                      PhosphorIcons.musicNote(PhosphorIconsStyle.fill), // Utilisation de .fill pour remplacer musicNoteSlash si manquant
                                       size: 48,
                                       color: theme.colorScheme.onSurfaceVariant,
                                     ),
@@ -537,7 +536,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
                                   const SizedBox(height: 24),
                                   FilledButton.icon(
                                     onPressed: () => _addSongs(cubit),
-                                    icon: PhosphorIcon(PhosphorIcons.plus),
+                                    icon: PhosphorIcon(PhosphorIcons.plus()),
                                     label: Text(l10n.addSongs, style: GoogleFonts.outfit()),
                                   ),
                                 ],
@@ -633,7 +632,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
                         child: FloatingActionButton(
                           onPressed: () => _addSongs(cubit),
                           tooltip: l10n.addSongs,
-                          child: PhosphorIcon(PhosphorIcons.plus),
+                          child: PhosphorIcon(PhosphorIcons.plus()),
                         ),
                       );
                     }
@@ -676,11 +675,11 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-             _buildBarAction(context, PhosphorIcons.play.fill, l10n.play, _playSelected),
-             _buildBarAction(context, PhosphorIcons.listPlus.fill, l10n.addToPlaylist, _addToPlaylistSelected),
-             _buildBarAction(context, PhosphorIcons.shareNetwork.fill, l10n.share, _shareSelected),
+             _buildBarAction(context, PhosphorIcons.play(PhosphorIconsStyle.fill), l10n.play, _playSelected),
+             _buildBarAction(context, PhosphorIcons.listPlus(PhosphorIconsStyle.fill), l10n.addToPlaylist, _addToPlaylistSelected),
+             _buildBarAction(context, PhosphorIcons.shareNetwork(PhosphorIconsStyle.fill), l10n.share, _shareSelected),
              // REMOVE instead of DELETE
-             _buildBarAction(context, PhosphorIcons.minusCircle, l10n.removeFromList, _removeSelected, isDestructive: true),
+             _buildBarAction(context, PhosphorIcons.minusCircle(), l10n.removeFromList, _removeSelected, isDestructive: true),
           ],
         ),
       ),

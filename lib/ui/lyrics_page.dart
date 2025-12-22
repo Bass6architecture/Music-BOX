@@ -1,11 +1,12 @@
+﻿import 'package:flutter/services.dart';
 
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:ui' as ui;
-import 'package:flutter/rendering.dart'; // For ScrollDirection
+ // For ScrollDirection
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
@@ -31,7 +32,8 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
   String? _lyrics;
   Timer? _timeoutTimer;
 
-  bool _notifiedFound = false;
+
+
   int? _lastSongId;
   Timer? _copyDebounce;
   bool _copySheetVisible = false;
@@ -41,14 +43,14 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
   double _lineHeight = 1.6;
   bool _alignCenter = true;
   bool _blurBackground = false;
-  int? _lyricsSavedAt;
-  bool _fromCache = false;
+
+
   static const int _lyricsTtlMs = 30 * 24 * 60 * 60 * 1000; // 30 jours
   bool _staleCache = false;
   String? _lastCopyText;
   
   // Synced Lyrics State
-  List<LyricLine> _parsedLyrics = [];
+  final List<LyricLine> _parsedLyrics = [];
   final ScrollController _scrollController = ScrollController();
   // final ItemScrollController _itemScrollController = ItemScrollController();
   // final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
@@ -148,10 +150,7 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
     final s = _song;
     if (s == null) return null;
     final id = s.id;
-    if (id != null) return 'lyrics_' + id.toString();
-    final artist = (s.artist ?? '').trim();
-    final title = (s.title).trim();
-    return 'lyrics_${artist}_$title';
+    return 'lyrics_$id';
   }
 
   Future<void> _loadCachedLyrics() async {
@@ -169,7 +168,11 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
             final m = json.decode(c) as Map<String, dynamic>;
             text = (m['text'] ?? m['lyrics'] ?? m['txt'])?.toString();
             final n = m['ts'];
-            if (n is int) ts = n; else if (n is double) ts = n.toInt();
+            if (n is int) {
+              ts = n;
+            } else if (n is double) {
+              ts = n.toInt();
+            }
           } catch (_) {
             text = cached;
           }
@@ -182,15 +185,13 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
           if (!mounted) return;
           setState(() {
             _lyrics = _cleanupLyrics(text!.trim());
-            _lyricsSavedAt = ts;
-            _fromCache = true;
             _staleCache = stale;
             _mode = LyricsMode.found;
           });
           // Parse loaded lyrics for sync
           if (_lyrics != null) _parseLrc(_lyrics!);
           
-          _notifyFoundOnce();
+          if (_lyrics != null) _parseLrc(_lyrics!);
         }
       }
     } catch (_) {}
@@ -204,8 +205,6 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
       final now = DateTime.now().millisecondsSinceEpoch;
       final payload = json.encode({'text': text, 'ts': now});
       await prefs.setString(key, payload);
-      _lyricsSavedAt = now;
-      _fromCache = false;
       _staleCache = false;
     } catch (_) {}
   }
@@ -219,9 +218,9 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
 
   String _normalizeTitle(String t) {
     var x = t;
-    // Enlever qualités audio : (256k), (320k), (128kbps), etc.
+    // Enlever qualitÃ©s audio : (256k), (320k), (128kbps), etc.
     x = x.replaceAll(RegExp(r'\s*\((\d+k(bps)?|\d+kbps)\)', caseSensitive: false), '');
-    // Enlever parenthèses et crochets
+    // Enlever parenthÃ¨ses et crochets
     x = x.replaceAll(RegExp(r'\s*\([^)]*\)'), '');
     x = x.replaceAll(RegExp(r'\s*\[[^\]]*\]'), '');
     x = x.replaceAll(RegExp(r'\s*-\s*(remaster(ed)?\s*\d{0,4}|live|single version|radio edit).*$', caseSensitive: false), '');
@@ -233,7 +232,7 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
     return x.trim();
   }
 
-  /// Extraire artiste depuis titre mal formaté (ex: "Artist_-_Song(256k)")
+  /// Extraire artiste depuis titre mal formatÃ© (ex: "Artist_-_Song(256k)")
   Map<String, String>? _parseVidmateFormat(String title) {
     // Pattern 1 : "Artist_-_Song(256k)" ou "Artist_-_Song"
     final match1 = RegExp(r'^([^_]+?)_-_(.+?)(?:\(\d+k\))?$', caseSensitive: false).firstMatch(title);
@@ -248,7 +247,7 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
     final match2 = RegExp(r'^([^-]+?)\s*-\s*(.+?)$').firstMatch(title);
     if (match2 != null) {
       final artist = match2.group(1)!.trim();
-      // Vérifier que ce n'est pas juste un numéro de piste
+      // VÃ©rifier que ce n'est pas juste un numÃ©ro de piste
       if (!RegExp(r'^\d+$').hasMatch(artist)) {
         return {
           'artist': artist,
@@ -292,7 +291,7 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
         if (txt != null && txt.trim().isNotEmpty) return txt;
       }
     } on SocketException {
-      rethrow; // ✅ Propagate network errors for detection
+      rethrow; // âœ… Propagate network errors for detection
     } catch (_) {}
     return null;
   }
@@ -308,7 +307,7 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
         if (txt != null && txt.trim().isNotEmpty) return txt;
       }
     } on SocketException {
-      rethrow; // ✅ Propagate network errors for detection
+      rethrow; // âœ… Propagate network errors for detection
     } catch (_) {}
     return null;
   }
@@ -331,8 +330,16 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
               final ia = norm((item['artistName'] ?? '').toString());
               final it = norm((item['trackName'] ?? '').toString());
               int score = 0;
-              if (ia == at) score += 2; else if (ia.contains(at) || at.contains(ia)) score += 1;
-              if (it == tt) score += 2; else if (it.contains(tt) || tt.contains(it)) score += 1;
+              if (ia == at) {
+                score += 2;
+              } else if (ia.contains(at) || at.contains(ia)) {
+                score += 1;
+              }
+              if (it == tt) {
+                score += 2;
+              } else if (it.contains(tt) || tt.contains(it)) {
+                score += 1;
+              }
               if (score > bestScore) { bestScore = score; best = item; }
             }
           }
@@ -342,7 +349,7 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
         }
       }
     } on SocketException {
-      rethrow; // ✅ Propagate network errors for detection
+      rethrow; // âœ… Propagate network errors for detection
     } catch (_) {}
     return null;
   }
@@ -422,7 +429,7 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
   void _ensureRecommendedDefaultsIfFirstRun() {
     // Apply immersive defaults only once and only where no prior user prefs exist.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
+      if (!context.mounted) return;
       try {
         final prefs = await SharedPreferences.getInstance();
         final applied = prefs.getBool('lyrics_defaults_applied_v2') ?? false;
@@ -462,18 +469,18 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
     try {
       var t = input.replaceAll('\r\n', '\n');
       final lines = t.split('\n');
-      // Enlever entêtes parasites (Aperçu, Paroles, Lyrics) au début
+      // Enlever entÃªtes parasites (AperÃ§u, Paroles, Lyrics) au dÃ©but
       while (lines.isNotEmpty && lines.first.trim().isEmpty) {
         lines.removeAt(0);
       }
-      final headerRe = RegExp(r'^(aperçu|paroles|lyrics)$', caseSensitive: false);
+      final headerRe = RegExp(r'^(aperÃ§u|paroles|lyrics)$', caseSensitive: false);
       while (lines.isNotEmpty && headerRe.hasMatch(lines.first.trim())) {
         lines.removeAt(0);
         while (lines.isNotEmpty && lines.first.trim().isEmpty) {
           lines.removeAt(0);
         }
       }
-      // Réduire les multiples lignes vides consécutives
+      // RÃ©duire les multiples lignes vides consÃ©cutives
       final out = <String>[];
       var empty = 0;
       for (final l in lines) {
@@ -625,18 +632,10 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
 
   String _formatNumber(double v) => v.toStringAsFixed(v.truncateToDouble() == v ? 0 : 2);
 
-  String _formatAgo(int? ts) {
-    if (ts == null) return '';
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final diff = (now - ts).clamp(0, 1 << 62);
-    if (diff < 60000) return '${(diff / 1000).round()} s';
-    if (diff < 3600000) return '${(diff / 60000).round()} min';
-    if (diff < 86400000) return '${(diff / 3600000).round()} h';
-    return '${(diff / 86400000).round()} j';
-  }
+
 
   Widget _buildCacheInfo() {
-    // Information de cache masquée car non pertinente pour l'utilisateur
+    // Information de cache masquÃ©e car non pertinente pour l'utilisateur
     return const SizedBox.shrink();
   }
 
@@ -699,12 +698,13 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
       _copySheetVisible = false;
       if (res == true && mounted) {
         final cleaned = _cleanupLyrics(txt);
-        setState(() {
-          _lyrics = cleaned;
-          _mode = LyricsMode.found;
-        });
-        await _saveLyricsToCache(cleaned);
-        _notifyFoundOnce();
+        if (mounted) {
+          setState(() {
+            _lyrics = cleaned;
+            _mode = LyricsMode.found;
+          });
+          await _saveLyricsToCache(cleaned);
+        }
       }
     });
   }
@@ -712,11 +712,9 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
   void _startAutoSearch() {
     setState(() {
       _mode = LyricsMode.loading;
-      _lyrics = null;
-      _notifiedFound = false;
     });
     _timeoutTimer?.cancel();
-    // 22s timeout pour laisser le temps aux chansons mal formatées
+    // 22s timeout pour laisser le temps aux chansons mal formatÃ©es
     _timeoutTimer = Timer(const Duration(seconds: 22), () {
       if (!mounted) return;
       if (_mode == LyricsMode.loading && _lyrics == null) {
@@ -760,25 +758,23 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
           txt ??= await _fetchLyricsOvh(ca, ct);
           if (txt != null && txt.trim().isNotEmpty) {
             final cleaned = _cleanupLyrics(txt.trim());
-            if (!mounted) return;
-            // Try to parse synced lyrics if present
             _parseLrc(cleaned);
             
-            setState(() {
-              _lyrics = cleaned;
-              _mode = LyricsMode.found;
-              _fromCache = false;
-              _lyricsSavedAt = DateTime.now().millisecondsSinceEpoch;
-              _staleCache = false;
-            });
-            await _saveLyricsToCache(cleaned);
-            _timeoutTimer?.cancel();
+            if (mounted) {
+              setState(() {
+                _lyrics = cleaned;
+                _mode = LyricsMode.found;
+                _staleCache = false;
+              });
+              await _saveLyricsToCache(cleaned);
+              _timeoutTimer?.cancel();
+            }
             return;
           }
         }
       }
     } on SocketException catch (_) {
-      // ✅ No internet connection detected
+      // âœ… No internet connection detected
       if (!mounted) return;
       setState(() => _mode = LyricsMode.noConnection);
       _timeoutTimer?.cancel();
@@ -789,10 +785,7 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
     // Do nothing here; the global timeout will switch to options if still loading
   }
 
-  void _notifyFoundOnce() {
-    // ✅ Removed snackbar per user request - keep method for backwards compatibility
-    _notifiedFound = true;
-  }
+
 
   Widget _skeletonBar({double widthFactor = 1.0, double height = 14}) {
     final color = Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: _pulse.value);
@@ -829,24 +822,13 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
       padding: const EdgeInsets.fromLTRB(12, 12, 4, 12), // Reduced padding right for icon
       child: Row(
         children: [
-          if (s.id != null)
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: SizedBox(
                 width: 56,
                 height: 56,
-                child: OptimizedArtwork.square(id: s.id!, type: ArtworkType.AUDIO, size: 56),
+                child: OptimizedArtwork.square(id: s.id, type: ArtworkType.AUDIO, size: 56),
               ),
-            )
-          else
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.music_note),
             ),
           const SizedBox(width: 12),
           Expanded(
@@ -886,7 +868,11 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
               return IconButton(
                 icon: const Icon(Icons.more_vert_rounded),
                 onPressed: () {
-                   if (controller.isOpen) controller.close(); else controller.open();
+                   if (controller.isOpen) {
+                     controller.close();
+                   } else {
+                     controller.open();
+                   }
                 },
               );
             },
@@ -910,7 +896,9 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
                    if (data?.text != null && data!.text!.isNotEmpty) {
                      _openEditor(initialText: data.text!);
                    } else {
-                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Clipboard empty')));
+                     if (context.mounted) {
+                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Clipboard empty')));
+                     }
                    }
                 },
               ),
@@ -982,7 +970,7 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
     final title = (s?.title ?? '').trim();
     final q = '$title $artist lyrics';
     
-    // Ouvrir une page plein écran pour la recherche web
+    // Ouvrir une page plein Ã©cran pour la recherche web
     if (!mounted) return;
     await Navigator.of(context).push(
       MaterialPageRoute(
@@ -1130,7 +1118,7 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
           ),
         );
       case LyricsMode.manual:
-        // Mode manuel maintenant géré par une page plein écran séparée
+        // Mode manuel maintenant gÃ©rÃ© par une page plein Ã©cran sÃ©parÃ©e
         return const SizedBox.shrink();
       case LyricsMode.noConnection:
         return Padding(
@@ -1189,8 +1177,10 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
 
     Widget buildBackdrop() {
       final s = _song;
-      if (!_blurBackground || s?.id == null) return const SizedBox.shrink();
-      final songId = s!.id!;
+      if (!_blurBackground) return const SizedBox.shrink();
+      if (s == null) return const SizedBox.shrink();
+
+      final songId = s.id;
       final customPath = context.select((PlayerCubit c) => c.state.customArtworkPaths[songId]);
       final hasCustom = (customPath != null && customPath.isNotEmpty && File(customPath).existsSync());
       return Positioned.fill(
@@ -1199,7 +1189,7 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
           children: [
             if (hasCustom)
               Image.file(
-                File(customPath!),
+                File(customPath),
                 fit: BoxFit.cover,
               )
             else
@@ -1279,14 +1269,18 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(key);
     }
-    if (mounted) {
-      setState(() {
-        _lyrics = null;
-        _mode = LyricsMode.options; // Revenir aux options
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.lyricsDeleted)),
-      );
+    if (context.mounted) {
+      if (context.mounted) {
+        setState(() {
+          _lyrics = null;
+          _mode = LyricsMode.options; // Revenir aux options
+        });
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.lyricsDeleted)),
+        );
+      }
     }
   }
 
@@ -1331,18 +1325,19 @@ class _LyricsPageState extends State<LyricsPage> with SingleTickerProviderStateM
         setState(() {
            _lyrics = cleaned;
            _mode = LyricsMode.found;
-           _lyricsSavedAt = DateTime.now().millisecondsSinceEpoch;
         });
         _parseLrc(cleaned);
         await _saveLyricsToCache(cleaned);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.lyricsSaved)));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.lyricsSaved)));
+        }
       }
     }
   }
 
 }
 
-// Page plein écran pour la recherche web de paroles
+// Page plein Ã©cran pour la recherche web de paroles
 class _LyricsWebSearchPage extends StatefulWidget {
   final String searchQuery;
   final void Function(String) onCopiedText;
@@ -1417,7 +1412,7 @@ class _LyricsWebSearchPageState extends State<_LyricsWebSearchPage> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (url) async {
-            // Inject JavaScript pour détecter les copies
+            // Inject JavaScript pour dÃ©tecter les copies
             const js = '''
 (function(){
   try {
@@ -1544,3 +1539,5 @@ class LyricLine {
 
   const LyricLine(this.timestamp, this.text);
 }
+
+

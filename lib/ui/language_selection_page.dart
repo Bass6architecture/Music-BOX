@@ -4,7 +4,6 @@ import '../core/l10n/locale_cubit.dart';
 import '../generated/app_localizations.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_theme.dart';
 
 class LanguageSelectionPage extends StatelessWidget {
   const LanguageSelectionPage({super.key});
@@ -38,7 +37,7 @@ class LanguageSelectionPage extends StatelessWidget {
             subtitle: Text(
               l10n.languageSystemDesc,
               style: GoogleFonts.outfit(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 fontSize: 12,
               ),
             ),
@@ -48,11 +47,13 @@ class LanguageSelectionPage extends StatelessWidget {
                 color: theme.colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: PhosphorIcon(PhosphorIcons.deviceMobile, color: theme.colorScheme.primary),
+              child: PhosphorIcon(PhosphorIcons.translate(), color: theme.colorScheme.primary),
             ),
             trailing: Radio<String?>(
-              value: null, // null représente le choix "Système"
-              groupValue: localeCubit.isSystemMode ? null : 'not_null', // Si mode système, on matche avec null
+              value: null,
+              // ignore: deprecated_member_use
+              groupValue: localeCubit.isSystemMode ? null : 'not_null',
+              // ignore: deprecated_member_use
               onChanged: (value) async {
                  await localeCubit.setLocale(null);
                  if (context.mounted) Navigator.pop(context);
@@ -79,7 +80,7 @@ class LanguageSelectionPage extends StatelessWidget {
               localeInfo.name,
               style: GoogleFonts.outfit(
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isAvailable ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withOpacity(0.5),
+                color: isAvailable ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
             subtitle: !isAvailable 
@@ -102,14 +103,15 @@ class LanguageSelectionPage extends StatelessWidget {
                 localeInfo.flag,
                 style: TextStyle(
                   fontSize: 20,
-                  color: isAvailable ? null : theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: isAvailable ? null : theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
             ),
             trailing: Radio<String>(
               value: localeInfo.locale.languageCode,
-              // Si on est en mode système, aucun bouton radio manuel ne doit être coché
+              // ignore: deprecated_member_use
               groupValue: localeCubit.isSystemMode ? null : currentLocale.languageCode,
+              // ignore: deprecated_member_use
               onChanged: isAvailable 
                   ? (value) async {
                       if (value != null && (!isSelected || localeCubit.isSystemMode)) {
@@ -129,7 +131,7 @@ class LanguageSelectionPage extends StatelessWidget {
               ),
             ),
           );
-        }).toList(),
+        }),
         ],
       ),
     );

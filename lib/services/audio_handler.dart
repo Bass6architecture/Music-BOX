@@ -1,34 +1,34 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Custom AudioHandler pour gérer les notifications avec boutons personnalisés
+/// Custom AudioHandler pour gÃ©rer les notifications avec boutons personnalisÃ©s
 class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
   final AudioPlayer _player;
   
   // Callback pour le bouton "J'aime"
   Function(int songId)? onLikePressed;
   
-  // Stocker l'état "aimé" de la chanson courante
+  // Stocker l'Ã©tat "aimÃ©" de la chanson courante
   bool _isLiked = false;
 
   MusicBoxAudioHandler(this._player) {
-    debugPrint('🎵 AudioHandler créé !');
+    debugPrint('ðŸŽµ AudioHandler crÃ©Ã© !');
     
-    // Restaurer l'état depuis le stockage (pour affichage immédiat en arrière-plan)
+    // Restaurer l'Ã©tat depuis le stockage (pour affichage immÃ©diat en arriÃ¨re-plan)
     _restoreLastState();
 
-    // Écouter TOUTES les mises à jour pour diffuser l'état
+    // Ã‰couter TOUTES les mises Ã  jour pour diffuser l'Ã©tat
     _player.playbackEventStream.listen(_broadcastState);
-    // ✅ Écouter aussi le changement d'état playing pour la barre de progression
+    // âœ… Ã‰couter aussi le changement d'Ã©tat playing pour la barre de progression
     _player.playingStream.listen((_) => _broadcastState(null));
     
-    // ✅ Throttle position updates - plus fréquent pour la barre de progression
+    // âœ… Throttle position updates - plus frÃ©quent pour la barre de progression
     Duration lastPosition = Duration.zero;
     _player.positionStream.listen((pos) {
-      // Mettre à jour si changement > 200ms pour fluidité
+      // Mettre Ã  jour si changement > 200ms pour fluiditÃ©
       if ((pos - lastPosition).abs() >= const Duration(milliseconds: 200)) {
         lastPosition = pos;
         _broadcastState(null);
@@ -44,7 +44,7 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
         MediaAction.seek,
         MediaAction.seekForward,
         MediaAction.seekBackward,
-        MediaAction.stop, // ✅ Allow stopping handling
+        MediaAction.stop, // âœ… Allow stopping handling
       },
       androidCompactActionIndices: const [0, 2, 3],
       updatePosition: Duration.zero,
@@ -53,16 +53,16 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
       shuffleMode: AudioServiceShuffleMode.none,
     ));
     
-    debugPrint('   PlaybackState initial diffusé');
+    debugPrint('   PlaybackState initial diffusÃ©');
   }
 
-  /// Restaurer le dernier état connu (chanson) pour éviter la notification vide
+  /// Restaurer le dernier Ã©tat connu (chanson) pour Ã©viter la notification vide
   Future<void> _restoreLastState() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final lastSongId = prefs.getInt('last_song_id'); // Key from PlayerCubit
       
-      debugPrint('🎵 AudioHandler: Attempting to restore last song ID: $lastSongId');
+      debugPrint('ðŸŽµ AudioHandler: Attempting to restore last song ID: $lastSongId');
 
       if (lastSongId != null) {
         final onAudioQuery = OnAudioQuery();
@@ -78,18 +78,18 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
             uriType: UriType.EXTERNAL,
           );
         } catch (e) {
-           debugPrint('❌ AudioHandler: Query failed: $e');
+           debugPrint('âŒ AudioHandler: Query failed: $e');
         }
 
         try {
            final song = songs.firstWhere((s) => s.id == lastSongId, orElse: () => SongModel({}));
            
            if (song.id == 0) {
-             debugPrint('❌ AudioHandler: Song $lastSongId not found in library of ${songs.length} songs');
+             debugPrint('âŒ AudioHandler: Song $lastSongId not found in library of ${songs.length} songs');
              return;
            }
 
-           debugPrint('✅ AudioHandler: Found song: ${song.title}');
+           debugPrint('âœ… AudioHandler: Found song: ${song.title}');
 
            // Create MediaItem for notification
            final item = MediaItem(
@@ -102,7 +102,7 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
               extras: {'songId': song.id},
            );
            
-           // ✅ Update MediaItem IMMEDIATELY for notification display
+           // âœ… Update MediaItem IMMEDIATELY for notification display
            mediaItem.add(item);
            
            // Update state to Ready (Paused) so notification appears correctly
@@ -114,21 +114,21 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
               bufferedPosition: Duration.zero,
            ));
            
-           // ⚠️ DO NOT set audio source here - let PlayerCubit handle it
+           // âš ï¸ DO NOT set audio source here - let PlayerCubit handle it
            // to avoid race conditions and ensure _playlist is properly tracked.
-           debugPrint('✅ AudioHandler: MediaItem set for notification (source will be loaded by PlayerCubit)');
+           debugPrint('âœ… AudioHandler: MediaItem set for notification (source will be loaded by PlayerCubit)');
         } catch (e) {
-           debugPrint('❌ AudioHandler: Logic error: $e');
+           debugPrint('âŒ AudioHandler: Logic error: $e');
         }
       } else {
-        debugPrint('ℹ️ AudioHandler: No last song ID found');
+        debugPrint('â„¹ï¸ AudioHandler: No last song ID found');
       }
     } catch (e) {
-      debugPrint('❌ AudioHandler: Error restoring state: $e');
+      debugPrint('âŒ AudioHandler: Error restoring state: $e');
     }
   }
   
-  /// Diffuse l'état complet pour la notification native
+  /// Diffuse l'Ã©tat complet pour la notification native
   void _broadcastState(PlaybackEvent? event) {
     final playing = _player.playing;
     final processingState = _mapProcessingState(_player.processingState);
@@ -172,10 +172,10 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
 
   List<MediaControl> _getControls(bool playing, bool isLiked) {
     return [
-      // Bouton Précédent
+      // Bouton PrÃ©cÃ©dent
       MediaControl.skipToPrevious,
       
-      // Bouton J'aime (changera d'icône selon l'état)
+      // Bouton J'aime (changera d'icÃ´ne selon l'Ã©tat)
       MediaControl.custom(
         androidIcon: isLiked ? 'drawable/ic_heart_filled' : 'drawable/ic_heart_outline',
         label: isLiked ? 'Ne plus aimer' : 'J\'aime',
@@ -190,16 +190,16 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
     ];
   }
 
-  /// Mettre à jour l'état "aimé"
+  /// Mettre Ã  jour l'Ã©tat "aimÃ©"
   void updateLikedState(bool isLiked) {
-    debugPrint('🎵 updateLikedState: $_isLiked → $isLiked');
+    debugPrint('ðŸŽµ updateLikedState: $_isLiked â†’ $isLiked');
     _isLiked = isLiked;
-    // Rafraîchir les boutons avec le nouvel état
+    // RafraÃ®chir les boutons avec le nouvel Ã©tat
     final currentState = playbackState.value;
     playbackState.add(currentState.copyWith(
       controls: _getControls(currentState.playing, isLiked),
     ));
-    debugPrint('   Boutons mis à jour');
+    debugPrint('   Boutons mis Ã  jour');
   }
 
   @override
@@ -226,25 +226,25 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
   @override
   Future<void> customAction(String name, [Map<String, dynamic>? extras]) async {
     if (name == 'like') {
-      debugPrint('🎵 Bouton cœur cliqué');
-      // Récupérer le songId depuis le MediaItem actuel
+      debugPrint('ðŸŽµ Bouton cÅ“ur cliquÃ©');
+      // RÃ©cupÃ©rer le songId depuis le MediaItem actuel
       final item = mediaItem.value;
       if (item != null && item.extras != null) {
         final songId = item.extras!['songId'];
         if (songId != null && onLikePressed != null) {
-          debugPrint('   SongId: $songId, État actuel: $_isLiked');
-          // NE PAS basculer ici, laisser PlayerCubit gérer
+          debugPrint('   SongId: $songId, Ã‰tat actuel: $_isLiked');
+          // NE PAS basculer ici, laisser PlayerCubit gÃ©rer
           onLikePressed!(songId as int);
-          // PlayerCubit va appeler setMediaItemWithLikedState avec le nouvel état
+          // PlayerCubit va appeler setMediaItemWithLikedState avec le nouvel Ã©tat
         }
       }
     }
     return super.customAction(name, extras);
   }
 
-  /// Mettre à jour le MediaItem courant avec l'état "aimé"
+  /// Mettre Ã  jour le MediaItem courant avec l'Ã©tat "aimÃ©"
   void setMediaItemWithLikedState(MediaItem item, bool isLiked) {
-    debugPrint('🎵 AudioHandler.setMediaItemWithLikedState');
+    debugPrint('ðŸŽµ AudioHandler.setMediaItemWithLikedState');
     debugPrint('   Title: ${item.title}');
     debugPrint('   ArtUri: ${item.artUri}');
     debugPrint('   Liked: $isLiked');
@@ -252,29 +252,31 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
     mediaItem.add(item);
     updateLikedState(isLiked);
     
-    // Diffuser l'état complet
+    // Diffuser l'Ã©tat complet
     _broadcastState(null);
     
     debugPrint('   PlaybackState: playing=${playbackState.value.playing}, controls=${playbackState.value.controls.length}');
   }
 
-  /// Mettre à jour la file d'attente (pour les notifications/wearables)
+  /// Mettre Ã  jour la file d'attente (pour les notifications/wearables)
   void setQueueItems(List<MediaItem> items) {
     queue.add(items);
   }
 
-  /// ✅ CRITICAL FIX: NE PAS arrêter le service quand l'app est fermée depuis récents !
-  /// Laisser le foreground service continuer pour que la musique joue en arrière-plan.
-  /// Le service s'arrêtera seulement quand l'utilisateur appuie explicitement sur Stop
+  /// âœ… CRITICAL FIX: NE PAS arrÃªter le service quand l'app est fermÃ©e depuis rÃ©cents !
+  /// Laisser le foreground service continuer pour que la musique joue en arriÃ¨re-plan.
+  /// Le service s'arrÃªtera seulement quand l'utilisateur appuie explicitement sur Stop
   /// ou quand la lecture se termine naturellement.
   @override
   Future<void> onTaskRemoved() async {
-    debugPrint('🎵 AudioHandler.onTaskRemoved - App fermée, MAIS service audio continue !');
-    // NE PAS appeler stop() ici ! Le service doit continuer à jouer.
-    // await stop(); ← SUPPRIMÉ - c'était la cause du bug !
+    debugPrint('ðŸŽµ AudioHandler.onTaskRemoved - App fermÃ©e, MAIS service audio continue !');
+    // NE PAS appeler stop() ici ! Le service doit continuer Ã  jouer.
+    // await stop(); â† SUPPRIMÃ‰ - c'Ã©tait la cause du bug !
   }
 
-  // Les événements headset/bluetooth (click, double click) sont mappés par Android en
+  // Les Ã©vÃ©nements headset/bluetooth (click, double click) sont mappÃ©s par Android en
   // MediaAction.play/pause/skipToNext...
-  // audio_service gère le mapping "Double Click -> skipToNext" automatiquement sur Android.
+  // audio_service gÃ¨re le mapping "Double Click -> skipToNext" automatiquement sur Android.
 }
+
+

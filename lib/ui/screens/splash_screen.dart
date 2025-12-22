@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:music_box/player/player_cubit.dart';
 import '../../core/constants/app_constants.dart';
 import '../../services/battery_optimization_service.dart';
 import '../../widgets/permission_wrapper.dart';
@@ -49,19 +50,23 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _navigateToHome() async {
     await Future.delayed(AppConstants.splashDuration);
-    if (!mounted) return;
+    if (!context.mounted) return;
     
+    // Wait for PlayerCubit to finish loading
+    final cubit = context.read<PlayerCubit>();
+    if (cubit.state.isLoading) {
+      await cubit.stream.firstWhere((state) => !state.isLoading);
+    }
+
     // Demander l'optimisation batterie au premier lancement
     BatteryOptimizationService.requestIfNeeded();
     
     // Check permissions
-    // We check audio (or storage) and notification
-    // If any is missing, go to PermissionWrapper
     final audio = await Permission.audio.status;
     final storage = await Permission.storage.status;
     final notification = await Permission.notification.status;
     
-    final hasAudio = audio.isGranted || storage.isGranted; // Simple check
+    final hasAudio = audio.isGranted || storage.isGranted; 
     final hasNotif = notification.isGranted;
     
     final allGranted = hasAudio && hasNotif;

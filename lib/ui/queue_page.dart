@@ -1,15 +1,17 @@
+﻿import 'widgets/music_box_scaffold.dart';
+import 'package:flutter/services.dart';
 import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:music_box/generated/app_localizations.dart';
 import '../player/player_cubit.dart';
 import '../widgets/optimized_artwork.dart';
 import '../player/mini_player.dart';
-import 'widgets/music_box_scaffold.dart';
+
 
 class QueuePage extends StatefulWidget {
   const QueuePage({super.key});
@@ -20,8 +22,6 @@ class QueuePage extends StatefulWidget {
 
 class _QueuePageState extends State<QueuePage> {
   late final ScrollController _scrollController;
-  SongModel? _lastRemovedSong;
-  int? _lastRemovedIndex;
   bool _hasScrolled = false;
 
   final Set<int> _selectedIds = {};
@@ -206,7 +206,7 @@ class _QueuePageState extends State<QueuePage> {
           ? _buildEmptyState(context)
           : Stack(
               children: [
-                // ✅ Glassmorphism Background
+                // âœ… Glassmorphism Background
                 Positioned.fill(
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
@@ -659,7 +659,7 @@ class _AnimatedEqualizerState extends State<_AnimatedEqualizer> with SingleTicke
           width: 3,
           height: 16 * height * maxHeight,
           decoration: BoxDecoration(
-            color: Colors.white, // ✅ Fixed: White color
+            color: Colors.white, // âœ… Fixed: White color
             borderRadius: BorderRadius.circular(1.5),
             boxShadow: [
               BoxShadow(
@@ -682,3 +682,7 @@ double? lerpDouble(num? a, num? b, double t) {
   b ??= 0.0;
   return a + (b - a) * t;
 }
+
+
+
+

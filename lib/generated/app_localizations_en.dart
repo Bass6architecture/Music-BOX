@@ -198,7 +198,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get equalizerDesc => 'Adjust bass and treble';
 
   @override
-  String get equalizerEnabled => 'Equalizer Enabled';
+  String get equalizerEnabled => 'Enable Equalizer';
 
   @override
   String get equalizerDisabled => 'Equalizer Disabled';
@@ -1076,6 +1076,36 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get crossfade => 'Crossfade';
+
+  @override
+  String get crossfadeDesc => 'Smooth transition between songs';
+
+  @override
+  String get crossfadeDisabled => 'Disabled';
+
+  @override
+  String crossfadeSeconds(int seconds) {
+    return '$seconds s';
+  }
+
+  @override
+  String get gaplessPlayback => 'Skip silence';
+
+  @override
+  String get gaplessPlaybackDesc =>
+      'Automatically skip silent parts (experimental, may cause noise)';
+
+  @override
+  String get playbackSpeed => 'Playback Speed';
+
+  @override
+  String get playbackSpeedDesc => 'Adjust audio speed';
+
+  @override
+  String get defaultSpeed => 'Default Speed';
+
+  @override
   String get contactSubject => 'Music Box Support';
 
   @override
@@ -1111,4 +1141,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchOnInternet => 'Search on Internet';
+
+  @override
+  String get finishCurrentSong => 'Finish current song';
+
+  @override
+  String get sleepTimerFadeOut => 'Final fade out (15s)';
+
+  @override
+  String get customEqualizer => 'Equalizer';
+
+  @override
+  String get equalizerBands => 'Frequency Bands';
+
+  @override
+  String get equalizerPresets => 'Presets';
 }

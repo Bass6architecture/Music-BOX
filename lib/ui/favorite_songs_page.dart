@@ -1,3 +1,4 @@
+﻿import 'widgets/music_box_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -7,16 +8,15 @@ import '../player/player_cubit.dart';
 import '../player/mini_player.dart';
 import 'now_playing_next_gen.dart';
 import '../widgets/song_tile.dart';
-import 'widgets/music_box_scaffold.dart';
+
 import '../core/background/background_cubit.dart';
 import '../widgets/song_actions.dart';
-import 'song_actions_sheet.dart'; 
+ 
 import 'package:share_plus/share_plus.dart'; 
 import 'dart:math' as math;
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_theme.dart';
-import 'widgets/modern_widgets.dart';
+
 
 class FavoriteSongsPage extends StatefulWidget {
   const FavoriteSongsPage({super.key});
@@ -237,7 +237,7 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
     }
     
     if (mounted) {
-       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Retiré des favoris"))); 
+       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("RetirÃ© des favoris"))); 
        _exitSelectionMode();
        _future = _load(); 
        setState(() {});
@@ -305,7 +305,7 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
                                      onPressed: _selectAll,
                                      icon: PhosphorIcon(_selectedIds.length == songs.length ? PhosphorIcons.minusSquare() : PhosphorIcons.checkSquare()),
                                      label: Text(
-                                       _selectedIds.length == songs.length ? "Désélect. tout" : l10n.selectAll, 
+                                       _selectedIds.length == songs.length ? "DÃ©sÃ©lect. tout" : l10n.selectAll, 
                                        style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
                                      ),
                                    )
@@ -342,7 +342,7 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
                                     right: -20,
                                     bottom: -20,
                                     child: PhosphorIcon(
-                                      PhosphorIconsFill.heart(),
+                                      PhosphorIcons.heart(PhosphorIconsStyle.fill),
                                       size: 140,
                                       color: Colors.red.withValues(alpha: 0.1),
                                     ),
@@ -405,7 +405,7 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
                                   if (index >= songs.length) return const SizedBox(height: 100);
                                   
                                   final s = songs[index];
-                                  final subtitle = [s.artist, s.album].where((e) => (e ?? '').isNotEmpty).join(' • ');
+                                  final subtitle = [s.artist, s.album].where((e) => (e ?? '').isNotEmpty).join(' â€¢ ');
                                   return SongTile(
                                     song: s,
                                     subtitle: subtitle,
@@ -474,10 +474,10 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-             _buildBarAction(context, PhosphorIconsFill.play(), l10n.play, _playSelected),
-             _buildBarAction(context, PhosphorIconsFill.playlist(), l10n.addToPlaylist, _addToPlaylistSelected),
-             _buildBarAction(context, PhosphorIconsFill.shareNetwork(), l10n.share, _shareSelected),
-             _buildBarAction(context, PhosphorIconsFill.minusCircle(), l10n.removeFromList, _removeSelected, isDestructive: true),
+             _buildBarAction(context, PhosphorIcons.play(PhosphorIconsStyle.fill), l10n.play, _playSelected),
+             _buildBarAction(context, PhosphorIcons.playlist(PhosphorIconsStyle.fill), l10n.addToPlaylist, _addToPlaylistSelected),
+             _buildBarAction(context, PhosphorIcons.shareNetwork(PhosphorIconsStyle.fill), l10n.share, _shareSelected),
+             _buildBarAction(context, PhosphorIcons.trash(PhosphorIconsStyle.fill), l10n.removeFromList, _removeSelected, isDestructive: true),
           ],
         ),
       ),
@@ -512,3 +512,5 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
      );
   }
 }
+
+

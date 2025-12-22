@@ -225,7 +225,6 @@ class SleepTimerDialog extends StatelessWidget {
   }
 
   Widget _buildOption(BuildContext context, int minutes, String label) {
-    final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
     

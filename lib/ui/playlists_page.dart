@@ -1,11 +1,12 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_box/generated/app_localizations.dart';
 import '../player/player_cubit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'widgets/modern_widgets.dart';
 import '../core/theme/app_theme.dart';
+import 'widgets/modern_widgets.dart';
+
 
 import 'package:music_box/ui/favorite_songs_page.dart';
 import 'package:music_box/ui/recently_added_page.dart';
@@ -72,7 +73,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
               children: [
                 _SystemPlaylistCard(
                   title: AppLocalizations.of(context)!.favorites,
-                  icon: PhosphorIconsFill.heart(),
+                  icon: PhosphorIcons.heart(PhosphorIconsStyle.fill),
                   color: Colors.red,
                   count: favoritesCount,
                   onTap: () => Navigator.of(context).push(
@@ -86,7 +87,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                 ),
                 _SystemPlaylistCard(
                   title: AppLocalizations.of(context)!.recentlyAdded,
-                  icon: PhosphorIconsFill.clock(),
+                  icon: PhosphorIcons.clock(PhosphorIconsStyle.fill),
                   color: Colors.blue,
                   count: recentAddedCount,
                   onTap: () => Navigator.of(context).push(
@@ -100,7 +101,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                 ),
                 _SystemPlaylistCard(
                   title: AppLocalizations.of(context)!.recentlyPlayed,
-                  icon: PhosphorIconsFill.clockCounterClockwise(),
+                  icon: PhosphorIcons.clockCounterClockwise(PhosphorIconsStyle.fill),
                   color: Colors.purple,
                   count: displayRecentPlayedCount,
                   onTap: () => Navigator.of(context).push(
@@ -114,7 +115,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                 ),
                 _SystemPlaylistCard(
                   title: AppLocalizations.of(context)!.mostPlayed,
-                  icon: PhosphorIconsFill.chartLineUp(),
+                  icon: PhosphorIcons.chartLineUp(PhosphorIconsStyle.fill),
                   color: Colors.orange,
                   count: displayMostPlayedCount,
                   onTap: () => Navigator.of(context).push(
@@ -164,7 +165,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     PhosphorIcon(
-                      PhosphorIcons.playlist(),
+                      PhosphorIcons.playlist(PhosphorIconsStyle.regular),
                       size: 64,
                       color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                     ),
@@ -215,10 +216,9 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                         color: theme.colorScheme.onPrimaryContainer,
                       ),
                     ),
-                    title: playlist.name,
-                    subtitle: AppLocalizations.of(context)!.songCount(count),
-                    trailing: (onRename != null || onDelete != null)
-                        ? PopupMenuButton<String>(
+                    title: Text(playlist.name),
+                    subtitle: Text(AppLocalizations.of(context)!.songCount(count)),
+                    trailing: PopupMenuButton<String>(
                             icon: PhosphorIcon(
                               PhosphorIcons.dotsThreeVertical(),
                               color: theme.colorScheme.onSurfaceVariant,
@@ -249,8 +249,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                                 ),
                               ),
                             ],
-                          )
-                        : null,
+                          ),
                   );
                 },
                 childCount: playlists.length,
@@ -468,115 +467,7 @@ class _SystemPlaylistCard extends StatelessWidget {
   }
 }
 
-class _UserPlaylistTile extends StatelessWidget {
-  const _UserPlaylistTile({
-    required this.playlist,
-    required this.count,
-    required this.onTap,
-    this.onRename,
-    this.onDelete,
-  });
 
-  final UserPlaylist playlist;
-  final int count;
-  final VoidCallback onTap;
-  final VoidCallback? onRename;
-  final VoidCallback? onDelete;
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.05),
-        ),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: PhosphorIcon(
-                  PhosphorIcons.playlist(),
-                  color: theme.colorScheme.onPrimaryContainer,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      playlist.name,
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                AppLocalizations.of(context)!.songCount(count),
-                style: GoogleFonts.outfit(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontSize: 12,
-                ),
-              ),
-              const SizedBox(width: 8),
-              if (onRename != null || onDelete != null)
-                PopupMenuButton<String>(
-                  icon: PhosphorIcon(
-                    PhosphorIcons.dotsThreeVertical(),
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  onSelected: (value) {
-                    if (value == 'rename') onRename?.call();
-                    if (value == 'delete') onDelete?.call();
-                  },
-                  itemBuilder: (context) => [
-                    if (onRename != null)
-                      PopupMenuItem(
-                        value: 'rename',
-                        child: Row(
-                          children: [
-                            PhosphorIcon(PhosphorIcons.pencilLine(), size: 20),
-                            const SizedBox(width: 12),
-                            Text(AppLocalizations.of(context)!.renamePlaylist, style: GoogleFonts.outfit()),
-                          ],
-                        ),
-                      ),
-                    if (onDelete != null)
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            PhosphorIcon(PhosphorIcons.trash(), size: 20),
-                            const SizedBox(width: 12),
-                            Text(AppLocalizations.of(context)!.deletePlaylist, style: GoogleFonts.outfit()),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+
 

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Music Box</string>
+    <string name="widget_compact_description">Widget 4x1 avec design premium glassmorphism</string>
+    <string name="widget_adaptive_description">Widget 4x2 redimensionnable avec design premium</string>
+    <string name="widget_tap_to_open">Appuyez pour ouvrir</string>
+    <string name="widget_no_song">Aucune musique</string>
+</resources>

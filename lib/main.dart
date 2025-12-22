@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -28,8 +29,8 @@ import 'ui/screens/modern_music_widgets.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // ✅ OPTIMISATION RAM: Augmenter le cache d'images pour une fluidité maximale
-  // On utilise 500MB de RAM pour les images (vs 100MB par défaut)
+  // âœ… OPTIMISATION RAM: Augmenter le cache d'images pour une fluiditÃ© maximale
+  // On utilise 500MB de RAM pour les images (vs 100MB par dÃ©faut)
   PaintingBinding.instance.imageCache.maximumSizeBytes = 500 * 1024 * 1024; 
   PaintingBinding.instance.imageCache.maximumSize = 5000;
   
@@ -46,16 +47,16 @@ Future<void> main() async {
     ),
   );
   
-  // Initialisation audio_service avec boutons personnalisés (J'aime, etc.)
-  // Note: L'AudioHandler sera créé par le PlayerCubit au premier usage
-  // Ceci permet d'avoir des boutons personnalisés dans la notification
+  // Initialisation audio_service avec boutons personnalisÃ©s (J'aime, etc.)
+  // Note: L'AudioHandler sera crÃ©Ã© par le PlayerCubit au premier usage
+  // Ceci permet d'avoir des boutons personnalisÃ©s dans la notification
   
   // Initialisation Firebase
   await Firebase.initializeApp();
   
   // Initialisation AdMob
-  // Initialisation AdMob supprimée ici pour éviter crash en background (WebView)
-  // Déplacée dans _InitialRoute
+  // Initialisation AdMob supprimÃ©e ici pour Ã©viter crash en background (WebView)
+  // DÃ©placÃ©e dans _InitialRoute
 
   
   runApp(const MusicBoxApp());
@@ -124,7 +125,7 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   bool _hasNavigated = false;
-  String _loadingStatus = '';
+
 
   @override
   void initState() {
@@ -145,7 +146,7 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
     _fadeController.forward();
     
     
-    // Initialiser AdMob ici seulement (quand UI visible) pour éviter crash background
+    // Initialiser AdMob ici seulement (quand UI visible) pour Ã©viter crash background
     AdService().initialize();
     
     // Connect ArtworkPreloader to OptimizedArtwork cache
@@ -189,7 +190,7 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
     final audioQuery = OnAudioQuery();
     
     // Set timeout to prevent infinite splash
-    // Limite de 10s pour le chargement comme demandé
+    // Limite de 10s pour le chargement comme demandÃ©
     final timeout = Future.delayed(const Duration(seconds: 10));
     
     // Wait for songs to be loaded (or timeout)
@@ -199,8 +200,8 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
     
     if (!mounted || _hasNavigated) return;
     
-    // Update status
-    setState(() => _loadingStatus = 'Chargement des pochettes...');
+    // Status update (optional logging)
+    debugPrint('[Splash] Chargement des pochettes...');
     
     // Get all unique IDs for pre-caching
     try {
@@ -313,7 +314,7 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
                             width: 10,
                             height: 10,
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withOpacity(opacity),
+                              color: theme.colorScheme.primary.withValues(alpha: opacity),
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -335,4 +336,7 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
     return (1 - (2 * t - 1).abs());
   }
 }
+
+
+
 

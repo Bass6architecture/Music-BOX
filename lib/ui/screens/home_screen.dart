@@ -1,5 +1,6 @@
+﻿import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/foundation.dart';
 import 'package:music_box/generated/app_localizations.dart';
@@ -13,7 +14,7 @@ import '../artists_page.dart';
 import '../settings_page.dart';
 import '../search_page.dart';
 // import '../now_playing_page.dart'; // replaced by immersive sheet
-import '../now_playing_next_gen.dart';
+
 import '../folders_page.dart';
 import 'songs_screen.dart';
 import 'for_you_page.dart';
@@ -21,7 +22,7 @@ import '../widgets/music_box_scaffold.dart';
 import '../background_selection_page.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../widgets/modern_widgets.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -51,7 +52,7 @@ class HomeScreenState extends State<HomeScreen>
     );
     _animationController.forward();
     
-    // Charger la bannière publicitaire
+    // Charger la banniÃ¨re publicitaire
     AdService().loadBanner();
   }
 
@@ -67,37 +68,37 @@ class HomeScreenState extends State<HomeScreen>
     return [
       _NavigationItem(
         icon: PhosphorIcons.sparkle(),
-        selectedIcon: PhosphorIconsFill.sparkle(),
+        selectedIcon: PhosphorIcons.sparkle(PhosphorIconsStyle.fill),
         label: l10n.forYou,
         page: const ForYouPage(),
       ),
       _NavigationItem(
         icon: PhosphorIcons.musicNotes(),
-        selectedIcon: PhosphorIconsFill.musicNotes(),
+        selectedIcon: PhosphorIcons.musicNotes(PhosphorIconsStyle.fill),
         label: l10n.songs,
         page: const SongsScreen(),
       ),
       _NavigationItem(
         icon: PhosphorIcons.playlist(),
-        selectedIcon: PhosphorIconsFill.playlist(),
+        selectedIcon: PhosphorIcons.playlist(PhosphorIconsStyle.fill),
         label: l10n.playlists,
         page: const PlaylistsPage(embedded: true),
       ),
       _NavigationItem(
         icon: PhosphorIcons.disc(),
-        selectedIcon: PhosphorIconsFill.disc(),
+        selectedIcon: PhosphorIcons.disc(PhosphorIconsStyle.fill),
         label: l10n.albums,
         page: const AlbumsPage(embedded: true),
       ),
       _NavigationItem(
         icon: PhosphorIcons.users(),
-        selectedIcon: PhosphorIconsFill.users(),
+        selectedIcon: PhosphorIcons.users(PhosphorIconsStyle.fill),
         label: l10n.artists,
         page: const ArtistsPage(embedded: true),
       ),
       _NavigationItem(
         icon: PhosphorIcons.folder(),
-        selectedIcon: PhosphorIconsFill.folder(),
+        selectedIcon: PhosphorIcons.folder(PhosphorIconsStyle.fill),
         label: l10n.folders,
         page: const FoldersPage(embedded: true),
       ),
@@ -139,7 +140,7 @@ class HomeScreenState extends State<HomeScreen>
             bottom: false,
             child: Column(
               children: [
-                // AppBar personnalisé - Masqué en mode sélection
+                // AppBar personnalisÃ© - MasquÃ© en mode sÃ©lection
                 AnimatedCrossFade(
                   duration: const Duration(milliseconds: 200),
                   crossFadeState: _isSelectionMode 
@@ -161,14 +162,14 @@ class HomeScreenState extends State<HomeScreen>
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: theme.colorScheme.primary.withOpacity(0.3),
+                                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
                             ],
                           ),
                           child: PhosphorIcon(
-                            PhosphorIconsFill.musicNote(),
+                            PhosphorIcons.musicNote(PhosphorIconsStyle.fill),
                             color: Colors.white,
                             size: 24,
                           ),
@@ -197,7 +198,7 @@ class HomeScreenState extends State<HomeScreen>
                         const SizedBox(width: 8),
 
                         _buildActionButton(
-                          icon: PhosphorIcons.paintBrush(),
+                          icon: PhosphorIcons.image(),
                           onPressed: () => Navigator.push(
                             context, 
                             MaterialPageRoute(builder: (_) => const BackgroundSelectionPage())
@@ -251,7 +252,7 @@ class HomeScreenState extends State<HomeScreen>
           // Mini Player (visible en profile/release si une chanson est en cours)
           if (hasCurrentSong) const MiniPlayer(),
           
-          // Bannière publicitaire (visible dans toutes les pages sauf Settings)
+          // BanniÃ¨re publicitaire (visible dans toutes les pages sauf Settings)
           AdService().getBannerWidget(),
           
           // Navigation
@@ -271,9 +272,9 @@ class HomeScreenState extends State<HomeScreen>
             ),
             child: NavigationBarTheme(
               data: NavigationBarThemeData(
-                labelTextStyle: MaterialStateProperty.resolveWith<TextStyle>(
-                  (Set<MaterialState> states) {
-                    if (states.contains(MaterialState.selected)) {
+                labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>(
+                  (Set<WidgetState> states) {
+                    if (states.contains(WidgetState.selected)) {
                       return GoogleFonts.outfit(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -285,6 +286,12 @@ class HomeScreenState extends State<HomeScreen>
                     );
                   },
                 ),
+                iconTheme: WidgetStateProperty.resolveWith<IconThemeData?>((states) {
+                  if (states.contains(WidgetState.selected)) {
+                    return IconThemeData(color: theme.colorScheme.primary);
+                  }
+                  return IconThemeData(color: theme.colorScheme.onSurfaceVariant);
+                }),
               ),
               child: NavigationBar(
                 selectedIndex: _selectedIndex,
@@ -340,20 +347,7 @@ class HomeScreenState extends State<HomeScreen>
     );
   }
 
-  void _navigateToNowPlaying(BuildContext context) {
-    HapticFeedback.lightImpact();
-    // Open Next Gen Now Playing
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => openNextGenNowPlaying(context),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 300),
-        opaque: false, // ✅ Transparent pour voir l'écran derrière
-      ),
-    );
-  }
+
 
   void _navigateToSettings(BuildContext context) {
     HapticFeedback.lightImpact();
@@ -382,3 +376,5 @@ class _NavigationItem {
     required this.page,
   });
 }
+
+

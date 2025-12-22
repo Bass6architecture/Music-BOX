@@ -1,8 +1,9 @@
+﻿import 'package:flutter/services.dart';
 
 import 'dart:async'; // Fix for Timer
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:music_box/generated/app_localizations.dart';
@@ -10,14 +11,13 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../player/player_cubit.dart';
 import '../../widgets/song_tile.dart';
 // import '../../widgets/song_actions.dart'; // legacy
-import '../../core/constants/app_constants.dart';
+
 
 import '../song_actions_sheet.dart';
-import '../search_page.dart';
+
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../widgets/modern_widgets.dart';
-import '../../core/theme/app_theme.dart';
+
 
 import '../../core/utils/music_data_processor.dart';
 import 'home_screen.dart'; // To access toggleSelectionMode
@@ -37,8 +37,8 @@ class _SongsScreenState extends State<SongsScreen>
   List<SongModel> _filteredSongs = [];
   bool _isLoading = true;
   bool _hasPermission = false;
-  bool _isRequestingPermission = false;  // ✅ Empêcher les clics multiples
-  bool _isPermanentlyDenied = false;  // ✅ Détecter refus permanent
+  bool _isRequestingPermission = false;  // âœ… EmpÃªcher les clics multiples
+  bool _isPermanentlyDenied = false;  // âœ… DÃ©tecter refus permanent
 
   _SortType _sortType = _SortType.title;
   bool _sortAscending = true;
@@ -117,7 +117,7 @@ class _SongsScreenState extends State<SongsScreen>
   }
 
   Future<void> _checkPermissionAndLoadSongs() async {
-    // ✅ Empêcher les appels multiples
+    // âœ… EmpÃªcher les appels multiples
     if (_isRequestingPermission) return;
     
     setState(() {
@@ -126,7 +126,7 @@ class _SongsScreenState extends State<SongsScreen>
     });
     
     try {
-      // ✅ Utiliser permission_handler au lieu de on_audio_query pour éviter le crash
+      // âœ… Utiliser permission_handler au lieu de on_audio_query pour Ã©viter le crash
       final status = await Permission.audio.status;
       if (!mounted) return;
       
@@ -139,7 +139,7 @@ class _SongsScreenState extends State<SongsScreen>
         return;
       }
 
-      // ✅ Vérifier si refus permanent AVANT de demander
+      // âœ… VÃ©rifier si refus permanent AVANT de demander
       if (status.isPermanentlyDenied) {
         if (mounted) {
           setState(() {
@@ -150,7 +150,7 @@ class _SongsScreenState extends State<SongsScreen>
         return;
       }
 
-      // ✅ Demander avec permission_handler
+      // âœ… Demander avec permission_handler
       final newStatus = await Permission.audio.request();
       if (!mounted) return;
       
@@ -192,12 +192,12 @@ class _SongsScreenState extends State<SongsScreen>
         ignoreCase: true,
       );
       
-      // ✅ Update raw songs first
+      // âœ… Update raw songs first
       setState(() {
         _songs = songs.where((song) => song.duration != null && song.duration! > 0).toList();
       });
       
-      // ✅ Await filter/sort to avoid "No songs" flash
+      // âœ… Await filter/sort to avoid "No songs" flash
       await _applyFilterAndSort();
       
       if (mounted) {
@@ -228,14 +228,14 @@ class _SongsScreenState extends State<SongsScreen>
       }
     }
 
-    // ✅ Run in background isolate
+    // âœ… Run in background isolate
     final filtered = await MusicDataProcessor.filterAndSortSongs(
       songs: _songs,
       query: query,
       sortTypeIndex: _SortType.values.indexOf(_sortType),
       ascending: _sortAscending,
       overrides: overrides,
-      hiddenFolders: cubit.state.hiddenFolders.toSet(), // ✅ Convert List to Set
+      hiddenFolders: cubit.state.hiddenFolders.toSet(), // âœ… Convert List to Set
       showHiddenFolders: cubit.state.showHiddenFolders,
     );
 
@@ -273,10 +273,18 @@ class _SongsScreenState extends State<SongsScreen>
 
   IconData _getSortIcon(_SortType type) {
     switch (type) {
-      case _SortType.timer:
-        return PhosphorIcons.timer();
+      case _SortType.title:
+        return PhosphorIcons.textAa();
+      case _SortType.artist:
+        return PhosphorIcons.user();
+      case _SortType.album:
+        return PhosphorIcons.disc();
+      case _SortType.duration:
+        return PhosphorIcons.hourglass();
       case _SortType.date:
         return PhosphorIcons.calendar();
+      case _SortType.timer:
+        return PhosphorIcons.timer();
     }
   }
 
@@ -292,6 +300,8 @@ class _SongsScreenState extends State<SongsScreen>
         return AppLocalizations.of(context)!.duration;
       case _SortType.date:
         return AppLocalizations.of(context)!.sortByDateAdded;
+      case _SortType.timer:
+        return "Timer";
     }
   }
 
@@ -301,7 +311,7 @@ class _SongsScreenState extends State<SongsScreen>
 
     final playerCubit = context.watch<PlayerCubit>();
 
-    // Construire un contenu quel que soit l'état, puis l'entourer d'un BlocListener
+    // Construire un contenu quel que soit l'Ã©tat, puis l'entourer d'un BlocListener
     late final Widget content;
 
     if (!_hasPermission) {
@@ -352,7 +362,7 @@ class _SongsScreenState extends State<SongsScreen>
                                  onPressed: _selectAll,
                                  icon: PhosphorIcon(_selectedIds.length == _filteredSongs.length ? PhosphorIcons.minusSquare() : PhosphorIcons.checkSquare()),
                                  label: Text(
-                                   _selectedIds.length == _filteredSongs.length ? "Désélect. tout" : AppLocalizations.of(context)!.selectAll,
+                                   _selectedIds.length == _filteredSongs.length ? "DÃ©sÃ©lect. tout" : AppLocalizations.of(context)!.selectAll,
                                    style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
                                  ),
                                )
@@ -366,7 +376,7 @@ class _SongsScreenState extends State<SongsScreen>
                          controller: _scrollController,
                          thumbVisibility: true,
                          interactive: true,
-                         thickness: 10, // Plus épais pour une meilleure prise en main
+                         thickness: 10, // Plus Ã©pais pour une meilleure prise en main
                          radius: const Radius.circular(8),
                        child: RefreshIndicator(
                          onRefresh: _loadSongs,
@@ -422,13 +432,13 @@ class _SongsScreenState extends State<SongsScreen>
                                         const SizedBox(width: 16),
                                         
                                         // Song Count (Discret)
-                                        Text(
-                                          AppLocalizations.of(context)!.songCount(_filteredSongs.length),
-                                          style: GoogleFonts.outfit(
-                                            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                                            fontSize: 12,
+                                          Text(
+                                            AppLocalizations.of(context)!.songCount(_filteredSongs.length),
+                                            style: GoogleFonts.outfit(
+                                              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                                              fontSize: 12,
+                                            ),
                                           ),
-                                        ),
                                       ],
                                      ),
                                    ),
@@ -481,7 +491,7 @@ class _SongsScreenState extends State<SongsScreen>
                    left: 0, 
                    right: 0,
                    bottom: 0,
-                   child: _buildSelectionBottomBar(context),
+                   child: _buildSelectionModeBar(context),
                  ),
             ],
           ),
@@ -497,9 +507,9 @@ class _SongsScreenState extends State<SongsScreen>
           prev.hiddenFolders != curr.hiddenFolders ||
           prev.showHiddenFolders != curr.showHiddenFolders ||
           prev.deletedSongIds != curr.deletedSongIds ||
-          prev.metadataOverrides != curr.metadataOverrides, // ✅ Refresh list on metadata changes
+          prev.metadataOverrides != curr.metadataOverrides, // âœ… Refresh list on metadata changes
       listener: (context, state) {
-        // Re-appliquer le filtre/tri si la liste des dossiers masqués change
+        // Re-appliquer le filtre/tri si la liste des dossiers masquÃ©s change
         if (mounted) {
           setState(() {
             _applyFilterAndSort();
@@ -581,8 +591,8 @@ class _SongsScreenState extends State<SongsScreen>
     );
   }
 
+
   Widget _buildEmptyState() {
-    final theme = Theme.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -610,7 +620,7 @@ class _SongsScreenState extends State<SongsScreen>
 
 
   // selection mode UI
-  Widget _buildSelectionBottomBar(BuildContext context) {
+  Widget _buildSelectionModeBar(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     
@@ -628,45 +638,45 @@ class _SongsScreenState extends State<SongsScreen>
              ),
            ],
         ),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-             _buildBarAction(PhosphorIcons.play(), l10n.play, _playSelected),
-             _buildBarAction(PhosphorIcons.playlist(), l10n.addToPlaylist, _addToPlaylistSelected),
-             _buildBarAction(PhosphorIcons.shareNetwork(), l10n.share, _shareSelected),
-             _buildBarAction(PhosphorIcons.trash(), l10n.delete, _deleteSelected, isDestructive: true),
+             _buildBarAction(context, PhosphorIcons.play(PhosphorIconsStyle.fill), l10n.play, _playSelected),
+             _buildBarAction(context, PhosphorIcons.listPlus(PhosphorIconsStyle.fill), l10n.addToPlaylist, _addToPlaylistSelected),
+             _buildBarAction(context, PhosphorIcons.shareNetwork(PhosphorIconsStyle.fill), l10n.share, _shareSelected),
+             _buildBarAction(context, PhosphorIcons.trash(PhosphorIconsStyle.fill), l10n.delete, _deleteSelected, isDestructive: true),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBarAction(IconData icon, String label, VoidCallback onTap, {bool isDestructive = false}) {
-     final theme = Theme.of(context);
-     final color = isDestructive ? theme.colorScheme.error : theme.colorScheme.onSurface;
-     
-     return InkWell(
-       onTap: onTap,
-       borderRadius: BorderRadius.circular(16),
-       child: Padding(
-         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-         child: Column(
-           mainAxisSize: MainAxisSize.min,
-           children: [
-             PhosphorIcon(icon, color: color, size: 24),
-             const SizedBox(height: 4),
-             Text(
-               label,
-               style: theme.textTheme.labelSmall?.copyWith(
-                 color: color,
-                 fontSize: 10,
-               ),
-             ),
-           ],
-         ),
-       ),
-     );
+  Widget _buildBarAction(BuildContext context, IconData icon, String label, VoidCallback onTap, {bool isDestructive = false}) {
+    final theme = Theme.of(context);
+    final color = isDestructive ? theme.colorScheme.error : theme.colorScheme.primary;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            PhosphorIcon(icon, color: color, size: 24),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: color,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
   
   void _playSelected() {
@@ -784,7 +794,9 @@ class _SongsScreenState extends State<SongsScreen>
       _exitSelectionMode();
     } catch (e) {
       if (mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error sharing: $e")));
+         if (context.mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error sharing: $e")));
+         }
       }
     }
   }
@@ -800,7 +812,7 @@ class _SongsScreenState extends State<SongsScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.deleteSong),
-        content: Text("Voulez-vous vraiment supprimer ${selectedSongs.length} chansons définitivement ?"),
+        content: Text("Voulez-vous vraiment supprimer ${selectedSongs.length} chansons dÃ©finitivement ?"),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
           FilledButton(
@@ -836,7 +848,7 @@ class _SongsScreenState extends State<SongsScreen>
          // Update PlayerCubit
          context.read<PlayerCubit>().removeSongsById(ids);
          
-         if (mounted) {
+         if (context.mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
              SnackBar(
                content: Text("${ids.length} ${l10n.fileDeleted}"), 
@@ -856,18 +868,19 @@ class _SongsScreenState extends State<SongsScreen>
   }
 }
 
-enum _SortType { title, artist, album, duration, date }
+enum _SortType { title, artist, album, duration, date, timer }
 
 class _AlphabetScroll extends StatefulWidget {
   final List<SongModel> songs;
   final ScrollController controller;
-  final double itemHeight;
+
 
   const _AlphabetScroll({
     required this.songs,
     required this.controller,
-    this.itemHeight = 62.0,
+
   });
+
 
   @override
   State<_AlphabetScroll> createState() => _AlphabetScrollState();
@@ -906,7 +919,8 @@ class _AlphabetScrollState extends State<_AlphabetScroll> {
 
     if (index != -1) {
       final headerOffset = 60.0; 
-      final offset = (index * widget.itemHeight) + headerOffset;
+      final itemHeight = 62.0;
+      final offset = (index * itemHeight) + headerOffset;
       final maxScroll = widget.controller.position.maxScrollExtent;
       final target = offset.clamp(0.0, maxScroll);
       widget.controller.jumpTo(target);
@@ -973,7 +987,7 @@ class _AlphabetScrollState extends State<_AlphabetScroll> {
                   return Expanded(
                     child: Center(
                       child: Text(
-                        '•', // Dots instead of letters
+                        'â€¢', // Dots instead of letters
                         style: TextStyle(
                           fontSize: 12, 
                           fontWeight: FontWeight.bold, 
@@ -1007,3 +1021,7 @@ class _AlphabetScrollState extends State<_AlphabetScroll> {
     _scrollTo(_alphabet[index]);
   }
 }
+
+
+
+

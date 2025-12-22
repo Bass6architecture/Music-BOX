@@ -1,0 +1,9 @@
+﻿Analyzing music_box...                                          
+
+   info - Don't use 'BuildContext's across async gaps - lib\ui\lyrics_page.dart:443:34 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\ui\lyrics_page.dart:899:43 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\ui\lyrics_page.dart:1225:38 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\ui\lyrics_page.dart:1226:62 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\ui\screens\songs_screen.dart:849:10 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\ui\screens\splash_screen.dart:69:18 - use_build_context_synchronously
+

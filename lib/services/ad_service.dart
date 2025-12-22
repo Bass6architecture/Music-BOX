@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -12,32 +12,32 @@ class AdService {
   bool _isBannerReady = false;
 
   // Mode test : utilisez true pour voir les pubs de test, false pour les vraies pubs
-  static const bool _useTestAds = false; // ✅ MODE PRODUCTION - Vraies pubs activées !
+  static const bool _useTestAds = false; // âœ… MODE PRODUCTION - Vraies pubs activÃ©es !
   
   // IDs de test AdMob
   static const String _testBannerId = 'ca-app-pub-3940256099942544/6300978111';
   
-  // IDs AdMob réels
+  // IDs AdMob rÃ©els
   static const String _androidBannerId = 'ca-app-pub-9535801913153032/3435168691';
   static const String _iosBannerId = 'ca-app-pub-9535801913153032/3435168691';
 
   bool get isBannerReady => _isBannerReady;
 
-  /// Initialiser AdMob (à appeler au démarrage de l'app)
+  /// Initialiser AdMob (Ã  appeler au dÃ©marrage de l'app)
   Future<void> initialize() async {
-    // ✅ En production : pas de configuration test device
-    // Les vraies pubs seront affichées automatiquement
+    // âœ… En production : pas de configuration test device
+    // Les vraies pubs seront affichÃ©es automatiquement
     
     await MobileAds.instance.initialize();
     if (kDebugMode) {
-      print('✅ AdMob initialisé - Mode: ${_useTestAds ? "TEST" : "PRODUCTION"}');
+      debugPrint('âœ… AdMob initialisÃ© - Mode: ${_useTestAds ? "TEST" : "PRODUCTION"}');
       if (!_useTestAds) {
-        print('   💰 Vraies pubs activées - Revenus générés !');
+        debugPrint('   ðŸ’° Vraies pubs activÃ©es - Revenus gÃ©nÃ©rÃ©s !');
       }
     }
   }
 
-  /// Charger la bannière publicitaire
+  /// Charger la banniÃ¨re publicitaire
   void loadBanner() {
     // Choisir l'ID selon le mode
     String adUnitId;
@@ -48,8 +48,8 @@ class AdService {
     }
     
     if (kDebugMode) {
-      print('🎯 Chargement bannière AdMob...');
-      print('   ID: $adUnitId');
+      debugPrint('ðŸŽ¯ Chargement banniÃ¨re AdMob...');
+      debugPrint('   ID: $adUnitId');
     }
     
     // Reset cache when loading new ad
@@ -63,7 +63,7 @@ class AdService {
         onAdLoaded: (ad) {
           _isBannerReady = true;
           if (kDebugMode) {
-            print('✅ Bannière AdMob chargée avec succès !');
+            debugPrint('âœ… BanniÃ¨re AdMob chargÃ©e avec succÃ¨s !');
           }
         },
         onAdFailedToLoad: (ad, error) {
@@ -71,25 +71,25 @@ class AdService {
           _cachedAdWidget = null;
           ad.dispose();
           if (kDebugMode) {
-            print('❌ Échec chargement bannière: ${error.message}');
-            print('   Code: ${error.code}');
+            debugPrint('âŒ Ã‰chec chargement banniÃ¨re: ${error.message}');
+            debugPrint('   Code: ${error.code}');
           }
-          // Réessayer après 60 secondes en cas d'échec
+          // RÃ©essayer aprÃ¨s 60 secondes en cas d'Ã©chec
           Future.delayed(const Duration(seconds: 60), () {
             if (kDebugMode) {
-              print('🔄 Nouvelle tentative de chargement...');
+              debugPrint('ðŸ”„ Nouvelle tentative de chargement...');
             }
             loadBanner();
           });
         },
         onAdOpened: (ad) {
           if (kDebugMode) {
-            print('📱 Bannière ouverte');
+            debugPrint('ðŸ“± BanniÃ¨re ouverte');
           }
         },
         onAdClosed: (ad) {
           if (kDebugMode) {
-            print('📱 Bannière fermée');
+            debugPrint('ðŸ“± BanniÃ¨re fermÃ©e');
           }
         },
       ),
@@ -99,11 +99,11 @@ class AdService {
 
   Widget? _cachedAdWidget;
 
-  /// Widget de la bannière à afficher
+  /// Widget de la banniÃ¨re Ã  afficher
   Widget getBannerWidget() {
     if (_isBannerReady && _bannerAd != null) {
       _cachedAdWidget ??= SizedBox(
-        height: 50, // Hauteur standard d'une bannière AdMob
+        height: 50, // Hauteur standard d'une banniÃ¨re AdMob
         width: double.infinity,
         child: AdWidget(ad: _bannerAd!),
       );
@@ -136,14 +136,15 @@ class AdService {
         ),
       );
     }
-    // En production, retourne un espace vide si la pub n'est pas prête
+    // En production, retourne un espace vide si la pub n'est pas prÃªte
     return const SizedBox.shrink();
   }
 
-  /// Libérer les ressources
+  /// LibÃ©rer les ressources
   void dispose() {
     _bannerAd?.dispose();
     _isBannerReady = false;
     _cachedAdWidget = null;
   }
 }
+

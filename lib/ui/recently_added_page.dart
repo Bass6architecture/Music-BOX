@@ -1,3 +1,4 @@
+﻿import 'widgets/music_box_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -9,11 +10,11 @@ import '../widgets/song_actions.dart';
 
 
 import 'now_playing_next_gen.dart';
-import 'widgets/music_box_scaffold.dart';
+
 import '../core/background/background_cubit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_theme.dart';
+
 
 class RecentlyAddedPage extends StatefulWidget {
   const RecentlyAddedPage({super.key});
@@ -23,7 +24,6 @@ class RecentlyAddedPage extends StatefulWidget {
 }
 
 class _RecentlyAddedPageState extends State<RecentlyAddedPage> with AutomaticKeepAliveClientMixin {
-  final OnAudioQuery _audioQuery = OnAudioQuery();
   Future<List<SongModel>>? _future;
 
   @override
@@ -38,14 +38,14 @@ class _RecentlyAddedPageState extends State<RecentlyAddedPage> with AutomaticKee
   
 
   Future<List<SongModel>> _load() async {
-    // ✅ Optimization: Use cached songs from Cubit
+    // âœ… Optimization: Use cached songs from Cubit
     final cubit = context.read<PlayerCubit>();
     final allSongs = cubit.state.allSongs;
     
     // Filtrer les fichiers avec des URIs valides
     final validSongs = allSongs.where((song) => song.uri != null).toList();
     
-    // Filtrer les dossiers masqués
+    // Filtrer les dossiers masquÃ©s
     if (!mounted) return [];
     final filteredSongs = cubit.filterSongs(validSongs);
 
@@ -71,7 +71,7 @@ class _RecentlyAddedPageState extends State<RecentlyAddedPage> with AutomaticKee
           return FadeTransition(opacity: animation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 300),
-        opaque: false, // ✅ Transparent
+        opaque: false, // âœ… Transparent
       ),
     );
   }
@@ -150,9 +150,9 @@ class _RecentlyAddedPageState extends State<RecentlyAddedPage> with AutomaticKee
                           right: -20,
                           bottom: -20,
                           child: PhosphorIcon(
-                            PhosphorIconsFill.clockPlus(),
-                            size: 140,
-                            color: Colors.blue.withValues(alpha: 0.1),
+                            PhosphorIcons.clock(PhosphorIconsStyle.fill),
+                            color: theme.colorScheme.onPrimaryContainer,
+                            size: 24,
                           ),
                         ),
                       ],
@@ -270,6 +270,8 @@ class _RecentlyAddedPageState extends State<RecentlyAddedPage> with AutomaticKee
   }
 
 }
+
+
 
 
 

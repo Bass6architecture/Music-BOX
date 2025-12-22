@@ -1,4 +1,5 @@
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
+
 import 'dart:io';
 import 'dart:async'; // For Timer
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ class OptimizedArtwork extends StatefulWidget {
     this.fit = BoxFit.cover,
     this.fallbackBuilder,
     this.useCustomOverrides = true,
-    this.borderRadius, // ✅ New parameter
+    this.borderRadius, // âœ… New parameter
   });
 
   final int id;
@@ -32,7 +33,7 @@ class OptimizedArtwork extends StatefulWidget {
   // When true (default), uses PlayerCubit.customArtworkPaths for AUDIO covers.
   // Set to false when used inside Sliver lists/grids to avoid provider select.
   final bool useCustomOverrides;
-  final BorderRadius? borderRadius; // ✅ New parameter
+  final BorderRadius? borderRadius; // âœ… New parameter
   
   /// Public static getter to expose artwork cache for pre-population (by ArtworkPreloader)
   static Map<String, Uint8List?> get artworkCache => _OptimizedArtworkState._cache;
@@ -44,10 +45,9 @@ class OptimizedArtwork extends StatefulWidget {
 class _OptimizedArtworkState extends State<OptimizedArtwork> {
   static final OnAudioQuery _query = OnAudioQuery();
   static final Map<String, Uint8List?> _cache = <String, Uint8List?>{};
-  static const int _maxCacheSize = 2000; // ✅ Increased for full artwork pre-caching
+  static const int _maxCacheSize = 2000; // âœ… Increased for full artwork pre-caching
   
-  /// Expose cache for external pre-population (by ArtworkPreloader)
-  static Map<String, Uint8List?> get cache => _cache;
+
 
   Uint8List? _bytes;
   int? _lastRequestedPx; // track last DPR-aware size we requested
@@ -76,12 +76,12 @@ class _OptimizedArtworkState extends State<OptimizedArtwork> {
   void initState() {
     super.initState();
     
-    // ✅ 1. Sync check: Try to find exact match immediately to avoid flicker
+    // âœ… 1. Sync check: Try to find exact match immediately to avoid flicker
     final exactKey = '${_typeKey(widget.type)}:${widget.id}';
     if (_cache.containsKey(exactKey)) {
       _bytes = _cache[exactKey];
     } else {
-      // ✅ 2. Schedule load if not in cache (Debounced)
+      // âœ… 2. Schedule load if not in cache (Debounced)
       _scheduleLoad();
     }
   }
@@ -123,7 +123,7 @@ class _OptimizedArtworkState extends State<OptimizedArtwork> {
     // Note: We might have loaded a low-res placeholder in initState, but we still want to load the high-res version if requested.
     final cached = _cache[_key];
     if (cached != null) {
-      // ✅ LRU: Move to end (most recently used)
+      // âœ… LRU: Move to end (most recently used)
       _cache.remove(_key);
       _cache[_key] = cached;
       
@@ -150,7 +150,7 @@ class _OptimizedArtworkState extends State<OptimizedArtwork> {
         );
       if (!mounted) return;
       
-      // ✅ Limiter la taille du cache (LRU eviction)
+      // âœ… Limiter la taille du cache (LRU eviction)
       if (_cache.length >= _maxCacheSize) {
         _cache.remove(_cache.keys.first); // Removes the oldest (least recently used)
       }
@@ -230,8 +230,8 @@ class _OptimizedArtworkState extends State<OptimizedArtwork> {
               gaplessPlayback: true,
               isAntiAlias: true,
               cacheWidth: cachePx,
-              // cacheHeight: cachePx, // ✅ Removed to preserve aspect ratio
-              // cacheHeight: cachePx, // ✅ Removed to preserve aspect ratio
+              // cacheHeight: cachePx, // âœ… Removed to preserve aspect ratio
+              // cacheHeight: cachePx, // âœ… Removed to preserve aspect ratio
             ),
           );
         }
@@ -271,7 +271,7 @@ class _OptimizedArtworkState extends State<OptimizedArtwork> {
               width: confSize,
               height: confSize,
               decoration: BoxDecoration(
-                borderRadius: widget.borderRadius, // ✅ Apply radius
+                borderRadius: widget.borderRadius, // âœ… Apply radius
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -336,7 +336,7 @@ class _OptimizedArtworkState extends State<OptimizedArtwork> {
             width: confSize,
             height: confSize,
             decoration: BoxDecoration(
-              borderRadius: widget.borderRadius, // ✅ Apply radius
+              borderRadius: widget.borderRadius, // âœ… Apply radius
               image: DecorationImage(
                 image: ResizeImage(
                   MemoryImage(_bytes!),
@@ -354,3 +354,5 @@ class _OptimizedArtworkState extends State<OptimizedArtwork> {
     );
   }
 }
+
+

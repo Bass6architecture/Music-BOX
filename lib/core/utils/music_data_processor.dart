@@ -1,5 +1,5 @@
-import 'dart:async';
-import 'dart:typed_data';
+﻿import 'dart:async';
+
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -48,12 +48,12 @@ class MusicDataProcessor {
   /// Decodes image on main thread, then extracts palette (still heavy but unavoidable).
   static Future<Map<String, int>?> extractPalette(Uint8List bytes) async {
     try {
-      // ✅ MUST decode on main thread (dart:ui required)
+      // âœ… MUST decode on main thread (dart:ui required)
       final codec = await instantiateImageCodec(bytes, targetWidth: 100);
       final frame = await codec.getNextFrame();
       final image = frame.image;
 
-      // ✅ PaletteGenerator can run on main thread with async gap
+      // âœ… PaletteGenerator can run on main thread with async gap
       final palette = await PaletteGenerator.fromImage(
         image,
         maximumColorCount: 16,
@@ -75,9 +75,9 @@ class MusicDataProcessor {
                     const Color(0xFF26304e);
 
       return {
-        'dominant': dominant.value,
-        'vibrant': vibrant.value,
-        'muted': muted.value,
+        'dominant': dominant.toARGB32(),
+        'vibrant': vibrant.toARGB32(),
+        'muted': muted.toARGB32(),
       };
     } catch (e) {
       debugPrint('Error extracting palette: $e');
@@ -229,7 +229,7 @@ class MusicDataProcessor {
                     palette.darkVibrantColor?.color ?? 
                     palette.dominantColor?.color;
                     
-      return color?.value;
+      return color?.toARGB32();
     } catch (e) {
       return null;
     }
@@ -272,3 +272,7 @@ class _FilterParams {
     required this.showHiddenFolders,
   });
 }
+
+
+
+

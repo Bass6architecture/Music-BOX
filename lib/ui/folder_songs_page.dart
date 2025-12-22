@@ -1,3 +1,4 @@
+﻿import 'widgets/music_box_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -7,16 +8,15 @@ import '../player/player_cubit.dart';
 import '../player/mini_player.dart';
 import 'now_playing_next_gen.dart';
 import '../widgets/song_tile.dart';
-import 'widgets/music_box_scaffold.dart';
+
 import '../core/background/background_cubit.dart';
 import '../widgets/song_actions.dart';
-import 'song_actions_sheet.dart'; 
+ 
 import 'package:share_plus/share_plus.dart'; 
 import 'dart:math' as math;
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_theme.dart';
-import 'widgets/modern_widgets.dart';
+
 
 class FolderSongsPage extends StatefulWidget {
   const FolderSongsPage({super.key, required this.folderName});
@@ -250,7 +250,7 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.deleteSong, style: GoogleFonts.outfit()),
-        content: Text("Voulez-vous vraiment supprimer ${selectedSongs.length} chansons définitivement ?", style: GoogleFonts.outfit()),
+        content: Text("Voulez-vous vraiment supprimer ${selectedSongs.length} chansons dÃ©finitivement ?", style: GoogleFonts.outfit()),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel, style: GoogleFonts.outfit())),
           FilledButton(
@@ -323,7 +323,7 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
                                    TextButton.icon(
                                      onPressed: _selectAll,
                                      icon: PhosphorIcon(_selectedIds.length == songs.length ? PhosphorIcons.minusSquare() : PhosphorIcons.checkSquare()),
-                                     label: Text(_selectedIds.length == songs.length ? "Désélect. tout" : AppLocalizations.of(context)!.selectAll, style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
+                                     label: Text(_selectedIds.length == songs.length ? "DÃ©sÃ©lect. tout" : AppLocalizations.of(context)!.selectAll, style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
                                    )
                                 ],
                             ) : null,
@@ -362,7 +362,7 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
                                     left: 0,
                                     right: 0,
                                     child: PhosphorIcon(
-                                      PhosphorIconsFill.folder(),
+                                      PhosphorIcons.folder(PhosphorIconsStyle.fill),
                                       size: 80,
                                       color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
                                     ),
@@ -427,7 +427,7 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
                                    }
                                   
                                   final s = songs[index];
-                                  final subtitle = [s.artist, s.album].where((e) => (e ?? '').isNotEmpty).join(' • ');
+                                  final subtitle = [s.artist, s.album].where((e) => (e ?? '').isNotEmpty).join(' â€¢ ');
                                   
                                   return SongTile(
                                     song: s,
@@ -498,10 +498,10 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-             _buildBarAction(context, PhosphorIconsFill.play(), l10n.play, _playSelected),
-             _buildBarAction(context, PhosphorIconsFill.playlist(), l10n.addToPlaylist, _addToPlaylistSelected),
-             _buildBarAction(context, PhosphorIconsFill.shareNetwork(), l10n.share, _shareSelected),
-             _buildBarAction(context, PhosphorIconsFill.trash(), l10n.delete, _deleteSelected, isDestructive: true),
+             _buildBarAction(context, PhosphorIcons.play(PhosphorIconsStyle.fill), l10n.play, _playSelected),
+             _buildBarAction(context, PhosphorIcons.playlist(PhosphorIconsStyle.fill), l10n.addToPlaylist, _addToPlaylistSelected),
+             _buildBarAction(context, PhosphorIcons.shareNetwork(PhosphorIconsStyle.fill), l10n.share, _shareSelected),
+             _buildBarAction(context, PhosphorIcons.trash(PhosphorIconsStyle.fill), l10n.delete, _deleteSelected, isDestructive: true),
           ],
         ),
       ),
@@ -535,3 +535,5 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
      );
   }
 }
+
+

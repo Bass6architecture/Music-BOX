@@ -122,7 +122,7 @@ class SongTile extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: PhosphorIcon(
-              isSelected ? PhosphorIcons.fill.checkCircle : PhosphorIcons.regular.circle,
+              isSelected ? PhosphorIcons.checkCircle(PhosphorIconsStyle.fill) : PhosphorIcons.circle(),
                color: isSelected 
                   ? theme.colorScheme.primary 
                   : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
@@ -229,7 +229,7 @@ class SongTile extends StatelessWidget {
             visualDensity: VisualDensity.compact,
             tooltip: isFavorite! ? 'Retirer des favoris' : 'Ajouter aux favoris',
             icon: PhosphorIcon(
-              isFavorite! ? PhosphorIcons.fill.heart : PhosphorIcons.regular.heart,
+              isFavorite! ? PhosphorIcons.heart(PhosphorIconsStyle.fill) : PhosphorIcons.heart(),
               color: isFavorite!
                   ? theme.colorScheme.primary
                   : theme.iconTheme.color,
@@ -261,13 +261,13 @@ class SongTile extends StatelessWidget {
         if (onMorePressed != null)
           IconButton(
             tooltip: 'Plus',
-            icon: PhosphorIcon(PhosphorIcons.regular.dotsThreeVertical, size: 24),
+            icon: PhosphorIcon(PhosphorIcons.dotsThreeVertical(), size: 24),
             onPressed: onMorePressed,
           )
         else if (menuBuilder != null)
           PopupMenuButton<dynamic>(
             tooltip: 'Options',
-            icon: PhosphorIcon(PhosphorIcons.regular.dotsThreeVertical, size: 24),
+            icon: PhosphorIcon(PhosphorIcons.dotsThreeVertical(), size: 24),
             itemBuilder: (ctx) => menuBuilder!(ctx, song),
             onSelected: onMenuSelected,
           ),

@@ -1,3 +1,4 @@
+﻿import 'widgets/music_box_scaffold.dart';
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -9,13 +10,14 @@ import 'package:palette_generator/palette_generator.dart';
 import '../player/player_cubit.dart';
 import '../widgets/optimized_artwork.dart';
 import '../generated/app_localizations.dart';
-import '../core/utils/music_data_processor.dart'; // ✅ Import Processor
+import '../core/utils/music_data_processor.dart'; // âœ… Import Processor
 import 'lyrics_page.dart';
 import 'queue_page.dart';
 import 'song_actions_sheet.dart';
 import 'widgets/bouncy_button.dart';
-import 'widgets/music_box_scaffold.dart';
+
 import 'widgets/sleep_timer_dialog.dart';
+import 'screens/equalizer_screen.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -61,27 +63,27 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
   Color _targetDominantColor = const Color(0xFF2a2a3e);
   Color _targetVibrantColor = const Color(0xFF4a9fff);
   Color _targetMutedColor = const Color(0xFF26304e);
-  Map<int, List<Color>> _colorCache = {};
-  static const int _maxColorCacheSize = 20; // ✅ Limiter le cache de couleurs
+  final Map<int, List<Color>> _colorCache = {};
+  static const int _maxColorCacheSize = 20; // âœ… Limiter le cache de couleurs
 
-  // ✅ Garantir une couleur visible pour les icônes actives
-  // ✅ Garantir une couleur visible pour les icônes actives
+  // âœ… Garantir une couleur visible pour les icÃ´nes actives
+  // âœ… Garantir une couleur visible pour les icÃ´nes actives
   Color get _activeButtonColor {
-    // Convertir en HSL pour manipuler la luminosité et la saturation
+    // Convertir en HSL pour manipuler la luminositÃ© et la saturation
     final hsl = HSLColor.fromColor(_vibrantColor);
     
-    // ✅ Si c'est gris (saturation très faible), on veut du BLANC pur
+    // âœ… Si c'est gris (saturation trÃ¨s faible), on veut du BLANC pur
     if (hsl.saturation < 0.2) {
       return Colors.white;
     }
     
-    // 1. Assurer une luminosité minimale (pour être visible sur fond sombre)
-    // Si la luminosité est < 0.6, on la remonte à 0.6 ou plus
+    // 1. Assurer une luminositÃ© minimale (pour Ãªtre visible sur fond sombre)
+    // Si la luminositÃ© est < 0.6, on la remonte Ã  0.6 ou plus
     final double minLightness = 0.6;
     final double lightness = hsl.lightness < minLightness ? minLightness : hsl.lightness;
     
     // 2. Assurer une saturation minimale (pour garder la couleur)
-    // Si la saturation est < 0.4, on la remonte à 0.6
+    // Si la saturation est < 0.4, on la remonte Ã  0.6
     final double minSaturation = 0.4;
     final double saturation = hsl.saturation < minSaturation ? 0.6 : hsl.saturation;
     
@@ -122,14 +124,14 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
       curve: Curves.easeInOut,
     ));
 
-    // ✅ Optimisation: Utiliser addListener au lieu de setState pour animations fluides
+    // âœ… Optimisation: Utiliser addListener au lieu de setState pour animations fluides
     _colorAnimationController.addListener(() {
       if (mounted) {
         final newDominant = _dominantColorAnimation.value ?? _dominantColor;
         final newVibrant = _vibrantColorAnimation.value ?? _vibrantColor;
         final newMuted = _mutedColorAnimation.value ?? _mutedColor;
         
-        // Ne rebuild que si les couleurs ont vraiment changé
+        // Ne rebuild que si les couleurs ont vraiment changÃ©
         if (newDominant != _dominantColor || newVibrant != _vibrantColor || newMuted != _mutedColor) {
           setState(() {
             _dominantColor = newDominant;
@@ -142,18 +144,18 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
 
     _extractArtworkColors();
     
-    // ✅ Throttle position updates pour meilleure fluidité (200ms au lieu de chaque frame)
-    Duration? _lastPositionUpdate;
+    // âœ… Throttle position updates pour meilleure fluiditÃ© (200ms au lieu de chaque frame)
+    Duration? lastPositionUpdate;
     _posSub = p.positionStream.listen((pos) {
       if (!mounted) return;
       if (_isScrubbing) return;
 
       final now = DateTime.now();
-      if (_lastPositionUpdate != null && 
-          now.difference(DateTime.fromMillisecondsSinceEpoch(_lastPositionUpdate!.inMilliseconds)) < const Duration(milliseconds: 200)) {
+      if (lastPositionUpdate != null && 
+          now.difference(DateTime.fromMillisecondsSinceEpoch(lastPositionUpdate!.inMilliseconds)) < const Duration(milliseconds: 200)) {
         return;
       }
-      _lastPositionUpdate = Duration(milliseconds: now.millisecondsSinceEpoch);
+      lastPositionUpdate = Duration(milliseconds: now.millisecondsSinceEpoch);
 
       final dur = p.duration ?? Duration.zero;
       if (mounted) {
@@ -179,7 +181,7 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
 
     _seqSub = p.sequenceStateStream.listen((seq) {
       if (!mounted) return;
-      if (seq != null && seq.currentIndex != null) {
+      if (seq.currentIndex != null) {
         _preCacheNextSongColors(seq);
       }
     });
@@ -196,12 +198,12 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
   }
 
   Future<void> _extractArtworkColors() async {
-    // ✅ Delay to let transition finish (improves opening fluidity)
+    // âœ… Delay to let transition finish (improves opening fluidity)
     await Future.delayed(const Duration(milliseconds: 350));
     if (!mounted) return;
 
     final song = context.read<PlayerCubit>().currentSong;
-    if (song == null || song.id == null) return;
+    if (song == null) return;
     if (song.id == _lastExtractedSongId) return;
 
     if (_colorCache.containsKey(song.id)) {
@@ -215,10 +217,10 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
 
     try {
       final bytes = await OnAudioQuery()
-          .queryArtwork(song.id!, ArtworkType.AUDIO, size: 1024, quality: 100);
+          .queryArtwork(song.id, ArtworkType.AUDIO, size: 1024, quality: 100);
       
       if (bytes != null && bytes.isNotEmpty) {
-        // ✅ Run in background isolate
+        // âœ… Run in background isolate
         final colors = await MusicDataProcessor.extractPalette(bytes);
         
         if (colors != null) {
@@ -226,39 +228,39 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
           final vibrant = Color(colors['vibrant']!);
           final muted = Color(colors['muted']!);
 
-          // ✅ Limiter la taille du cache de couleurs
+          // âœ… Limiter la taille du cache de couleurs
           if (_colorCache.length >= _maxColorCacheSize) {
             _colorCache.remove(_colorCache.keys.first);
           }
           
-          _colorCache[song.id!] = [dominant, vibrant, muted];
+          _colorCache[song.id] = [dominant, vibrant, muted];
           _animateToColors(dominant, vibrant, muted);
         } else {
-          // ✅ PAS de couleurs extraites → Réinitialiser aux couleurs par défaut
+          // âœ… PAS de couleurs extraites â†’ RÃ©initialiser aux couleurs par dÃ©faut
           const Color defaultDominant = Color(0xFF2a2a3e);
           const Color defaultVibrant = Color(0xFF4a9fff);
           const Color defaultMuted = Color(0xFF26304e);
           
-          _colorCache[song.id!] = [defaultDominant, defaultVibrant, defaultMuted];
+          _colorCache[song.id] = [defaultDominant, defaultVibrant, defaultMuted];
           _animateToColors(defaultDominant, defaultVibrant, defaultMuted);
         }
       } else {
-        // ✅ PAS de pochette → Réinitialiser aux couleurs par défaut
+        // âœ… PAS de pochette â†’ RÃ©initialiser aux couleurs par dÃ©faut
         const Color defaultDominant = Color(0xFF2a2a3e);
         const Color defaultVibrant = Color(0xFF4a9fff);
         const Color defaultMuted = Color(0xFF26304e);
         
-        // Mettre en cache les couleurs par défaut pour cette chanson
-        _colorCache[song.id!] = [defaultDominant, defaultVibrant, defaultMuted];
+        // Mettre en cache les couleurs par dÃ©faut pour cette chanson
+        _colorCache[song.id] = [defaultDominant, defaultVibrant, defaultMuted];
         _animateToColors(defaultDominant, defaultVibrant, defaultMuted);
       }
     } catch (e) {
-      // ✅ En cas d'erreur → Réinitialiser aux couleurs par défaut
+      // âœ… En cas d'erreur â†’ RÃ©initialiser aux couleurs par dÃ©faut
       const Color defaultDominant = Color(0xFF2a2a3e);
       const Color defaultVibrant = Color(0xFF4a9fff);
       const Color defaultMuted = Color(0xFF26304e);
       
-      _colorCache[song.id!] = [defaultDominant, defaultVibrant, defaultMuted];
+      _colorCache[song.id] = [defaultDominant, defaultVibrant, defaultMuted];
       _animateToColors(defaultDominant, defaultVibrant, defaultMuted);
     }
   }
@@ -348,6 +350,80 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
     );
   }
 
+  void _showPlaybackSpeedSheet(BuildContext context) {
+    final cubit = context.read<PlayerCubit>();
+    final l10n = AppLocalizations.of(context)!;
+    final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      showDragHandle: false, // Remove the top system handle as requested
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) {
+          final currentSpeed = cubit.state.playbackSpeed;
+          return Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E1E1E), // Match app theme dark card color
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            padding: const EdgeInsets.only(bottom: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                // Custom handle (the "trait")
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  l10n.playbackSpeed,
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: speeds.map((speed) {
+                      final isSelected = (speed - currentSpeed).abs() < 0.01;
+                      return ListTile(
+                        title: Text(
+                          '${speed}x',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.outfit(
+                            color: isSelected ? Colors.orange : Colors.white,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontSize: 18,
+                          ),
+                        ),
+                        onTap: () {
+                          cubit.setPlaybackSpeed(speed);
+                          setSheetState(() {}); // Refresh UI without closing
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      ),
+    );
+  }
+
 
 
   @override
@@ -367,7 +443,7 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
 
     return GestureDetector(
       onVerticalDragEnd: (details) {
-        // ✅ Swipe down pour fermer (sans animation de suivi)
+        // âœ… Swipe down pour fermer (sans animation de suivi)
         if ((details.primaryVelocity ?? 0) > 500) {
           Navigator.of(context).pop();
         }
@@ -379,7 +455,7 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
         body: Stack(
           fit: StackFit.expand,
           children: [
-            // ✅ Fond dégradé animé (couleurs de la chanson)
+            // âœ… Fond dÃ©gradÃ© animÃ© (couleurs de la chanson)
             AnimatedBuilder(
               animation: _colorAnimationController,
               builder: (context, child) {
@@ -389,7 +465,7 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        _dominantColor.withValues(alpha: 0.8), // Transparence pour laisser voir un peu le fond custom si désiré
+                        _dominantColor.withValues(alpha: 0.8), // Transparence pour laisser voir un peu le fond custom si dÃ©sirÃ©
                         _mutedColor.withValues(alpha: 0.9),
                         Colors.black,
                       ],
@@ -418,6 +494,20 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                             ),
                             const Spacer(),
                             IconButton(
+                              icon: PhosphorIcon(PhosphorIcons.equalizer(),
+                                  size: 26, color: Colors.white),
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => BlocProvider.value(
+                                      value: context.read<PlayerCubit>(),
+                                      child: const EqualizerScreen(),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            IconButton(
                               icon: PhosphorIcon(PhosphorIcons.dotsThreeVertical(),
                                   size: 32, color: Colors.white),
                               onPressed: () => openSongActionsSheet(context, song),
@@ -440,8 +530,8 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                           duration: const Duration(milliseconds: 800),
                           child: Container(
                             key: ValueKey(song.id),
-                            width: screenW * 0.58, // ✅ Reverted size
-                            height: screenW * 0.58, // ✅ Reverted size
+                            width: screenW * 0.58, // âœ… Reverted size
+                            height: screenW * 0.58, // âœ… Reverted size
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               boxShadow: [
@@ -461,7 +551,7 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                               child: OptimizedArtwork.square(
                                 id: song.id,
                                 type: ArtworkType.AUDIO,
-                                size: screenW * 0.58, // ✅ Reverted size
+                                size: screenW * 0.58, // âœ… Reverted size
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -478,7 +568,7 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
 
                 // Song info avec glassmorphism
                 Expanded(
-                  flex: 3, // ✅ Reverted flex
+                  flex: 3, // âœ… Reverted flex
                   child: SingleChildScrollView(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -507,8 +597,7 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 15,
-                              color: Colors.white.withValues(alpha: 0.7),
-                              letterSpacing: 0.2,
+                              color: Colors.white.withValues(alpha: 0.1),
                             ),
                           ),
 
@@ -533,10 +622,38 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                                         );
                                       },
                                       child: PhosphorIcon(
-                                        isFavorite ? PhosphorIconsFill.heart() : PhosphorIcons.heart(),
+                                        isFavorite ? PhosphorIcons.heart(PhosphorIconsStyle.fill) : PhosphorIcons.heart(),
                                         key: ValueKey(isFavorite),
                                         color: isFavorite ? Colors.red : Colors.white,
                                         size: 32,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              
+                              const SizedBox(width: 24),
+
+                              // Playback Speed button
+                              Builder(
+                                builder: (context) {
+                                  final speed = context.select((PlayerCubit c) => c.state.playbackSpeed);
+                                  return GestureDetector(
+                                    onTap: () => _showPlaybackSpeedSheet(context),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.white.withValues(alpha: 0.05),
+                                      ),
+                                      child: Text(
+                                        '${speed}x',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   );
@@ -724,7 +841,7 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                                           snapshot.data ?? false;
                                       return IconButton(
                                         icon: PhosphorIcon(
-                                          PhosphorIcons.shuffle(),
+                                          PhosphorIcons.shuffle(PhosphorIconsStyle.regular),
                                           size: 26,
                                           color: isShuffleOn
                                               ? _activeButtonColor
@@ -741,7 +858,7 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                                   BouncyButton(
                                     onPressed: () => player.seekToPrevious(),
                                     child: PhosphorIcon(
-                                      PhosphorIconsFill.skipBack(),
+                                      PhosphorIcons.skipBack(PhosphorIconsStyle.fill),
                                       size: 44,
                                       color: Colors.white,
                                     ),
@@ -784,8 +901,8 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                                           ),
                                           child: PhosphorIcon(
                                             isPlaying
-                                                ? PhosphorIconsFill.pause()
-                                                : PhosphorIconsFill.play(),
+                                                ? PhosphorIcons.pause(PhosphorIconsStyle.fill)
+                                                : PhosphorIcons.play(PhosphorIconsStyle.fill),
                                             size: 40,
                                             color: Colors.white,
                                           ),
@@ -797,7 +914,7 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                                   BouncyButton(
                                     onPressed: () => player.seekToNext(),
                                     child: PhosphorIcon(
-                                      PhosphorIconsFill.skipForward(),
+                                      PhosphorIcons.skipForward(PhosphorIconsStyle.fill),
                                       size: 44,
                                       color: Colors.white,
                                     ),
@@ -808,9 +925,9 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                                     initialData: player.loopMode,
                                     builder: (context, snapshot) {
                                       final mode = snapshot.data ?? LoopMode.off;
-                                      IconData ic = PhosphorIcons.repeat();
+                                      IconData ic = PhosphorIcons.repeat(PhosphorIconsStyle.regular);
                                       if (mode == LoopMode.one) {
-                                        ic = PhosphorIcons.repeatOnce();
+                                        ic = PhosphorIcons.repeatOnce(PhosphorIconsStyle.regular);
                                       }
                                       final isOn = mode != LoopMode.off;
                                       return BouncyButton(
@@ -853,7 +970,7 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               _GlassButton(
-                                icon: PhosphorIcons.textAa,
+                               icon: PhosphorIcons.textAa(),
                                 label: AppLocalizations.of(context)!.lyrics,
                                 onTap: () {
                                   Navigator.of(context).push(
@@ -866,9 +983,23 @@ class _NextGenNowPlayingState extends State<_NextGenNowPlaying>
                                   );
                                 },
                               ),
-                              const SizedBox(width: 16),
+                              const SizedBox(width: 12),
                               _GlassButton(
-                                icon: PhosphorIcons.playlist,
+                                icon: PhosphorIcons.timer(),
+                                label: AppLocalizations.of(context)!.sleepTimerTask,
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => BlocProvider.value(
+                                      value: context.read<PlayerCubit>(),
+                                      child: const SleepTimerDialog(),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(width: 12),
+                              _GlassButton(
+                               icon: PhosphorIcons.playlist(),
                                 label: AppLocalizations.of(context)!.queue,
                                 onTap: () {
                                   Navigator.of(context).push(
@@ -950,3 +1081,5 @@ class _GlassButton extends StatelessWidget {
     );
   }
 }
+
+

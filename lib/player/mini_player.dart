@@ -1,6 +1,7 @@
+﻿import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'package:flutter/services.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -17,7 +18,7 @@ import '../core/theme/app_theme.dart';
 class MiniPlayer extends StatefulWidget {
   const MiniPlayer({super.key, this.disableNavigation = false});
   
-  /// Si true, désactive l'ouverture de la page now playing (pour éviter les boucles)
+  /// Si true, dÃ©sactive l'ouverture de la page now playing (pour Ã©viter les boucles)
   final bool disableNavigation;
 
   @override
@@ -35,7 +36,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) => openNextGenNowPlaying(context),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          // ✅ Animation "Directe" (Zoom + Fade) sans effet de glissement
+          // âœ… Animation "Directe" (Zoom + Fade) sans effet de glissement
           // C'est plus rapide et ne donne pas l'impression de "suivre le doigt"
           const curve = Curves.easeOutCubic;
           final curvedAnimation = CurvedAnimation(parent: animation, curve: curve);
@@ -50,7 +51,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
         },
         transitionDuration: const Duration(milliseconds: 250),
         reverseTransitionDuration: const Duration(milliseconds: 200),
-        opaque: false, // ✅ Transparent pour voir l'écran derrière lors du dismiss
+        opaque: false, // âœ… Transparent pour voir l'Ã©cran derriÃ¨re lors du dismiss
       ),
     ).whenComplete(() {
       _presenting = false;
@@ -65,11 +66,11 @@ class _MiniPlayerState extends State<MiniPlayer> {
     final song = context.select((PlayerCubit c) => c.currentSong);
 
     if (song == null) {
-      // Rien en cours — pas de barre
+      // Rien en cours â€” pas de barre
       return const SizedBox.shrink();
     }
 
-    // Appliquer les overrides pour garantir des chaînes non nulles
+    // Appliquer les overrides pour garantir des chaÃ®nes non nulles
     final safeSong = cubit.applyOverrides(song);
     // Violet principal de l'app
     final acc = Theme.of(context).colorScheme.primary;
@@ -186,7 +187,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                               ],
                             ),
                           ),
-                           // Contrôles circulaires 48dp
+                           // ContrÃ´les circulaires 48dp
                           _MiniIconButton(
                             icon: PhosphorIcons.skipBack(),
                             onPressed: () async { try { await player.seekToPrevious(); } catch (_) {} },
@@ -196,7 +197,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                             builder: (_, snap) {
                               final isPlaying = snap.data?.playing == true;
                               return _MiniIconButton(
-                                icon: isPlaying ? PhosphorIconsFill.pause() : PhosphorIconsFill.play(),
+                                icon: isPlaying ? PhosphorIcons.pause(PhosphorIconsStyle.fill) : PhosphorIcons.play(PhosphorIconsStyle.fill),
                                 accent: acc,
                                 onPressed: () async { if (isPlaying) { await player.pause(); } else { await player.play(); } },
                               );
@@ -278,3 +279,5 @@ class _MiniIconButton extends StatelessWidget {
     );
   }
 }
+
+

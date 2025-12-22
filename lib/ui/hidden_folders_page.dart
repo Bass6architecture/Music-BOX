@@ -6,7 +6,7 @@ import 'package:path/path.dart' as p;
 import '../player/player_cubit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_theme.dart';
+
 
 class HiddenFoldersPage extends StatefulWidget {
   const HiddenFoldersPage({super.key});
@@ -28,23 +28,7 @@ class _HiddenFoldersPageState extends State<HiddenFoldersPage> {
     setState(() {});
   }
 
-  Future<void> _removeFolder(String folder) async {
-    // Pour cette app, "Supprimer définitivement de la liste" signifie
-    // simplement retirer ce chemin de la liste des dossiers masqués.
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.delete, style: GoogleFonts.outfit()),
-        content: Text('${AppLocalizations.of(context)!.confirmDelete}: ${p.basename(folder)}', style: GoogleFonts.outfit()),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit())),
-          FilledButton.tonal(onPressed: () => Navigator.pop(ctx, true), child: Text(AppLocalizations.of(context)!.delete, style: GoogleFonts.outfit())),
-        ],
-      ),
-    );
-    if (ok != true) return;
-    await _unhideFolder(folder);
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +43,7 @@ class _HiddenFoldersPageState extends State<HiddenFoldersPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  PhosphorIcon(PhosphorIcons.folderNotchSlash(), size: 56),
+                  PhosphorIcon(PhosphorIcons.folder(), size: 56),
                   SizedBox(height: 8),
                   Text(AppLocalizations.of(context)!.noFolders, style: GoogleFonts.outfit()),
                 ],
@@ -100,7 +84,7 @@ class _HiddenFoldersPageState extends State<HiddenFoldersPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: PhosphorIcon(
-                            PhosphorIconsFill.folderNotchMinus(),
+                            PhosphorIcons.folderMinus(PhosphorIconsStyle.fill),
                             color: theme.colorScheme.onErrorContainer,
                             size: 24,
                           ),

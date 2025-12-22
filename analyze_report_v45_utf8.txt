@@ -1,0 +1,18 @@
+﻿Analyzing music_box...                                          
+
+   info - Don't use 'BuildContext's across async gaps - lib\ui\lyrics_page.dart:443:34 - use_build_context_synchronously
+warning - The operand can't be 'null', so the condition is always 'true' - lib\ui\lyrics_page.dart:825:20 - unnecessary_null_comparison
+warning - The '!' will have no effect because the receiver can't be null - lib\ui\lyrics_page.dart:831:56 - unnecessary_non_null_assertion
+warning - Dead code - lib\ui\lyrics_page.dart:835:13 - dead_code
+   info - Statements in an if should be enclosed in a block - lib\ui\lyrics_page.dart:882:43 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\ui\lyrics_page.dart:882:68 - curly_braces_in_flow_control_structures
+   info - Don't use 'BuildContext's across async gaps - lib\ui\lyrics_page.dart:906:43 - use_build_context_synchronously
+  error - The property 'id' can't be unconditionally accessed because the receiver can be 'null' - lib\ui\lyrics_page.dart:1186:24 - unchecked_use_of_nullable_value
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\ui\lyrics_page.dart:1230:38 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\ui\lyrics_page.dart:1231:62 - use_build_context_synchronously
+warning - The operand can't be 'null', so the condition is always 'true' - lib\ui\now_playing_next_gen.dart:183:15 - unnecessary_null_comparison
+warning - The operand can't be 'null', so the condition is always 'false' - lib\ui\now_playing_next_gen.dart:205:33 - unnecessary_null_comparison
+   info - Don't use 'BuildContext's across async gaps - lib\ui\screens\songs_screen.dart:849:10 - use_build_context_synchronously
+warning - A value for optional parameter 'itemHeight' isn't ever given - lib\ui\screens\songs_screen.dart:881:10 - unused_element_parameter
+   info - Don't use 'BuildContext's across async gaps - lib\ui\screens\splash_screen.dart:69:18 - use_build_context_synchronously
+

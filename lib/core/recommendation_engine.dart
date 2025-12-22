@@ -2,7 +2,7 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart'; // Pour compute
 import 'package:on_audio_query/on_audio_query.dart';
-import '../../player/player_cubit.dart';
+
 
 /// DTO for passing data to Isolate
 class RecommendationInputs {
@@ -129,14 +129,12 @@ class RecommendationEngine {
     final now = DateTime.now().millisecondsSinceEpoch;
     final thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
     
+    // Si pas assez d'historique, prendre des chansons alÃ©atoires peu jouÃ©es
     final gems = inputs.allSongs.where((s) {
       if (!_isAllowed(s, inputs)) return false;
-
       final playCount = inputs.playCounts[s.id] ?? 0;
-      final lastPlayed = inputs.lastPlayed[s.id] ?? 0;
-      
-      final isForgotten = (now - lastPlayed) > thirtyDaysMs;
-      return playCount >= 3 && isForgotten;
+      // Relaxed: playCount < 5 (moins jouÃ©es) au lieu de >= 3 && forgotten
+      return playCount < 5;
     }).toList();
     
     gems.shuffle();
@@ -176,19 +174,12 @@ class RecommendationEngine {
     return result;
   }
   
-  static List<SongModel> _getRecentlyAdded(RecommendationInputs inputs, {int limit = 10}) {
-    final nowSec = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    final thirtyDaysSec = 30 * 24 * 60 * 60;
+  static List<SongModel> _getRecentlyAdded(RecommendationInputs inputs, {int limit = 15}) {
+    // Relaxed: Just sort by dateAdded descending, no time limit
+    final allowed = inputs.allSongs.where((s) => _isAllowed(s, inputs)).toList();
     
-    final allowed = inputs.allSongs.where((s) {
-      if (!_isAllowed(s, inputs)) return false;
-      final dateAdded = s.dateAdded ?? 0;
-      return dateAdded > (nowSec - thirtyDaysSec);
-    }).toList();
-    
-    final sorted = List<SongModel>.from(allowed);
-    sorted.sort((a, b) => (b.dateAdded ?? 0).compareTo(a.dateAdded ?? 0));
-    return sorted.take(limit).toList();
+    allowed.sort((a, b) => (b.dateAdded ?? 0).compareTo(a.dateAdded ?? 0));
+    return allowed.take(limit).toList();
   }
 
   static List<SongModel> _getAllTimeHits(RecommendationInputs inputs, {int limit = 15}) {
