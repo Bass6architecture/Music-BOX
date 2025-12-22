@@ -2270,6 +2270,12 @@ abstract class AppLocalizations {
   /// **'Fondu enchaîné final (15s)'**
   String get sleepTimerFadeOut;
 
+  /// No description provided for @sleepTimerTask.
+  ///
+  /// In fr, this message translates to:
+  /// **'Minuteur'**
+  String get sleepTimerTask;
+
   /// No description provided for @customEqualizer.
   ///
   /// In fr, this message translates to:
