@@ -1,6 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 
 class InternalBrowserPage extends StatefulWidget {
@@ -64,7 +64,7 @@ class _InternalBrowserPageState extends State<InternalBrowserPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text(widget.title, style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: Column(

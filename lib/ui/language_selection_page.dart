@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../core/l10n/locale_cubit.dart';
 import '../generated/app_localizations.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 class LanguageSelectionPage extends StatelessWidget {
   const LanguageSelectionPage({super.key});
@@ -17,7 +17,7 @@ class LanguageSelectionPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.language, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text(l10n.language, style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: ListView(
@@ -32,11 +32,11 @@ class LanguageSelectionPage extends StatelessWidget {
             },
             title: Text(
               l10n.languageSystem,
-              style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
             subtitle: Text(
               l10n.languageSystemDesc,
-              style: GoogleFonts.outfit(
+              style: TextStyle(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 fontSize: 12,
               ),
@@ -78,7 +78,7 @@ class LanguageSelectionPage extends StatelessWidget {
                 : null,
             title: Text(
               localeInfo.name,
-              style: GoogleFonts.outfit(
+              style: TextStyle(
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 color: isAvailable ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withValues(alpha: 0.5),
               ),
@@ -86,7 +86,7 @@ class LanguageSelectionPage extends StatelessWidget {
             subtitle: !isAvailable 
                 ? Text(
                     l10n.languageComingSoon,
-                    style: GoogleFonts.outfit(
+                    style: TextStyle(
                       fontSize: 11,
                       color: theme.colorScheme.error,
                       fontStyle: FontStyle.italic,

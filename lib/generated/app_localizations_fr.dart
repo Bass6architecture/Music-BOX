@@ -1159,9 +1159,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get sleepTimerFadeOut => 'Fondu enchaîné final (15s)';
 
   @override
-  String get sleepTimerTask => 'Minuteur';
-
-  @override
   String get customEqualizer => 'Égaliseur';
 
   @override

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,7 +21,7 @@ import 'for_you_page.dart';
 import '../widgets/music_box_scaffold.dart';
 import '../background_selection_page.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 
 class HomeScreen extends StatefulWidget {
@@ -52,8 +52,17 @@ class HomeScreenState extends State<HomeScreen>
     );
     _animationController.forward();
     
-    // Charger la banniÃ¨re publicitaire
+    // Charger la bannière publicitaire
     AdService().loadBanner();
+
+    // ✅ ENSURE SONGS ARE LOADED (in case they failed at startup due to permissions)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final cubit = context.read<PlayerCubit>();
+      if (cubit.state.allSongs.isEmpty && !cubit.state.isLoading) {
+        debugPrint('[HomeScreen] Library empty, forcing refresh...');
+        cubit.loadAllSongs();
+      }
+    });
   }
 
   @override
@@ -140,7 +149,7 @@ class HomeScreenState extends State<HomeScreen>
             bottom: false,
             child: Column(
               children: [
-                // AppBar personnalisÃ© - MasquÃ© en mode sÃ©lection
+                // AppBar personnalisé - Masqué en mode sélection
                 AnimatedCrossFade(
                   duration: const Duration(milliseconds: 200),
                   crossFadeState: _isSelectionMode 
@@ -177,7 +186,7 @@ class HomeScreenState extends State<HomeScreen>
                         const SizedBox(width: 14),
                         Text(
                           AppConstants.appName,
-                          style: GoogleFonts.outfit(
+                          style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: theme.colorScheme.onSurface,
@@ -252,7 +261,7 @@ class HomeScreenState extends State<HomeScreen>
           // Mini Player (visible en profile/release si une chanson est en cours)
           if (hasCurrentSong) const MiniPlayer(),
           
-          // BanniÃ¨re publicitaire (visible dans toutes les pages sauf Settings)
+          // Bannière publicitaire (visible dans toutes les pages sauf Settings)
           AdService().getBannerWidget(),
           
           // Navigation
@@ -275,12 +284,12 @@ class HomeScreenState extends State<HomeScreen>
                 labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>(
                   (Set<WidgetState> states) {
                     if (states.contains(WidgetState.selected)) {
-                      return GoogleFonts.outfit(
+                      return TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                       );
                     }
-                    return GoogleFonts.outfit(
+                    return TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.normal,
                     );

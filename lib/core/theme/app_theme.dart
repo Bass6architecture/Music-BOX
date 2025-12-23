@@ -2,7 +2,6 @@
 import 'package:flutter/services.dart';
 
 
-import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Common Corner Radii for Modern Look
@@ -21,13 +20,13 @@ class AppTheme {
       secondary: const Color(0xFF9C27B0),
       tertiary: const Color(0xFF6200EA),
     ),
-    textTheme: GoogleFonts.outfitTextTheme(ThemeData.light().textTheme),
+    textTheme: ThemeData.light().textTheme,
     appBarTheme: AppBarTheme(
       centerTitle: false,
       elevation: 0,
       scrolledUnderElevation: 0,
       backgroundColor: Colors.transparent,
-      titleTextStyle: GoogleFonts.outfit(
+      titleTextStyle: const TextStyle(
         fontSize: 22,
         fontWeight: FontWeight.bold,
         color: Colors.black87,
@@ -51,7 +50,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
         ),
-        textStyle: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(fontWeight: FontWeight.w600),
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
@@ -60,7 +59,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
         ),
-        textStyle: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(fontWeight: FontWeight.w600),
       ),
     ),
     iconButtonTheme: IconButtonThemeData(
@@ -78,7 +77,7 @@ class AppTheme {
         borderRadius: BorderRadius.circular(radiusMedium),
       ),
       labelTextStyle: WidgetStateProperty.all(
-        GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w500),
+        const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
       ),
     ),
     bottomSheetTheme: const BottomSheetThemeData(
@@ -112,13 +111,13 @@ class AppTheme {
       secondary: const Color(0xFF9C27B0),
       tertiary: const Color(0xFF6200EA),
     ),
-    textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
+    textTheme: ThemeData.dark().textTheme,
     appBarTheme: AppBarTheme(
       centerTitle: false,
       elevation: 0,
       scrolledUnderElevation: 0,
       backgroundColor: Colors.transparent,
-      titleTextStyle: GoogleFonts.outfit(
+      titleTextStyle: const TextStyle(
         fontSize: 22,
         fontWeight: FontWeight.bold,
         color: Colors.white,
@@ -142,7 +141,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
         ),
-        textStyle: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(fontWeight: FontWeight.w600),
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
@@ -153,14 +152,14 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
         ),
-        textStyle: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(fontWeight: FontWeight.w600),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        textStyle: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(fontWeight: FontWeight.w600),
       ),
     ),
     iconButtonTheme: IconButtonThemeData(
@@ -178,7 +177,7 @@ class AppTheme {
         borderRadius: BorderRadius.circular(radiusMedium),
       ),
       labelTextStyle: WidgetStateProperty.all(
-        GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w500),
+        const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
       ),
     ),
     bottomSheetTheme: const BottomSheetThemeData(

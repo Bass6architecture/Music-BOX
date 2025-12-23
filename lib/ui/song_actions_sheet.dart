@@ -1,4 +1,4 @@
-﻿import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
 
 import 'dart:io';
 import 'dart:math' as math;
@@ -18,7 +18,7 @@ import 'cover_art_search_page.dart';
 import '../player/player_cubit.dart';
 import '../widgets/optimized_artwork.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 
 // Channel for native actions we still use (ringtone, delete notifications)
@@ -27,9 +27,9 @@ const MethodChannel _nativeChannel = MethodChannel('com.synergydev.music_box/nat
 
 void _ensureCoverCallbacks(BuildContext context) {
   // Always update handler to use the latest context
-  debugPrint('ðŸ”„ Mise Ã  jour des callbacks avec le contexte actuel...');
+  debugPrint('🔄 Mise à jour des callbacks avec le contexte actuel...');
   _nativeChannel.setMethodCallHandler((call) async {
-    debugPrint('ðŸ”” Callback reÃ§u: ${call.method} avec arguments: ${call.arguments}');
+    debugPrint('🔔 Callback reçu: ${call.method} avec arguments: ${call.arguments}');
     switch (call.method) {
       case 'onDeleteCompleted':
         if (context.mounted) {
@@ -40,22 +40,22 @@ void _ensureCoverCallbacks(BuildContext context) {
         break;
       case 'onAlbumArtWritten':
         final success = call.arguments['success'] as bool?;
-        debugPrint('ðŸ”” onAlbumArtWritten: success=$success, context.mounted=${context.mounted}');
+        debugPrint('🔔 onAlbumArtWritten: success=$success, context.mounted=${context.mounted}');
         if (context.mounted) {
           final l10n = AppLocalizations.of(context)!;
           if (success == true) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('âœ… ${l10n.coverSaved}'),
+                content: Text('✅ ${l10n.coverSaved}'),
                 backgroundColor: Colors.green,
               ),
             );
           } else {
-            // Ã‰chec systÃ¨me (ex: AAC/FLAC ou permission refusÃ©e),
-            // mais l'image locale est sauvegardÃ©e. On rassure l'utilisateur.
+            // Échec système (ex: AAC/FLAC ou permission refusée),
+            // mais l'image locale est sauvegardée. On rassure l'utilisateur.
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('âœ… ${l10n.coverSaved}'),
+                content: Text('✅ ${l10n.coverSaved}'),
                 backgroundColor: Colors.teal,
               ),
             );
@@ -64,23 +64,23 @@ void _ensureCoverCallbacks(BuildContext context) {
         break;
       case 'onMetadataWritten':
         final success = call.arguments['success'] as bool?;
-        debugPrint('ðŸ”” onMetadataWritten: success=$success, context.mounted=${context.mounted}');
+        debugPrint('🔔 onMetadataWritten: success=$success, context.mounted=${context.mounted}');
         if (context.mounted) {
           final l10n = AppLocalizations.of(context)!;
           if (success == true) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('âœ… ${l10n.metadataSaved}'),
+                content: Text('✅ ${l10n.metadataSaved}'),
                 backgroundColor: Colors.green,
               ),
             );
           } else {
-            // Ã‰chec systÃ¨me (ex: format AAC/FLAC non supportÃ© par mp3agic)
-            // Mais l'override local est dÃ©jÃ  appliquÃ©, donc on affiche "SuccÃ¨s (App)"
+            // Échec système (ex: format AAC/FLAC non supporté par mp3agic)
+            // Mais l'override local est déjà appliqué, donc on affiche "Succès (App)"
             // pour ne pas paniquer l'utilisateur.
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('âœ… ${l10n.metadataSaved}'),
+                content: Text('✅ ${l10n.metadataSaved}'),
                 backgroundColor: Colors.teal,
               ),
             );
@@ -89,12 +89,12 @@ void _ensureCoverCallbacks(BuildContext context) {
       case 'onRequestPermissionResult':
         // Just log for now, or use if we keep the callback approach.
         // But better to switch to Future-based approach.
-        debugPrint('ðŸ”” Authorization result: ${call.arguments}');
+        debugPrint('🔔 Authorization result: ${call.arguments}');
         break;
     }
   });
 
-  debugPrint('âœ… Callbacks initialisÃ©s');
+  debugPrint('✅ Callbacks initialisés');
 }
 
 // System-wide metadata updates removed on user request (Android 14/15 restrictions).
@@ -129,7 +129,7 @@ Widget _buildActionTile({
               Expanded(
                 child: Text(
                   title,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: theme.colorScheme.onSurface,
@@ -145,7 +145,7 @@ Widget _buildActionTile({
 }
 
 Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
-  // Initialiser les callbacks dÃ¨s l'ouverture
+  // Initialiser les callbacks dès l'ouverture
   _ensureCoverCallbacks(context);
   
   final cubit = context.read<PlayerCubit>();
@@ -173,7 +173,7 @@ Future<void> openSongActionsSheet(BuildContext context, SongModel song) async {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // FIXED HEADER: Handle personnalisÃ©
+              // FIXED HEADER: Handle personnalisé
               const SizedBox(height: 12),
               Container(
                 width: 32,
@@ -469,7 +469,7 @@ Future<void> _openAddToPlaylist(BuildContext context, PlayerCubit cubit, SongMod
         children: [
           ListTile(
             leading: PhosphorIcon(PhosphorIcons.plus()),
-            title: Text(AppLocalizations.of(context)!.createPlaylist, style: GoogleFonts.outfit()),
+            title: Text(AppLocalizations.of(context)!.createPlaylist, style: TextStyle()),
             onTap: () async {
               Navigator.pop(ctx);
               final l10n = AppLocalizations.of(context)!;
@@ -492,8 +492,8 @@ Future<void> _openAddToPlaylist(BuildContext context, PlayerCubit cubit, SongMod
                 final p = playlists[i];
                 return ListTile(
                   leading: PhosphorIcon(PhosphorIcons.playlist()),
-                  title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.outfit()),
-                  subtitle: Text(AppLocalizations.of(context)!.songCount(p.songIds.length), style: GoogleFonts.outfit()),
+                  title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle()),
+                  subtitle: Text(AppLocalizations.of(context)!.songCount(p.songIds.length), style: TextStyle()),
                   onTap: () {
                     cubit.addSongToUserPlaylist(p.id, song.id);
                     Navigator.pop(ctx);
@@ -537,12 +537,12 @@ Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel son
             ),
             ListTile(
               leading: PhosphorIcon(PhosphorIcons.image()),
-              title: Text(l10n.localGallery, style: GoogleFonts.outfit()),
+              title: Text(l10n.localGallery, style: TextStyle()),
               onTap: () => Navigator.pop(ctx, 0), // 0 = Gallery
             ),
             ListTile(
               leading: PhosphorIcon(PhosphorIcons.globe()),
-              title: Text(l10n.searchOnInternet, style: GoogleFonts.outfit()),
+              title: Text(l10n.searchOnInternet, style: TextStyle()),
               onTap: () => Navigator.pop(ctx, 1), // 1 = Web
             ),
             const SizedBox(height: 16),
@@ -614,42 +614,42 @@ Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel son
     // D'abord appliquer localement dans l'app
     await cubit.setCustomArtworkBytes(song.id, bytes, ext: '.jpg');
     
-    // Vider le cache d'images pour forcer le rafraÃ®chissement
+    // Vider le cache d'images pour forcer le rafraîchissement
     if (context.mounted) {
       PaintingBinding.instance.imageCache.clear();
       PaintingBinding.instance.imageCache.clearLiveImages();
-      // Force les widgets Ã  se reconstruire avec la nouvelle pochette
+      // Force les widgets à se reconstruire avec la nouvelle pochette
       cubit.forceArtworkRefresh(song.id);
     }
     
-    // Enregistrer directement dans le systÃ¨me (pas de choix)
+    // Enregistrer directement dans le système (pas de choix)
     if (context.mounted && Platform.isAndroid) {
       try {
-        debugPrint('ðŸ“¸ Appel writeAlbumArt pour song.id=${song.id}');
+        debugPrint('📸 Appel writeAlbumArt pour song.id=${song.id}');
         final success = await _nativeChannel.invokeMethod('writeAlbumArt', {
           'audioId': song.id,
           'imagePath': path,
         });
         
-        debugPrint('ðŸ“¸ RÃ©sultat writeAlbumArt: $success');
+        debugPrint('📸 Résultat writeAlbumArt: $success');
         
-        // Si success == false, Ã©chec immÃ©diat
+        // Si success == false, échec immédiat
         if (context.mounted && success == false) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.requiresAndroid10),
-              backgroundColor: Colors.orange,
+              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.9),
             ),
           );
         }
         // Si success == null, on attend la permission (le callback affichera le message)
       } catch (e) {
-        debugPrint('âŒ Erreur technique lors de l\'Ã©criture (MP3 uniquement?) : $e');
-        // On affiche quand mÃªme un succÃ¨s car l'override local a fonctionnÃ©
+        debugPrint('❌ Erreur technique lors de l\'écriture (MP3 uniquement?) : $e');
+        // On affiche quand même un succès car l'override local a fonctionné
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('âœ… ${l10n.coverSaved}'),
+              content: Text('✅ ${l10n.coverSaved}'),
               backgroundColor: Colors.teal,
             ),
           );
@@ -665,7 +665,7 @@ Future<void> _changeCover(BuildContext context, PlayerCubit cubit, SongModel son
   }
 } // End _changeCover
 
-// plus de recadrage automatique â€” l'utilisateur choisit la zone en 1:1 via ImageCropper
+// plus de recadrage automatique — l'utilisateur choisit la zone en 1:1 via ImageCropper
 
 Future<void> _shareSong(BuildContext context, SongModel song) async {
   try {
@@ -720,7 +720,7 @@ Future<void> _openInFiles(BuildContext context, SongModel song) async {
   
   // Extraire le chemin du dossier depuis l'URI
   try {
-    // Obtenir le chemin rÃ©el via le canal natif
+    // Obtenir le chemin réel via le canal natif
     final realPath = await _nativeChannel.invokeMethod<String>('getRealPath', {'uri': uri});
     
     if (realPath == null || realPath.isEmpty) {
@@ -736,12 +736,12 @@ Future<void> _openInFiles(BuildContext context, SongModel song) async {
     final file = File(realPath);
     final folder = file.parent.path;
     
-    debugPrint('ðŸ“‚ Ouverture du dossier: $folder');
+    debugPrint('📂 Ouverture du dossier: $folder');
     
     // Essayer d'ouvrir dans l'explorateur de fichiers
     bool intentLaunched = false;
     
-    // MÃ©thode 1: Utiliser ACTION_VIEW avec le fichier pour ouvrir son dossier
+    // Méthode 1: Utiliser ACTION_VIEW avec le fichier pour ouvrir son dossier
     try {
       final intent = AndroidIntent(
         action: 'android.intent.action.VIEW',
@@ -751,15 +751,15 @@ Future<void> _openInFiles(BuildContext context, SongModel song) async {
       );
       await intent.launch();
       intentLaunched = true;
-      debugPrint('âœ… Dossier ouvert avec ACTION_VIEW');
+      debugPrint('✅ Dossier ouvert avec ACTION_VIEW');
     } catch (e1) {
-      debugPrint('âŒ MÃ©thode 1 (VIEW) Ã©chouÃ©e: $e1');
+      debugPrint('❌ Méthode 1 (VIEW) échouée: $e1');
       
-      // MÃ©thode 2: Construire l'URI Documents correctement
+      // Méthode 2: Construire l'URI Documents correctement
       try {
         // Encoder le chemin correctement pour Documents UI
         String documentPath = folder.replaceFirst('/storage/emulated/0/', '');
-        // URL encoder le chemin pour Ã©viter les problÃ¨mes avec les caractÃ¨res spÃ©ciaux
+        // URL encoder le chemin pour éviter les problèmes avec les caractères spéciaux
         documentPath = Uri.encodeComponent(documentPath);
         
         final intent = AndroidIntent(
@@ -770,11 +770,11 @@ Future<void> _openInFiles(BuildContext context, SongModel song) async {
         );
         await intent.launch();
         intentLaunched = true;
-        debugPrint('âœ… Dossier ouvert avec Documents UI');
+        debugPrint('✅ Dossier ouvert avec Documents UI');
       } catch (e2) {
-        debugPrint('âŒ MÃ©thode 2 (Documents) Ã©chouÃ©e: $e2');
+        debugPrint('❌ Méthode 2 (Documents) échouée: $e2');
         
-        // MÃ©thode 3: Ouvrir le gestionnaire de fichiers gÃ©nÃ©rique
+        // Méthode 3: Ouvrir le gestionnaire de fichiers générique
         try {
           final intent = AndroidIntent(
             action: 'android.intent.action.VIEW',
@@ -783,14 +783,14 @@ Future<void> _openInFiles(BuildContext context, SongModel song) async {
           );
           await intent.launch();
           intentLaunched = true;
-          debugPrint('âœ… Gestionnaire de fichiers ouvert');
+          debugPrint('✅ Gestionnaire de fichiers ouvert');
         } catch (e3) {
-          debugPrint('âŒ MÃ©thode 3 (gestionnaire) Ã©chouÃ©e: $e3');
+          debugPrint('❌ Méthode 3 (gestionnaire) échouée: $e3');
         }
       }
     }
     
-    // Si aucun intent n'a marchÃ©, afficher le chemin
+    // Si aucun intent n'a marché, afficher le chemin
     if (!intentLaunched) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -842,7 +842,7 @@ Future<void> _setAsRingtone(BuildContext context, SongModel song) async {
           onPressed: () => Navigator.pop(ctx, true),
           style: FilledButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Colors.white,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
           ),
           child: Text(AppLocalizations.of(context)!.confirm),
         ),
@@ -885,12 +885,13 @@ Future<void> _setAsRingtone(BuildContext context, SongModel song) async {
 }
 
 Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel song) async {
+  final theme = Theme.of(context);
   // Initialiser les callbacks en premier
   _ensureCoverCallbacks(context);
   
-  // Avertissement supprimÃ©: on ouvre directement l'Ã©diteur (modification locale uniquement).
+  // Avertissement supprimé: on ouvre directement l'éditeur (modification locale uniquement).
 
-  // 1) Formulaire d'Ã©dition (prÃ©-rempli)
+  // 1) Formulaire d'édition (pré-rempli)
   final applied = cubit.applyOverrides(song);
   final titleCtrl = TextEditingController(text: applied.title);
   final artistCtrl = TextEditingController(text: applied.artist);
@@ -921,7 +922,7 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Handle personnalisÃ©
+                // Handle personnalisé
                 const SizedBox(height: 12),
                 Center(
                   child: Container(
@@ -982,10 +983,10 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
                     children: [
                       TextField(
                         controller: titleCtrl,
-                        style: GoogleFonts.outfit(),
+                        style: TextStyle(),
                         decoration: InputDecoration(
                           labelText: AppLocalizations.of(context)!.title,
-                          labelStyle: GoogleFonts.outfit(),
+                          labelStyle: TextStyle(),
                           prefixIcon: PhosphorIcon(PhosphorIcons.musicNote(), color: theme.colorScheme.primary),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -997,10 +998,10 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
                       const SizedBox(height: 16),
                       TextField(
                         controller: artistCtrl,
-                        style: GoogleFonts.outfit(),
+                        style: TextStyle(),
                         decoration: InputDecoration(
                           labelText: AppLocalizations.of(context)!.artist,
-                          labelStyle: GoogleFonts.outfit(),
+                          labelStyle: TextStyle(),
                           prefixIcon: PhosphorIcon(PhosphorIcons.user(), color: theme.colorScheme.primary),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -1012,10 +1013,10 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
                       const SizedBox(height: 16),
                       TextField(
                         controller: albumCtrl,
-                        style: GoogleFonts.outfit(),
+                        style: TextStyle(),
                         decoration: InputDecoration(
                           labelText: AppLocalizations.of(context)!.album,
-                          labelStyle: GoogleFonts.outfit(),
+                          labelStyle: TextStyle(),
                           prefixIcon: PhosphorIcon(PhosphorIcons.disc(), color: theme.colorScheme.primary),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -1027,10 +1028,10 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
                       const SizedBox(height: 16),
                       TextField(
                         controller: genreCtrl,
-                        style: GoogleFonts.outfit(),
+                        style: TextStyle(),
                         decoration: InputDecoration(
                           labelText: AppLocalizations.of(context)!.genreOptional,
-                          labelStyle: GoogleFonts.outfit(),
+                          labelStyle: TextStyle(),
                           prefixIcon: PhosphorIcon(PhosphorIcons.tag(), color: theme.colorScheme.secondary),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -1042,10 +1043,10 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
                       const SizedBox(height: 16),
                       TextField(
                         controller: yearCtrl,
-                        style: GoogleFonts.outfit(),
+                        style: TextStyle(),
                         decoration: InputDecoration(
                           labelText: AppLocalizations.of(context)!.yearOptional,
-                          labelStyle: GoogleFonts.outfit(),
+                          labelStyle: TextStyle(),
                           prefixIcon: PhosphorIcon(PhosphorIcons.calendar(), color: theme.colorScheme.secondary),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -1106,7 +1107,7 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
 
   if (confirmed != true) return;
 
-  // 2) Appliquer immÃ©diatement dans l'app (fluide)
+  // 2) Appliquer immédiatement dans l'app (fluide)
   final overrides = LocalMetadataOverrides(
     title: titleCtrl.text.trim().isEmpty ? null : titleCtrl.text.trim(),
     artist: artistCtrl.text.trim().isEmpty ? null : artistCtrl.text.trim(),
@@ -1115,13 +1116,13 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
     year: int.tryParse(yearCtrl.text.trim()),
   );
   await cubit.setMetadataOverride(song.id, overrides);
-  // Force les widgets Ã  se reconstruire avec les nouvelles mÃ©tadonnÃ©es
+  // Force les widgets à se reconstruire avec les nouvelles métadonnées
   cubit.forceArtworkRefresh(song.id);
 
-  // 3) Enregistrer directement dans le systÃ¨me (pas de choix)
+  // 3) Enregistrer directement dans le système (pas de choix)
   if (context.mounted && Platform.isAndroid) {
     try {
-      debugPrint('ðŸ“ Appel writeMetadata pour song.id=${song.id}');
+      debugPrint('📝 Appel writeMetadata pour song.id=${song.id}');
       final success = await _nativeChannel.invokeMethod('writeMetadata', {
         'audioId': song.id,
         'title': titleCtrl.text.trim(),
@@ -1131,24 +1132,25 @@ Future<void> _editMetadata(BuildContext context, PlayerCubit cubit, SongModel so
         'year': yearCtrl.text.trim(),
       });
 
-      debugPrint('ðŸ“ RÃ©sultat writeMetadata: $success');
+      debugPrint('📝 Résultat writeMetadata: $success');
 
       if (context.mounted && success == false) {
+        final theme = Theme.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.android10Required),
-            backgroundColor: Colors.orange,
+            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.9),
           ),
         );
       }
       // Si success == null, on attend la permission (le callback affichera le message)
     } catch (e) {
-      debugPrint('ðŸ“ Erreur technique writeMetadata: $e');
-      // Override local OK, on affiche un succÃ¨s discret
+      debugPrint('📝 Erreur technique writeMetadata: $e');
+      // Override local OK, on affiche un succès discret
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
            SnackBar(
-            content: Text('âœ… ${AppLocalizations.of(context)!.metadataSaved}'),
+            content: Text('✅ ${AppLocalizations.of(context)!.metadataSaved}'),
             backgroundColor: Colors.teal,
           ),
         );
@@ -1188,7 +1190,7 @@ Future<String?> _promptForText(
           onPressed: () => Navigator.pop(context, controller.text),
           style: FilledButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Colors.white,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
           ),
           child: Text(AppLocalizations.of(context)!.ok),
         ),
@@ -1269,7 +1271,7 @@ Future<void> _deleteAudioFile(BuildContext context, PlayerCubit cubit, SongModel
           onPressed: () => Navigator.pop(ctx, true),
           style: FilledButton.styleFrom(
             backgroundColor: theme.colorScheme.error,
-            foregroundColor: Colors.white,
+            foregroundColor: theme.colorScheme.onError,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
           child: Text(AppLocalizations.of(context)!.delete),
@@ -1284,7 +1286,7 @@ Future<void> _deleteAudioFile(BuildContext context, PlayerCubit cubit, SongModel
     // Utiliser le canal natif pour supprimer via MediaStore
     await _nativeChannel.invokeMethod('deleteAudio', {'audioId': song.id});
     
-    // Retirer de la queue si prÃ©sent et de la playlist (Robust)
+    // Retirer de la queue si présent et de la playlist (Robust)
     await cubit.removeSongsById([song.id]);
     
     if (context.mounted) {

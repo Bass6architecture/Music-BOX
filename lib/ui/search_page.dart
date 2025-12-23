@@ -160,14 +160,14 @@ class _SearchPageState extends State<SearchPage> {
             Icon(
               Icons.search_rounded,
               size: 16,
-              color: Colors.white,
+              color: theme.colorScheme.onSurface,
             ),
             const SizedBox(width: 8),
             Text(
               '${_songs.length} rÃ©sultat${_songs.length > 1 ? "s" : ""} pour "$_query"',
               style: theme.textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: theme.colorScheme.onSurface,
               ),
             ),
           ],

@@ -1,4 +1,4 @@
-﻿import 'widgets/music_box_scaffold.dart';
+import 'widgets/music_box_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -13,7 +13,7 @@ import 'now_playing_next_gen.dart';
 
 import '../core/background/background_cubit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 
 class MostPlayedPage extends StatefulWidget {
@@ -42,19 +42,19 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
     final counts = cubit.state.playCounts;
     if (counts.isEmpty) return <SongModel>[];
 
-    // âœ… Optimization: Use cached songs from Cubit
+    // ✅ Optimization: Use cached songs from Cubit
     final allSongs = cubit.state.allSongs;
 
-    // Filtrer les dossiers masquÃ©s
+    // Filtrer les dossiers masqués
     final filteredSongs = cubit.filterSongs(allSongs);
 
-    // CrÃ©er une map pour un accÃ¨s rapide par ID
+    // Créer une map pour un accès rapide par ID
     final songMap = <int, SongModel>{};
     for (final song in filteredSongs) {
       songMap[song.id] = song;
     }
 
-    // Trier par count dÃ©croissant et rÃ©cupÃ©rer les chansons
+    // Trier par count décroissant et récupérer les chansons
     final sortedEntries = counts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
@@ -81,7 +81,7 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
           return FadeTransition(opacity: animation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 300),
-        opaque: false, // âœ… Transparent
+        opaque: false, // ✅ Transparent
       ),
     );
   }
@@ -126,7 +126,7 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
                       
                       return CustomScrollView(
                         slivers: [
-                          // AppBar Ã©pinglÃ©e avec gradient
+                          // AppBar épinglée avec gradient
                           SliverAppBar(
                             expandedHeight: 180,
                             pinned: true,
@@ -135,7 +135,7 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
                             flexibleSpace: FlexibleSpaceBar(
                               title: Text(
                                 AppLocalizations.of(context)!.mostPlayed,
-                                style: GoogleFonts.outfit(
+                                style: TextStyle(
                                   color: theme.colorScheme.onSurface,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 22,
@@ -150,7 +150,7 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
-                                          Colors.orange.withValues(alpha: 0.1),
+                                           theme.colorScheme.primary.withValues(alpha: 0.1),
                                           hasCustomBackground ? Colors.transparent : theme.colorScheme.surface,
                                         ],
                                         begin: Alignment.topCenter,
@@ -163,7 +163,7 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
                                     top: 20,child: PhosphorIcon(
                             PhosphorIcons.chartLineUp(PhosphorIconsStyle.fill), 
                             size: 140,
-                            color: Colors.orange.withValues(alpha: 0.1),
+                            color: theme.colorScheme.primary.withValues(alpha: 0.1),
                           ),
                         ),
                       ],
@@ -185,7 +185,7 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
                         const SizedBox(width: 6),
                         Text(
                           AppLocalizations.of(context)!.songCount(songs.length),
-                          style: GoogleFonts.outfit(
+                          style: TextStyle(
                             color: theme.colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w500,
                           ),
@@ -195,7 +195,7 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
                         FilledButton.tonalIcon(
                           onPressed: songs.isEmpty ? null : () => _playAll(songs, shuffle: true),
                           icon: PhosphorIcon(PhosphorIcons.shuffle(), size: 20),
-                          label: Text(AppLocalizations.of(context)!.shuffleAll, style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
+                          label: Text(AppLocalizations.of(context)!.shuffleAll, style: TextStyle(fontWeight: FontWeight.w600)),
                           style: FilledButton.styleFrom(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -228,14 +228,14 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
                             final count = inner.select((PlayerCubit c) => c.state.playCounts[s.id] ?? 0);
                             final subtitle = [s.artist, s.album]
                                 .where((e) => (e ?? '').isNotEmpty)
-                                .join(' â€¢ ');
+                                .join(' • ');
                             
                             return Column(
                               children: [
                                 SongTile(
                                   song: s,
                                   subtitle: subtitle,
-                                  // âœ… Move count to trailing widget
+                                  // ✅ Move count to trailing widget
                                   trailing: count > 0 ? Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
@@ -244,7 +244,7 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
                                     ),
                                     child: Text(
                                       '${count}x',
-                                      style: GoogleFonts.outfit(
+                                      style: TextStyle(
                                         color: theme.colorScheme.onSecondaryContainer,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12,

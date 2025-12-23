@@ -1,4 +1,4 @@
-﻿import 'widgets/music_box_scaffold.dart';
+import 'widgets/music_box_scaffold.dart';
 import 'package:flutter/material.dart';
 
 import 'dart:io';
@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_box/generated/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'scan_music_page.dart';
 import 'hidden_folders_page.dart';
 import 'language_selection_page.dart';
@@ -135,7 +135,7 @@ class _SettingsPageState extends State<SettingsPage> {
         // Section: Audio
         _buildSectionHeader(context, l10n.audio),
         _buildSection(context, [
-          // âœ… Sleep Timer Tile
+          // ✅ Sleep Timer Tile
           BlocBuilder<PlayerCubit, PlayerStateModel>(
             builder: (context, state) {
               String subtitle = l10n.sleepTimerDesc;
@@ -196,7 +196,7 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
 
-          // âœ… Crossfade
+          // ✅ Crossfade
           BlocBuilder<PlayerCubit, PlayerStateModel>(
             builder: (context, state) {
               final seconds = state.crossfadeDuration;
@@ -212,13 +212,13 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
 
-          // âœ… Gapless Playback
+          // ✅ Gapless Playback
           BlocBuilder<PlayerCubit, PlayerStateModel>(
             builder: (context, state) {
               return SwitchListTile(
                  activeColor: Theme.of(context).colorScheme.primary,
-                 title: Text(l10n.gaplessPlayback, style: GoogleFonts.outfit(fontWeight: FontWeight.w500)),
-                 subtitle: Text(l10n.gaplessPlaybackDesc, style: GoogleFonts.outfit(fontSize: 12)),
+                 title: Text(l10n.gaplessPlayback, style: TextStyle(fontWeight: FontWeight.w500)),
+                 subtitle: Text(l10n.gaplessPlaybackDesc, style: TextStyle(fontSize: 12)),
                  secondary: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
@@ -238,7 +238,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
 
-          // âœ… Default Playback Speed
+          // ✅ Default Playback Speed
           BlocBuilder<PlayerCubit, PlayerStateModel>(
             builder: (context, state) {
               return _buildSettingTile(
@@ -371,7 +371,7 @@ class _SettingsPageState extends State<SettingsPage> {
         
         const SizedBox(height: 24),
 
-        // Section: BibliothÃ¨que
+        // Section: Bibliothèque
         _buildSectionHeader(context, l10n.library),
         _buildSection(context, [
           _buildSettingTile(
@@ -401,7 +401,7 @@ class _SettingsPageState extends State<SettingsPage> {
         
         const SizedBox(height: 24),
 
-        // Section: Ã€ propos
+        // Section: À propos
         _buildSectionHeader(context, l10n.about),
         _buildSection(context, [
           _buildSettingTile(
@@ -471,7 +471,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return MusicBoxScaffold(
       appBar: AppBar(
-        title: Text(l10n.settings, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text(l10n.settings, style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
       ),
       body: content,
@@ -484,7 +484,7 @@ class _SettingsPageState extends State<SettingsPage> {
       padding: const EdgeInsets.only(left: 12, bottom: 8),
       child: Text(
         title,
-        style: GoogleFonts.outfit(
+        style: TextStyle(
           color: theme.colorScheme.onSurface,
           fontWeight: FontWeight.w600,
           fontSize: 16,
@@ -533,8 +533,8 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               child: PhosphorIcon(icon, color: theme.colorScheme.onSurfaceVariant, size: 20),
             ),
-            title: Text(title, style: GoogleFonts.outfit(fontWeight: FontWeight.w500)),
-            subtitle: subtitle != null ? Text(subtitle, style: GoogleFonts.outfit(fontSize: 12)) : null,
+            title: Text(title, style: TextStyle(fontWeight: FontWeight.w500)),
+            subtitle: subtitle != null ? Text(subtitle, style: TextStyle(fontSize: 12)) : null,
             trailing: isDisabled 
                 ? null 
                 : PhosphorIcon(PhosphorIcons.caretRight(), color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5), size: 18),
@@ -562,13 +562,13 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            title: Text(l10n.crossfade, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            title: Text(l10n.crossfade, style: TextStyle(fontWeight: FontWeight.bold)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   selected == 0 ? l10n.crossfadeDisabled : l10n.crossfadeSeconds(selected),
-                  style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w500),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 16),
                 Slider(
@@ -610,12 +610,12 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.playbackSpeed, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text(l10n.playbackSpeed, style: TextStyle(fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: speeds.map((speed) {
             return RadioListTile<double>(
-              title: Text('${speed}x', style: GoogleFonts.outfit()),
+              title: Text('${speed}x', style: TextStyle()),
               value: speed,
               groupValue: currentSpeed,
               onChanged: (value) {
@@ -644,13 +644,13 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.themeDescription, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text(l10n.themeDescription, style: TextStyle(fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              title: Text(l10n.themeSystem, style: GoogleFonts.outfit()),
-              subtitle: Text(l10n.themeSystemDesc, style: GoogleFonts.outfit()),
+              title: Text(l10n.themeSystem, style: TextStyle()),
+              subtitle: Text(l10n.themeSystemDesc, style: TextStyle()),
               leading: PhosphorIcon(PhosphorIcons.sun()),
               trailing: Radio<ThemeMode>(
                 value: ThemeMode.system,
@@ -670,8 +670,8 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             ListTile(
-              title: Text(l10n.themeLight, style: GoogleFonts.outfit()),
-              subtitle: Text(l10n.themeLightDesc, style: GoogleFonts.outfit()),
+              title: Text(l10n.themeLight, style: TextStyle()),
+              subtitle: Text(l10n.themeLightDesc, style: TextStyle()),
               leading: PhosphorIcon(PhosphorIcons.sun()),
               trailing: Radio<ThemeMode>(
                 value: ThemeMode.light,
@@ -691,8 +691,8 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             ListTile(
-              title: Text(l10n.themeDark, style: GoogleFonts.outfit()),
-              subtitle: Text(l10n.themeDarkDesc, style: GoogleFonts.outfit()),
+              title: Text(l10n.themeDark, style: TextStyle()),
+              subtitle: Text(l10n.themeDarkDesc, style: TextStyle()),
               leading: PhosphorIcon(PhosphorIcons.moon()),
               trailing: Radio<ThemeMode>(
                 value: ThemeMode.dark,

@@ -1,4 +1,4 @@
-﻿import 'widgets/music_box_scaffold.dart';
+import 'widgets/music_box_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -15,7 +15,7 @@ import '../widgets/song_actions.dart';
 import 'package:share_plus/share_plus.dart'; 
 import 'dart:math' as math;
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 
 class FavoriteSongsPage extends StatefulWidget {
@@ -138,7 +138,7 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
           children: [
             ListTile(
               leading: PhosphorIcon(PhosphorIcons.plus()),
-              title: Text(l10n.createPlaylist, style: GoogleFonts.outfit()),
+              title: Text(l10n.createPlaylist, style: TextStyle()),
               onTap: () async {
                 Navigator.pop(ctx);
                 final name = await _promptForText(context, title: l10n.createPlaylist, hint: l10n.playlistNameHint);
@@ -163,8 +163,8 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
                   final p = playlists[i];
                   return ListTile(
                     leading: PhosphorIcon(PhosphorIcons.playlist()),
-                    title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.outfit()),
-                    subtitle: Text(l10n.songCount(p.songIds.length), style: GoogleFonts.outfit()),
+                    title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle()),
+                    subtitle: Text(l10n.songCount(p.songIds.length), style: TextStyle()),
                     onTap: () {
                       for (final s in selectedSongs) {
                          cubit.addSongToUserPlaylist(p.id, s.id);
@@ -188,17 +188,17 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
     return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(title, style: GoogleFonts.outfit()),
+        title: Text(title, style: TextStyle()),
         content: TextField(
           controller: controller,
           autofocus: true,
-          style: GoogleFonts.outfit(),
-          decoration: InputDecoration(hintText: hint, hintStyle: GoogleFonts.outfit()),
+          style: TextStyle(),
+          decoration: InputDecoration(hintText: hint, hintStyle: TextStyle()),
           onSubmitted: (_) => Navigator.pop(context, controller.text),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit())),
-          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(AppLocalizations.of(context)!.confirm, style: GoogleFonts.outfit())),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle())),
+          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(AppLocalizations.of(context)!.confirm, style: TextStyle())),
         ],
       ),
     );
@@ -237,7 +237,7 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
     }
     
     if (mounted) {
-       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("RetirÃ© des favoris"))); 
+       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Retiré des favoris"))); 
        _exitSelectionMode();
        _future = _load(); 
        setState(() {});
@@ -299,14 +299,14 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
                                      onPressed: _exitSelectionMode,
                                    ),
                                    const SizedBox(width: 8),
-                                   Text('${_selectedIds.length}', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold)),
+                                   Text('${_selectedIds.length}', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                                    const Spacer(),
                                    TextButton.icon(
                                      onPressed: _selectAll,
                                      icon: PhosphorIcon(_selectedIds.length == songs.length ? PhosphorIcons.minusSquare() : PhosphorIcons.checkSquare()),
                                      label: Text(
-                                       _selectedIds.length == songs.length ? "DÃ©sÃ©lect. tout" : l10n.selectAll, 
-                                       style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+                                       _selectedIds.length == songs.length ? "Désélect. tout" : l10n.selectAll, 
+                                       style: TextStyle(fontWeight: FontWeight.w600),
                                      ),
                                    )
                                 ],
@@ -315,7 +315,7 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
                             flexibleSpace: _isSelectionMode ? null : FlexibleSpaceBar(
                               title: Text(
                                 l10n.favorites,
-                                style: GoogleFonts.outfit(
+                                style: TextStyle(
                                   color: theme.colorScheme.onSurface,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 24,
@@ -366,7 +366,7 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
                                   const SizedBox(width: 6),
                                   Text(
                                     l10n.songCount(favIds.length),
-                                    style: GoogleFonts.outfit(
+                                    style: TextStyle(
                                       color: theme.colorScheme.onSurfaceVariant,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -375,7 +375,7 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
                                   FilledButton.tonalIcon(
                                     onPressed: songs.isEmpty ? null : () => _playAll(songs, shuffle: true),
                                     icon: PhosphorIcon(PhosphorIcons.shuffle(), size: 20),
-                                    label: Text(l10n.shuffleAll, style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
+                                    label: Text(l10n.shuffleAll, style: TextStyle(fontWeight: FontWeight.w600)),
                                     style: FilledButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 16,
@@ -394,7 +394,7 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
                               child: Center(
                                 child: Text(
                                   l10n.noFavorites,
-                                  style: GoogleFonts.outfit(),
+                                  style: TextStyle(),
                                 ),
                               ),
                             )
@@ -405,7 +405,7 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
                                   if (index >= songs.length) return const SizedBox(height: 100);
                                   
                                   final s = songs[index];
-                                  final subtitle = [s.artist, s.album].where((e) => (e ?? '').isNotEmpty).join(' â€¢ ');
+                                  final subtitle = [s.artist, s.album].where((e) => (e ?? '').isNotEmpty).join(' • ');
                                   return SongTile(
                                     song: s,
                                     subtitle: subtitle,
@@ -501,7 +501,7 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
              Text(
                label,
                textAlign: TextAlign.center,
-               style: GoogleFonts.outfit(
+               style: TextStyle(
                  color: color,
                  fontSize: 10,
                ),

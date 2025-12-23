@@ -139,8 +139,6 @@ class PlayerStateModel {
     this.playbackSpeed = 1.0,
     this.equalizerBands = const [],
     this.equalizerEnabled = false,
-    this.finishSongBeforeStop = false,
-    this.sleepTimerFadeOut = true,
   });
 
   final List<SongModel> songs; // Current Queue
@@ -176,9 +174,7 @@ class PlayerStateModel {
   final List<double> equalizerBands; // gain in dB
   final bool equalizerEnabled;
 
-  // âœ… Enhanced Sleep Timer State
-  final bool finishSongBeforeStop;
-  final bool sleepTimerFadeOut;
+
 
   // Helpers
   bool get hasSleepTimer => sleepTimerEndTime != null;
@@ -208,8 +204,6 @@ class PlayerStateModel {
     double? playbackSpeed,
     List<double>? equalizerBands,
     bool? equalizerEnabled,
-    bool? finishSongBeforeStop,
-    bool? sleepTimerFadeOut,
   }) {
     return PlayerStateModel(
       songs: songs ?? this.songs,
@@ -235,8 +229,6 @@ class PlayerStateModel {
       playbackSpeed: playbackSpeed ?? this.playbackSpeed,
       equalizerBands: equalizerBands ?? this.equalizerBands,
       equalizerEnabled: equalizerEnabled ?? this.equalizerEnabled,
-      finishSongBeforeStop: finishSongBeforeStop ?? this.finishSongBeforeStop,
-      sleepTimerFadeOut: sleepTimerFadeOut ?? this.sleepTimerFadeOut,
     );
   }
 }
@@ -267,8 +259,6 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
           playbackSpeed: 1.0,
           equalizerBands: [],
           equalizerEnabled: false,
-          finishSongBeforeStop: false,
-          sleepTimerFadeOut: true,
         ));
 
   final AndroidEqualizer _equalizer = AndroidEqualizer();
@@ -474,7 +464,9 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       emit(state.copyWith(isLoading: true)); // âœ… Start loading
       
       final audioQuery = OnAudioQuery();
-      if (await Permission.audio.request().isGranted) {
+      final hasPermission = await Permission.audio.request().isGranted;
+      
+      if (hasPermission) {
         final songs = await audioQuery.querySongs(
           sortType: SongSortType.TITLE,
           orderType: OrderType.ASC_OR_SMALLER,
@@ -490,14 +482,20 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         emit(state.copyWith(
           songs: filteredSongs, 
           allSongs: filteredSongs,
-          isLoading: false, // âœ… Finish loading
         ));
       
-        // âœ… Restore player state (last song, shuffle, loop)
-        await _restorePlayerState();
+        // âœ… Restore player state (last song, shuffle, loop) in background
+        // to avoid blocking the splash screen / startup flow.
+        _restorePlayerState(); 
+      } else {
+        debugPrint('[PlayerCubit] Audio permission denied.');
       }
-    } catch (e) {
+    } catch (e, stack) {
       debugPrint('Error loading songs: $e');
+      debugPrint('Stack: $stack');
+    } finally {
+      // âœ… ALWAYS mark as not loading, even on error or denial
+      emit(state.copyWith(isLoading: false));
     }
   }
 
@@ -608,8 +606,8 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         }
       }
 
-      // âœ… Handle Sleep Timer "Finish current song"
-      if (_sleepEndTime != null && DateTime.now().isAfter(_sleepEndTime!) && state.finishSongBeforeStop) {
+      // âœ… Handle Sleep Timer
+      if (_sleepEndTime != null && DateTime.now().isAfter(_sleepEndTime!)) {
         _stopFromSleepTimer();
         return; // Don't play the next song
       }
@@ -664,12 +662,6 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     await _loadSoftDeletedSongIds();
     await _loadHideMetadataSaveWarning();
     
-    // âœ… Restore state AFTER loading everything else
-    // We need songs to be loaded first, which happens in loadAllSongs called from UI or elsewhere.
-    // But init() is called early. We might need to hook into loadAllSongs or just wait.
-    // Actually, loadAllSongs is usually called by the UI. 
-    // We should probably call _restorePlayerState inside loadAllSongs after songs are loaded.
-    await _restorePlayerState();
     await _initEqualizer(); // âœ… Init Equalizer at startup
 
     await loadAllSongs();
@@ -1656,47 +1648,25 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
   // -----------------------------
   bool _isSleepTimerFadeStarted = false;
 
-  void startSleepTimer(Duration duration, {bool? finishSong, bool? fadeOut}) {
+  void startSleepTimer(Duration duration) {
     _sleepTimer?.cancel();
     _sleepEndTime = DateTime.now().add(duration);
     _isSleepTimerFadeStarted = false;
     
     final newState = state.copyWith(
       sleepTimerEndTime: _sleepEndTime,
-      finishSongBeforeStop: finishSong ?? state.finishSongBeforeStop,
-      sleepTimerFadeOut: fadeOut ?? state.sleepTimerFadeOut,
     );
     emit(newState);
     
-    // We use a periodic timer to check for fade out and completion
     _sleepTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       final now = DateTime.now();
       if (_sleepEndTime == null) {
         timer.cancel();
         return;
       }
-
-      final remaining = _sleepEndTime!.difference(now);
-
-      // Handle Fade Out (15s before end)
-      if (state.sleepTimerFadeOut && remaining.inSeconds <= 15 && remaining.inSeconds > 0) {
-        _isSleepTimerFadeStarted = true;
-        final volume = remaining.inMilliseconds / 15000.0;
-        player.setVolume(volume.clamp(0.0, 1.0));
-      }
-
+      
       if (now.isAfter(_sleepEndTime!)) {
-        if (state.finishSongBeforeStop) {
-          // Wait for song to finish - handled in currentIndexStream listener
-          // But we can also check if we are already at the very end
-           final pos = player.position;
-           final dur = player.duration;
-           if (dur != null && (dur - pos).inSeconds < 1) {
-             await _stopFromSleepTimer();
-           }
-        } else {
-          await _stopFromSleepTimer();
-        }
+        await _stopFromSleepTimer();
       }
     });
   }
@@ -1716,13 +1686,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     emit(state.copyWith(clearSleepTimer: true));
   }
 
-  void toggleSleepTimerFinishSong(bool value) {
-    emit(state.copyWith(finishSongBeforeStop: value));
-  }
 
-  void toggleSleepTimerFadeOut(bool value) {
-    emit(state.copyWith(sleepTimerFadeOut: value));
-  }
 
   // -----------------------------
   // Equalizer Controls
@@ -2946,10 +2910,6 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       await prefs.setBool(_keyEqEnabled, state.equalizerEnabled);
       await prefs.setStringList(_keyEqBands, state.equalizerBands.map((e) => e.toString()).toList());
       
-      // Save Timer Features
-      await prefs.setBool(_keyTimerFinishSong, state.finishSongBeforeStop);
-      await prefs.setBool(_keyTimerFadeOut, state.sleepTimerFadeOut);
-      
       // Save Last Song ID and Metadata for quick notification restore
       if (state.currentSongId != null) {
         await prefs.setInt(_keyLastSongId, state.currentSongId!);
@@ -3010,9 +2970,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         eqBands = eqBandsStr.map((e) => double.tryParse(e) ?? 0.0).toList();
       }
       
-      // Restore Timer
-      final timerFinish = prefs.getBool(_keyTimerFinishSong) ?? false;
-      final timerFade = prefs.getBool(_keyTimerFadeOut) ?? true;
+
       
       emit(state.copyWith(
         crossfadeDuration: crossfade,
@@ -3020,8 +2978,6 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         playbackSpeed: speed, // 1.0 = normal
         equalizerEnabled: eqEnabled,
         equalizerBands: eqBands,
-        finishSongBeforeStop: timerFinish,
-        sleepTimerFadeOut: timerFade,
       ));
       
       // Apply restored settings
@@ -3042,46 +2998,47 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       final lastSongId = prefs.getInt(_keyLastSongId);
       if (lastSongId != null) {
         final index = state.songs.indexWhere((s) => s.id == lastSongId);
-        if (index != -1) {
-          debugPrint('ðŸ”„ Restoring last played song: ${state.songs[index].title}');
-          
-          // âœ… Build sources with URI as MediaItem.id (consistent with _updateQueue)
-          final sources = <AudioSource>[];
-          for (final s in state.songs) {
-            if (s.uri != null && s.uri!.isNotEmpty) {
-              Uri? artUri;
-              final customPath = state.customArtworkPaths[s.id];
-              if (customPath != null && customPath.isNotEmpty) {
-                artUri = Uri.file(customPath);
-              } else if (_defaultCoverPath != null) {
-                artUri = Uri.file(_defaultCoverPath!);
-              }
-              
-              sources.add(AudioSource.uri(
-                Uri.parse(s.uri!),
-                tag: MediaItem(
-                  id: s.uri!, // âœ… Use URI as ID (consistent with _updateQueue)
-                  album: s.album ?? '',
-                  title: s.title,
-                  artist: s.artist ?? '',
-                  artUri: artUri,
-                  duration: Duration(milliseconds: s.duration ?? 0),
-                  extras: {'songId': s.id},
-                ),
-              ));
-            }
-          }
-          
-          if (sources.isEmpty) {
-            debugPrint('âŒ No valid sources for restore');
-            return;
-          }
+          if (index != -1) {
+            debugPrint('ðŸ”„ Restoring last played song: ${state.songs[index].title}');
+            
+            // âœ… INSTANT UPDATE: Emit immediately so the UI (MiniPlayer) shows the song
+            emit(state.copyWith(
+              currentIndex: index,
+              currentSongId: lastSongId,
+            ));
+            _pushWidgetUpdate();
 
-          // âœ… OPTIMIZATION: Emit state IMMEDIATELY for instant UI feedback
-          emit(state.copyWith(
-            currentIndex: index,
-            currentSongId: lastSongId,
-          ));
+            // âœ… Build sources in background
+            final sources = <AudioSource>[];
+            for (final s in state.songs) {
+              if (s.uri != null && s.uri!.isNotEmpty) {
+                Uri? artUri;
+                final customPath = state.customArtworkPaths[s.id];
+                if (customPath != null && customPath.isNotEmpty) {
+                  artUri = Uri.file(customPath);
+                } else if (_defaultCoverPath != null) {
+                  artUri = Uri.file(_defaultCoverPath!);
+                }
+                
+                sources.add(AudioSource.uri(
+                  Uri.parse(s.uri!),
+                  tag: MediaItem(
+                    id: s.uri!, // âœ… Use URI as ID (consistent with _updateQueue)
+                    album: s.album ?? '',
+                    title: s.title,
+                    artist: s.artist ?? '',
+                    artUri: artUri,
+                    duration: Duration(milliseconds: s.duration ?? 0),
+                    extras: {'songId': s.id},
+                  ),
+                ));
+              }
+            }
+            
+            if (sources.isEmpty) {
+              debugPrint('â Œ No valid sources for restore');
+              return;
+            }
           
           // Trigger artwork load in background
           Future.microtask(_refreshCurrentArtworkIfNeeded);
@@ -3091,6 +3048,10 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
             initialIndex: index,
             initialPosition: Duration.zero,
           );
+          
+          // âœ… FORCE UI UPDATE to ensure MiniPlayer shows up
+          _pushWidgetUpdate();
+          debugPrint('âœ… Last song restored and UI update pushed.');
           
           // Update AudioHandler with the current MediaItem
           if (_audioHandler != null && index < sources.length) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../player/player_cubit.dart';
 import 'package:music_box/generated/app_localizations.dart';
@@ -11,15 +11,16 @@ class EqualizerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(l10n.customEqualizer),
+        title: Text(l10n.customEqualizer, style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(PhosphorIconsRegular.caretLeft, color: Colors.white),
+          icon: Icon(PhosphorIconsRegular.caretLeft, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -28,14 +29,14 @@ class EqualizerScreen extends StatelessWidget {
           return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.all(20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       l10n.equalizerEnabled,
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
@@ -45,7 +46,7 @@ class EqualizerScreen extends StatelessWidget {
                       onChanged: (value) {
                         context.read<PlayerCubit>().toggleEqualizer(value);
                       },
-                      activeColor: Colors.orange,
+                      activeColor: theme.colorScheme.primary,
                     ),
                   ],
                 ),
@@ -77,10 +78,10 @@ class EqualizerScreen extends StatelessWidget {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               l10n.equalizerPresets,
-                              style: GoogleFonts.outfit(
-                                color: Colors.white70,
+                              style: TextStyle(
+                               color: theme.colorScheme.onSurfaceVariant,
                                 fontSize: 14,
-                                textStyle: const TextStyle(letterSpacing: 1.2),
+                                letterSpacing: 1.2,
                               ),
                             ),
                           ),
@@ -101,6 +102,7 @@ class EqualizerScreen extends StatelessWidget {
   }
 
   Widget _buildSlider(BuildContext context, PlayerStateModel state, int index) {
+    final theme = Theme.of(context);
     final gain = state.equalizerBands[index];
     // Labels frequencies (approximative for common 5-band EQ)
     final frequencies = ['60', '230', '910', '4k', '14k'];
@@ -116,9 +118,9 @@ class EqualizerScreen extends StatelessWidget {
                 trackHeight: 4,
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
                 overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
-                activeTrackColor: Colors.orange,
-                inactiveTrackColor: Colors.white10,
-                thumbColor: Colors.white,
+                activeTrackColor: theme.colorScheme.primary,
+                inactiveTrackColor: theme.colorScheme.outlineVariant.withValues(alpha: 0.2),
+                thumbColor: theme.colorScheme.primary,
               ),
               child: Slider(
                 value: gain,
@@ -134,13 +136,14 @@ class EqualizerScreen extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           label,
-          style: GoogleFonts.outfit(color: Colors.white54, fontSize: 12),
+          style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 12),
         ),
       ],
     );
   }
 
   Widget _buildPresets(BuildContext context) {
+    final theme = Theme.of(context);
     final presets = {
       'Flat': [0.0, 0.0, 0.0, 0.0, 0.0],
       'Bass Boost': [6.0, 3.0, 0.0, 0.0, 0.0],
@@ -162,8 +165,8 @@ class EqualizerScreen extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 5),
             child: ActionChip(
-              backgroundColor: Colors.white10,
-              label: Text(name, style: const TextStyle(color: Colors.white)),
+              backgroundColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              label: Text(name, style: TextStyle(color: theme.colorScheme.onSurface)),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               onPressed: () async {
                 final cubit = context.read<PlayerCubit>();

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
 import 'dart:io' as io;
 import 'package:flutter/material.dart';
 
@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 import 'package:music_box/generated/app_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 
-// Phase d'Ã©tat pour l'Ã©cran de scan
+
+// Phase d'état pour l'écran de scan
 enum ScanPhase { idle, scanning, done }
 
 class ScanMusicPage extends StatefulWidget {
@@ -66,17 +66,17 @@ class _ScanMusicPageState extends State<ScanMusicPage> with SingleTickerProvider
       //   uriType: UriType.EXTERNAL,
       //   ignoreCase: true,
       // );
-      // Applique les seuils choisis pour un aperÃ§u cohÃ©rent avec l'analyse.
+      // Applique les seuils choisis pour un aperçu cohérent avec l'analyse.
       // final filtered = songs.where((s) {
       //   final int d = s.duration ?? 0;
       //   final int sz = s.size;
       //   return d >= _minDurationMs && sz >= _minSizeBytes;
       // }).toList();
       // setState(() {
-      //   _lastMessage = 'BibliothÃ¨que mise Ã  jour (${filtered.length} titres)';
+      //   _lastMessage = 'Bibliothèque mise à jour (${filtered.length} titres)';
       // });
     } catch (e) {
-      // setState(() => _lastMessage = 'Erreur lors de la mise Ã  jour: $e');
+      // setState(() => _lastMessage = 'Erreur lors de la mise à jour: $e');
     } finally {
       setState(() => _busy = false);
     }
@@ -111,9 +111,9 @@ class _ScanMusicPageState extends State<ScanMusicPage> with SingleTickerProvider
         return d >= _minDurationMs && sz >= _minSizeBytes;
       }).length;
 
-      // Appel direct du canal natif du plugin pour la mÃ©thode 'scan'.
+      // Appel direct du canal natif du plugin pour la méthode 'scan'.
       final channel = MethodChannel('com.lucasjosino.on_audio_query');
-      // Racines courantes du stockage partagÃ© Android. On scanne toutes celles qui existent.
+      // Racines courantes du stockage partagé Android. On scanne toutes celles qui existent.
       final roots = <String>[
         '/storage/emulated/0',
         '/sdcard',
@@ -130,7 +130,7 @@ class _ScanMusicPageState extends State<ScanMusicPage> with SingleTickerProvider
       }
       await _refreshCount();
 
-      // Compte aprÃ¨s scan (avec filtres)
+      // Compte après scan (avec filtres)
       final afterSongs = await _audioQuery.querySongs(
         sortType: SongSortType.TITLE,
         orderType: OrderType.ASC_OR_SMALLER,
@@ -166,7 +166,7 @@ class _ScanMusicPageState extends State<ScanMusicPage> with SingleTickerProvider
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.scanMusic, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context)!.scanMusic, style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: AbsorbPointer(
         absorbing: _busy,
@@ -246,7 +246,7 @@ class _ScanMusicPageState extends State<ScanMusicPage> with SingleTickerProvider
             ),
             const SizedBox(height: 24),
 
-            // Texte d'Ã©tat
+            // Texte d'état
             if (_phase == ScanPhase.scanning)
               Center(
                 child: Text(

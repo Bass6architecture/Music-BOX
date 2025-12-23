@@ -8,7 +8,7 @@ import 'package:music_box/widgets/optimized_artwork.dart';
 
 import 'package:music_box/core/utils/music_data_processor.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 class AlbumsPage extends StatefulWidget {
   const AlbumsPage({super.key, this.embedded = false});
@@ -106,7 +106,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
                     titlePadding: const EdgeInsetsDirectional.only(start: 16, bottom: 16),
                     title: Text(
                       AppLocalizations.of(context)!.albums,
-                      style: GoogleFonts.outfit(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold),
                     ),
                     background: Container(
                       decoration: BoxDecoration(
@@ -230,7 +230,7 @@ class _AlbumCard extends StatelessWidget {
                       album.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                       ),
@@ -240,7 +240,7 @@ class _AlbumCard extends StatelessWidget {
                       '${album.artist} • ${AppLocalizations.of(context)!.songCount(album.count)}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         color: theme.colorScheme.onSurfaceVariant,
                         fontSize: 12,
                       ),

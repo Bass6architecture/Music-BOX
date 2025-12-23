@@ -1,4 +1,4 @@
-﻿import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
 
 import 'dart:async'; // Fix for Timer
 import 'dart:math' as math;
@@ -16,7 +16,7 @@ import '../../widgets/song_tile.dart';
 import '../song_actions_sheet.dart';
 
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 
 import '../../core/utils/music_data_processor.dart';
@@ -37,8 +37,10 @@ class _SongsScreenState extends State<SongsScreen>
   List<SongModel> _filteredSongs = [];
   bool _isLoading = true;
   bool _hasPermission = false;
-  bool _isRequestingPermission = false;  // âœ… EmpÃªcher les clics multiples
-  bool _isPermanentlyDenied = false;  // âœ… DÃ©tecter refus permanent
+  bool _isRequestingPermission = false;  // ✅ Empêcher les clics multiples
+  bool _isPermanentlyDenied = false;  // ✅ Détecter refus permanent
+
+  ThemeData get theme => Theme.of(context);
 
   _SortType _sortType = _SortType.title;
   bool _sortAscending = true;
@@ -117,7 +119,7 @@ class _SongsScreenState extends State<SongsScreen>
   }
 
   Future<void> _checkPermissionAndLoadSongs() async {
-    // âœ… EmpÃªcher les appels multiples
+    // ✅ Empêcher les appels multiples
     if (_isRequestingPermission) return;
     
     setState(() {
@@ -126,7 +128,7 @@ class _SongsScreenState extends State<SongsScreen>
     });
     
     try {
-      // âœ… Utiliser permission_handler au lieu de on_audio_query pour Ã©viter le crash
+      // ✅ Utiliser permission_handler au lieu de on_audio_query pour éviter le crash
       final status = await Permission.audio.status;
       if (!mounted) return;
       
@@ -139,7 +141,7 @@ class _SongsScreenState extends State<SongsScreen>
         return;
       }
 
-      // âœ… VÃ©rifier si refus permanent AVANT de demander
+      // ✅ Vérifier si refus permanent AVANT de demander
       if (status.isPermanentlyDenied) {
         if (mounted) {
           setState(() {
@@ -150,7 +152,7 @@ class _SongsScreenState extends State<SongsScreen>
         return;
       }
 
-      // âœ… Demander avec permission_handler
+      // ✅ Demander avec permission_handler
       final newStatus = await Permission.audio.request();
       if (!mounted) return;
       
@@ -192,12 +194,12 @@ class _SongsScreenState extends State<SongsScreen>
         ignoreCase: true,
       );
       
-      // âœ… Update raw songs first
+      // ✅ Update raw songs first
       setState(() {
         _songs = songs.where((song) => song.duration != null && song.duration! > 0).toList();
       });
       
-      // âœ… Await filter/sort to avoid "No songs" flash
+      // ✅ Await filter/sort to avoid "No songs" flash
       await _applyFilterAndSort();
       
       if (mounted) {
@@ -228,14 +230,14 @@ class _SongsScreenState extends State<SongsScreen>
       }
     }
 
-    // âœ… Run in background isolate
+    // ✅ Run in background isolate
     final filtered = await MusicDataProcessor.filterAndSortSongs(
       songs: _songs,
       query: query,
       sortTypeIndex: _SortType.values.indexOf(_sortType),
       ascending: _sortAscending,
       overrides: overrides,
-      hiddenFolders: cubit.state.hiddenFolders.toSet(), // âœ… Convert List to Set
+      hiddenFolders: cubit.state.hiddenFolders.toSet(), // ✅ Convert List to Set
       showHiddenFolders: cubit.state.showHiddenFolders,
     );
 
@@ -311,7 +313,7 @@ class _SongsScreenState extends State<SongsScreen>
 
     final playerCubit = context.watch<PlayerCubit>();
 
-    // Construire un contenu quel que soit l'Ã©tat, puis l'entourer d'un BlocListener
+    // Construire un contenu quel que soit l'état, puis l'entourer d'un BlocListener
     late final Widget content;
 
     if (!_hasPermission) {
@@ -355,15 +357,15 @@ class _SongsScreenState extends State<SongsScreen>
                                const SizedBox(width: 8),
                                Text(
                                  '${_selectedIds.length}',
-                                 style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold),
+                                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                                ),
                                const Spacer(),
                                TextButton.icon(
                                  onPressed: _selectAll,
                                  icon: PhosphorIcon(_selectedIds.length == _filteredSongs.length ? PhosphorIcons.minusSquare() : PhosphorIcons.checkSquare()),
                                  label: Text(
-                                   _selectedIds.length == _filteredSongs.length ? "DÃ©sÃ©lect. tout" : AppLocalizations.of(context)!.selectAll,
-                                   style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+                                   _selectedIds.length == _filteredSongs.length ? "Désélect. tout" : AppLocalizations.of(context)!.selectAll,
+                                   style: TextStyle(fontWeight: FontWeight.w600),
                                  ),
                                )
                             ],
@@ -376,7 +378,7 @@ class _SongsScreenState extends State<SongsScreen>
                          controller: _scrollController,
                          thumbVisibility: true,
                          interactive: true,
-                         thickness: 10, // Plus Ã©pais pour une meilleure prise en main
+                         thickness: 10, // Plus épais pour une meilleure prise en main
                          radius: const Radius.circular(8),
                        child: RefreshIndicator(
                          onRefresh: _loadSongs,
@@ -394,7 +396,7 @@ class _SongsScreenState extends State<SongsScreen>
                                      children: [
                                         FilterChip(
                                           avatar: PhosphorIcon(PhosphorIcons.shuffle(), size: 18),
-                                          label: Text(AppLocalizations.of(context)!.shuffle, style: GoogleFonts.outfit()),
+                                          label: Text(AppLocalizations.of(context)!.shuffle, style: TextStyle()),
                                           onSelected: (_) {
                                             if (_filteredSongs.isNotEmpty) {
                                               final idx = math.Random().nextInt(_filteredSongs.length);
@@ -409,7 +411,7 @@ class _SongsScreenState extends State<SongsScreen>
                                                avatar: PhosphorIcon(PhosphorIcons.sortAscending(), size: 18),
                                               label: Text(
                                                 '${_getSortLabel(_sortType)}${_getSortSuffix()}',
-                                                style: GoogleFonts.outfit(),
+                                                style: TextStyle(),
                                               ),
                                               onPressed: () {
                                                 if (controller.isOpen) {
@@ -423,7 +425,7 @@ class _SongsScreenState extends State<SongsScreen>
                                           menuChildren: _SortType.values.map((type) {
                                             return MenuItemButton(
                                                leadingIcon: PhosphorIcon(_getSortIcon(type), size: 20),
-                                              child: Text(_getSortLabel(type), style: GoogleFonts.outfit()),
+                                              child: Text(_getSortLabel(type), style: TextStyle()),
                                               onPressed: () => _sortSongs(type),
                                             );
                                           }).toList(),
@@ -434,7 +436,7 @@ class _SongsScreenState extends State<SongsScreen>
                                         // Song Count (Discret)
                                           Text(
                                             AppLocalizations.of(context)!.songCount(_filteredSongs.length),
-                                            style: GoogleFonts.outfit(
+                                            style: TextStyle(
                                               color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                                               fontSize: 12,
                                             ),
@@ -507,9 +509,9 @@ class _SongsScreenState extends State<SongsScreen>
           prev.hiddenFolders != curr.hiddenFolders ||
           prev.showHiddenFolders != curr.showHiddenFolders ||
           prev.deletedSongIds != curr.deletedSongIds ||
-          prev.metadataOverrides != curr.metadataOverrides, // âœ… Refresh list on metadata changes
+          prev.metadataOverrides != curr.metadataOverrides, // ✅ Refresh list on metadata changes
       listener: (context, state) {
-        // Re-appliquer le filtre/tri si la liste des dossiers masquÃ©s change
+        // Re-appliquer le filtre/tri si la liste des dossiers masqués change
         if (mounted) {
           setState(() {
             _applyFilterAndSort();
@@ -521,7 +523,6 @@ class _SongsScreenState extends State<SongsScreen>
   }
 
   Widget _buildPermissionRequest() {
-    final theme = Theme.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -531,14 +532,14 @@ class _SongsScreenState extends State<SongsScreen>
             PhosphorIcon(
               _isPermanentlyDenied ? PhosphorIcons.prohibit() : PhosphorIcons.folderSimpleStar(), // Use something related
               size: 80,
-              color: _isPermanentlyDenied ? theme.colorScheme.error : Colors.white,
+              color: _isPermanentlyDenied ? theme.colorScheme.error : theme.colorScheme.onSurface.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 24),
             Text(
               _isPermanentlyDenied 
                   ? AppLocalizations.of(context)!.permissionDenied
                   : AppLocalizations.of(context)!.permissionRequired,
-              style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -547,7 +548,7 @@ class _SongsScreenState extends State<SongsScreen>
                   ? AppLocalizations.of(context)!.permissionPermanentlyDenied
                   : AppLocalizations.of(context)!.storagePermissionRequired,
               textAlign: TextAlign.center,
-              style: GoogleFonts.outfit(fontSize: 16),
+              style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 32),
             if (_isPermanentlyDenied)
@@ -563,7 +564,7 @@ class _SongsScreenState extends State<SongsScreen>
                   }
                 },
                 icon: PhosphorIcon(PhosphorIcons.gear()),
-                label: Text(AppLocalizations.of(context)!.openSettings, style: GoogleFonts.outfit()),
+                label: Text(AppLocalizations.of(context)!.openSettings, style: TextStyle()),
               )
             else
               FilledButton.icon(
@@ -577,7 +578,7 @@ class _SongsScreenState extends State<SongsScreen>
                     : PhosphorIcon(PhosphorIcons.gear()),
                 label: Text(_isRequestingPermission 
                     ? AppLocalizations.of(context)!.loading 
-                    : AppLocalizations.of(context)!.grantPermission, style: GoogleFonts.outfit()),
+                    : AppLocalizations.of(context)!.grantPermission, style: TextStyle()),
               ),
           ],
         ),
@@ -595,17 +596,18 @@ class _SongsScreenState extends State<SongsScreen>
   Widget _buildEmptyState() {
     return Center(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           PhosphorIcon(
-            PhosphorIcons.musicNote(), // musicNoteSlash is missing, using musicNote
+            PhosphorIcons.musicNote(), 
             size: 80,
-            color: Colors.white24,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
           ),
           const SizedBox(height: 24),
           Text(
             AppLocalizations.of(context)!.noSongs,
-            style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           FilledButton.icon(
@@ -730,8 +732,8 @@ class _SongsScreenState extends State<SongsScreen>
                   final p = playlists[i];
                   return ListTile(
                     leading: PhosphorIcon(PhosphorIcons.playlist()),
-                    title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.outfit()),
-                    subtitle: Text(l10n.songCount(p.songIds.length), style: GoogleFonts.outfit()),
+                    title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle()),
+                    subtitle: Text(l10n.songCount(p.songIds.length), style: TextStyle()),
                     onTap: () {
                       for (final s in selectedSongs) {
                          cubit.addSongToUserPlaylist(p.id, s.id);
@@ -763,8 +765,8 @@ class _SongsScreenState extends State<SongsScreen>
           onSubmitted: (_) => Navigator.pop(context, controller.text),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit())),
-          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(AppLocalizations.of(context)!.confirm, style: GoogleFonts.outfit())),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle())),
+          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(AppLocalizations.of(context)!.confirm, style: TextStyle())),
         ],
       ),
     );
@@ -812,7 +814,7 @@ class _SongsScreenState extends State<SongsScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.deleteSong),
-        content: Text("Voulez-vous vraiment supprimer ${selectedSongs.length} chansons dÃ©finitivement ?"),
+        content: Text("Voulez-vous vraiment supprimer ${selectedSongs.length} chansons définitivement ?"),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
           FilledButton(
@@ -987,7 +989,7 @@ class _AlphabetScrollState extends State<_AlphabetScroll> {
                   return Expanded(
                     child: Center(
                       child: Text(
-                        'â€¢', // Dots instead of letters
+                        '•', // Dots instead of letters
                         style: TextStyle(
                           fontSize: 12, 
                           fontWeight: FontWeight.bold, 

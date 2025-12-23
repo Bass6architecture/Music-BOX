@@ -125,6 +125,10 @@ class RecommendationEngine {
 
   static List<SongModel> _getForgottenGems(RecommendationInputs inputs, {int limit = 10}) {
     if (inputs.allSongs.isEmpty) return [];
+    
+    // âœ… REQUÃŠTE UTILISATEUR: Ne pas afficher si l'app vient d'Ãªtre installÃ©e
+    // On vÃ©rifie si l'utilisateur a un minimum d'historique (ex: 5 chansons jouÃ©es)
+    if (inputs.playCounts.length < 5) return [];
 
     final now = DateTime.now().millisecondsSinceEpoch;
     final thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;

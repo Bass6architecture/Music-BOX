@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../core/theme/app_theme.dart';
 
@@ -95,7 +95,7 @@ class ModernListTile extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DefaultTextStyle(
-                    style: GoogleFonts.outfit(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: selected ? FontWeight.bold : FontWeight.w500,
                       color: selected ? theme.colorScheme.primary : theme.colorScheme.onSurface,
@@ -105,7 +105,7 @@ class ModernListTile extends StatelessWidget {
                   if (subtitle != null) ...[
                     const SizedBox(height: 4),
                     DefaultTextStyle(
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
                         color: theme.colorScheme.onSurfaceVariant,

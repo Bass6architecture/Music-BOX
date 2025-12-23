@@ -1,9 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_box/generated/app_localizations.dart';
 import '../player/player_cubit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import '../core/theme/app_theme.dart';
 import 'widgets/modern_widgets.dart';
 
@@ -55,7 +55,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
           // Header Title
           if (!widget.embedded)
             SliverAppBar(
-              title: Text(AppLocalizations.of(context)!.playlists, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+              title: Text(AppLocalizations.of(context)!.playlists, style: TextStyle(fontWeight: FontWeight.bold)),
               floating: true,
               snap: true,
               backgroundColor: Colors.transparent,
@@ -116,7 +116,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                 _SystemPlaylistCard(
                   title: AppLocalizations.of(context)!.mostPlayed,
                   icon: PhosphorIcons.chartLineUp(PhosphorIconsStyle.fill),
-                  color: Colors.orange,
+                  color: theme.colorScheme.primary,
                   count: displayMostPlayedCount,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
@@ -139,7 +139,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                 children: [
                   Text(
                     AppLocalizations.of(context)!.yourPlaylists,
-                    style: GoogleFonts.outfit(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
                       color: theme.colorScheme.onSurface,
@@ -172,7 +172,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                     const SizedBox(height: 16),
                     Text(
                       AppLocalizations.of(context)!.noPlaylists,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         color: theme.colorScheme.onSurfaceVariant,
                         fontSize: 16,
                       ),
@@ -234,7 +234,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                                   children: [
                                     PhosphorIcon(PhosphorIcons.pencilLine(), size: 20),
                                     const SizedBox(width: 12),
-                                    Text(AppLocalizations.of(context)!.renamePlaylist, style: GoogleFonts.outfit()),
+                                    Text(AppLocalizations.of(context)!.renamePlaylist, style: TextStyle()),
                                   ],
                                 ),
                               ),
@@ -244,7 +244,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                                   children: [
                                     PhosphorIcon(PhosphorIcons.trash(), size: 20),
                                     const SizedBox(width: 12),
-                                    Text(AppLocalizations.of(context)!.deletePlaylist, style: GoogleFonts.outfit()),
+                                    Text(AppLocalizations.of(context)!.deletePlaylist, style: TextStyle()),
                                   ],
                                 ),
                               ),
@@ -279,25 +279,25 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
     final name = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.createPlaylist, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context)!.createPlaylist, style: TextStyle(fontWeight: FontWeight.bold)),
         content: TextField(
           controller: controller,
           autofocus: true,
-          style: GoogleFonts.outfit(),
+          style: TextStyle(),
           decoration: InputDecoration(
             hintText: AppLocalizations.of(context)!.playlistNameHint,
-            hintStyle: GoogleFonts.outfit(),
+            hintStyle: TextStyle(),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit()),
+            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle()),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, controller.text),
-            child: Text(AppLocalizations.of(context)!.create, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            child: Text(AppLocalizations.of(context)!.create, style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -321,25 +321,25 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
     final newName = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.renamePlaylist, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context)!.renamePlaylist, style: TextStyle(fontWeight: FontWeight.bold)),
         content: TextField(
           controller: controller,
           autofocus: true,
-          style: GoogleFonts.outfit(),
+          style: TextStyle(),
           decoration: InputDecoration(
             hintText: AppLocalizations.of(context)!.playlistName,
-            hintStyle: GoogleFonts.outfit(),
+            hintStyle: TextStyle(),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit()),
+            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle()),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: Text(AppLocalizations.of(context)!.save, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            child: Text(AppLocalizations.of(context)!.save, style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -353,12 +353,12 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.deletePlaylist, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        content: Text(AppLocalizations.of(context)!.confirmDeletePlaylist, style: GoogleFonts.outfit()),
+        title: Text(AppLocalizations.of(context)!.deletePlaylist, style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(AppLocalizations.of(context)!.confirmDeletePlaylist, style: TextStyle()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit()),
+            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle()),
           ),
           FilledButton.tonal(
             onPressed: () => Navigator.pop(ctx, true),
@@ -366,7 +366,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
               backgroundColor: Theme.of(context).colorScheme.errorContainer,
               foregroundColor: Theme.of(context).colorScheme.onErrorContainer,
             ),
-            child: Text(AppLocalizations.of(context)!.delete, style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            child: Text(AppLocalizations.of(context)!.delete, style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -436,7 +436,7 @@ class _SystemPlaylistCard extends StatelessWidget {
                 ),
                 child: Text(
                   AppLocalizations.of(context)!.songCount(count),
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     color: theme.colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                     fontSize: 11,
@@ -451,7 +451,7 @@ class _SystemPlaylistCard extends StatelessWidget {
               right: 16,
               child: Text(
                 title,
-                style: GoogleFonts.outfit(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: theme.colorScheme.onSurface,
                   fontSize: 16,

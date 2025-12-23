@@ -504,7 +504,6 @@
   "searchOnInternet": "Search on Internet",
   "finishCurrentSong": "Finish current song",
   "sleepTimerFadeOut": "Final fade out (15s)",
-  "sleepTimerTask": "Sleep Timer",
   "customEqualizer": "Equalizer",
   "equalizerEnabled": "Enable Equalizer",
   "equalizerBands": "Frequency Bands",

@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'optimized_artwork.dart';
 import '../player/player_cubit.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import '../core/theme/app_theme.dart';
 
 /// Unified, customizable tile for displaying a song row across the app.
@@ -99,7 +99,7 @@ class SongTile extends StatelessWidget {
     
     // Slim text styles
     // Slim text styles
-    final titleStyle = GoogleFonts.outfit(
+    final titleStyle = TextStyle(
       color: isActive ? theme.colorScheme.primary : theme.colorScheme.onSurface,
       fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
       fontSize: 14,
@@ -109,7 +109,7 @@ class SongTile extends StatelessWidget {
         ? subtitle!.trim()
         : _defaultSubtitleFor(overrideSong);
         
-    final subStyle = GoogleFonts.outfit(
+    final subStyle = TextStyle(
       color: isActive ? theme.colorScheme.primary.withValues(alpha: 0.8) : theme.colorScheme.onSurfaceVariant,
       fontSize: 12,
     );
@@ -172,7 +172,7 @@ class SongTile extends StatelessWidget {
                     ),
                     child: Text(
                       '$index',
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: theme.textTheme.labelSmall?.fontSize,
                         color: theme.textTheme.labelSmall?.color,
                         fontWeight: theme.textTheme.labelSmall?.fontWeight,

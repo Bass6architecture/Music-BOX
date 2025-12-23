@@ -1149,9 +1149,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sleepTimerFadeOut => 'Final fade out (15s)';
 
   @override
-  String get sleepTimerTask => 'Sleep Timer';
-
-  @override
   String get customEqualizer => 'Equalizer';
 
   @override

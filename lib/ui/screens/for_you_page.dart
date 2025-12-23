@@ -1,4 +1,4 @@
-﻿import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
 
 
 import 'dart:math' as math;
@@ -11,7 +11,7 @@ import '../../player/player_cubit.dart';
 import '../../core/recommendation_engine.dart';
 import '../../widgets/optimized_artwork.dart';
 
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../widgets/modern_widgets.dart';
 import '../../core/theme/app_theme.dart';
@@ -31,6 +31,7 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
   List<SongModel> _freshArrivals = [];
   List<SongModel> _allTimeHits = []; 
   bool _isInit = false;
+  bool _isCalculating = false; // ✅ Flag to prevent concurrent runs
 
   @override
   bool get wantKeepAlive => true;
@@ -38,30 +39,40 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadRecommendations();
-    });
+    _loadRecommendations();
   }
 
   Future<void> _loadRecommendations() async {
-    if (!context.mounted) return;
+    if (!context.mounted || _isCalculating) return;
+    
     final cubit = context.read<PlayerCubit>();
     final state = cubit.state;
 
-    // If songs aren't loaded yet, don't proceed (let spinner show until songs arrive)
+    // If songs aren't loaded yet, return early but mark as init if not loading
     if (state.allSongs.isEmpty) {
       if (!state.isLoading) {
-        setState(() => _isInit = true);
+        if (mounted) setState(() => _isInit = true);
       }
-      debugPrint('[ForYouPage] Waiting for songs to load...');
       return;
     }
+
+    // Force _isInit to true if we have some songs to show something immediately
+    // Recommendations will load in the background
+    if (state.allSongs.isNotEmpty) {
+      if (_freshArrivals.isEmpty) {
+        // Fast path for Fresh Arrivals (just a simple sort)
+        final sorted = List<SongModel>.from(state.allSongs);
+        sorted.sort((a,b) => (b.dateAdded ?? 0).compareTo(a.dateAdded ?? 0));
+        _freshArrivals = sorted.take(15).toList();
+      }
+      if (mounted) setState(() => _isInit = true);
+    }
     
-    // print('[ForYouPage] Loading... Songs: ${state.allSongs.length}');
+    setState(() => _isCalculating = true);
     
     // Create input DTO
     final inputs = RecommendationInputs(
-      allSongs: state.allSongs,
+      allSongs: List.from(state.allSongs),
       playCounts: Map.from(state.playCounts),
       lastPlayed: Map.from(state.lastPlayed),
       favorites: List.from(state.favorites),
@@ -73,7 +84,7 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
       // Run calculation in background isolate
       final results = await RecommendationEngine.computeRecommendations(inputs);
 
-      if (context.mounted) {
+      if (mounted) {
         setState(() {
           _quickPlayMix = results.quickPlay;
           _forgottenGems = results.forgotten;
@@ -82,13 +93,20 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
           _freshArrivals = results.fresh;
           _allTimeHits = results.hits;
           _isInit = true;
-          // print('[ForYouPage] Loaded. Quick: ${_quickPlayMix.length}, Habits: ${_habits.length}, Fresh: ${_freshArrivals.length}');
+          _isCalculating = false;
         });
       }
     } catch (e) {
       debugPrint('[ForYouPage] Recommendations error: $e');
-      if (context.mounted) {
-        setState(() => _isInit = true); // Allow showing empty state instead of spinner
+      if (mounted) {
+        setState(() {
+          _isInit = true;
+          _isCalculating = false;
+        });
+      }
+    } finally {
+      if (mounted && _isCalculating) {
+         setState(() => _isCalculating = false);
       }
     }
   }
@@ -131,13 +149,13 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
                                     child: PhosphorIcon(
                                       PhosphorIcons.musicNote(),
                                       size: 48,
-                                      color: Colors.white,
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
                                     ),
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
                                     AppLocalizations.of(context)!.noSongs,
-                                    style: GoogleFonts.outfit(
+                                    style: TextStyle(
                                       color: Theme.of(context).colorScheme.onSurface,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -145,7 +163,7 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
                                   const SizedBox(height: 8),
                                   Text(
                                     AppLocalizations.of(context)!.addSongsToPlaylistDesc,
-                                    style: GoogleFonts.outfit(
+                                    style: TextStyle(
                                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                                     ),
                                   ),
@@ -286,7 +304,7 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
                        children: [
                          Text(
                            AppLocalizations.of(context)!.quickPlay,
-                           style: GoogleFonts.outfit(
+                           style: TextStyle(
                              color: Colors.white,
                              fontWeight: FontWeight.bold,
                              fontSize: 24,
@@ -295,7 +313,7 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
                          const SizedBox(height: 4),
                           Text(
                             '${_quickPlayMix.length} ${AppLocalizations.of(context)!.songs.toLowerCase()}',
-                            style: GoogleFonts.outfit(
+                            style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.7),
                               fontSize: 14,
                               ),
@@ -330,7 +348,7 @@ class _ForYouPageState extends State<ForYouPage> with AutomaticKeepAliveClientMi
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
       child: Text(
         title,
-        style: GoogleFonts.outfit(
+        style: TextStyle(
           fontWeight: FontWeight.bold,
           letterSpacing: 0.5,
           fontSize: 18,
@@ -479,7 +497,7 @@ class _DetailedSongCard extends StatelessWidget {
               isAlbum ? (song.album ?? 'Unknown') : song.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.outfit(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: isActive ? theme.colorScheme.primary : null,
                 fontSize: 14,
@@ -490,7 +508,7 @@ class _DetailedSongCard extends StatelessWidget {
               song.artist ?? 'Artist',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.outfit(
+              style: TextStyle(
                 color: isActive ? theme.colorScheme.primary.withValues(alpha: 0.8) : theme.colorScheme.onSurfaceVariant,
                 fontSize: 12,
               ),

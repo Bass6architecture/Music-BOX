@@ -1,4 +1,4 @@
-﻿import 'widgets/music_box_scaffold.dart';
+import 'widgets/music_box_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -15,7 +15,7 @@ import '../core/background/background_cubit.dart';
 import 'package:share_plus/share_plus.dart'; 
 import 'dart:math' as math;
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 
 class ArtistDetailPage extends StatefulWidget {
@@ -44,7 +44,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
 
   Future<List<SongModel>> _load() async {
     final cubit = context.read<PlayerCubit>();
-    // âœ… Optimization: Use cached songs
+    // ✅ Optimization: Use cached songs
     final allSongs = cubit.state.allSongs;
     
     // Filter from cached songs
@@ -114,7 +114,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
           return FadeTransition(opacity: animation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 300),
-        opaque: false, // âœ… Transparent
+        opaque: false, // ✅ Transparent
       ),
     );
   }
@@ -153,7 +153,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
           children: [
             ListTile(
               leading: PhosphorIcon(PhosphorIcons.plus()),
-              title: Text(l10n.createPlaylist, style: GoogleFonts.outfit()),
+              title: Text(l10n.createPlaylist, style: TextStyle()),
               onTap: () async {
                 Navigator.pop(ctx);
                 final name = await _promptForText(context, title: l10n.createPlaylist, hint: l10n.playlistNameHint);
@@ -178,8 +178,8 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
                   final p = playlists[i];
                   return ListTile(
                     leading: PhosphorIcon(PhosphorIcons.playlist()),
-                    title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.outfit()),
-                    subtitle: Text(l10n.songCount(p.songIds.length), style: GoogleFonts.outfit()),
+                    title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle()),
+                    subtitle: Text(l10n.songCount(p.songIds.length), style: TextStyle()),
                     onTap: () {
                       for (final s in selectedSongs) {
                          cubit.addSongToUserPlaylist(p.id, s.id);
@@ -211,7 +211,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
           onSubmitted: (_) => Navigator.pop(context, controller.text),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(AppLocalizations.of(context)!.confirm, style: GoogleFonts.outfit())),
+          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(AppLocalizations.of(context)!.confirm, style: TextStyle())),
         ],
       ),
     );
@@ -250,7 +250,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.deleteSong),
-        content: Text("Voulez-vous vraiment supprimer ${selectedSongs.length} chansons dÃ©finitivement ?"),
+        content: Text("Voulez-vous vraiment supprimer ${selectedSongs.length} chansons définitivement ?"),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
           FilledButton(
@@ -305,7 +305,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
                   
                   return CustomScrollView(
                     slivers: [
-                      // AppBar Ã©pinglÃ©e avec gradient
+                      // AppBar épinglée avec gradient
                       SliverAppBar(
                         expandedHeight: _isSelectionMode ? 0 : 200,
                         pinned: true,
@@ -320,12 +320,12 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
                                  onPressed: _exitSelectionMode,
                                ),
                                const SizedBox(width: 8),
-                               Text('${_selectedIds.length}', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold)),
+                               Text('${_selectedIds.length}', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                                const Spacer(),
                                TextButton.icon(
                                  onPressed: _selectAll,
                                  icon: PhosphorIcon(_selectedIds.length == songs.length ? PhosphorIcons.minusSquare() : PhosphorIcons.checkSquare()),
-                                 label: Text(_selectedIds.length == songs.length ? "DÃ©sÃ©lect. tout" : AppLocalizations.of(context)!.selectAll, style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
+                                 label: Text(_selectedIds.length == songs.length ? "Désélect. tout" : AppLocalizations.of(context)!.selectAll, style: TextStyle(fontWeight: FontWeight.w600)),
                                )
                             ],
                         ) : null,
@@ -339,7 +339,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
                             widget.artistName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.outfit(
+                            style: TextStyle(
                               color: theme.colorScheme.onSurface,
                               fontWeight: FontWeight.bold,
                             ),
@@ -378,7 +378,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
                     ),
                   ),
     
-                  // Info et boutons (MasquÃ©s)
+                  // Info et boutons (Masqués)
                   if (!_isSelectionMode)
                     SliverToBoxAdapter(
                       child: Padding(
@@ -402,7 +402,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
                             FilledButton.tonalIcon(
                               onPressed: songs.isEmpty ? null : () => _playAll(songs, shuffle: true),
                               icon: PhosphorIcon(PhosphorIcons.shuffle(), size: 20),
-                              label: Text(AppLocalizations.of(context)!.shuffleAll, style: GoogleFonts.outfit()),
+                              label: Text(AppLocalizations.of(context)!.shuffleAll, style: TextStyle()),
                               style: FilledButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 16,
@@ -435,7 +435,7 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
                            }
                           
                           final s = songs[index];
-                          final subtitle = [s.artist, s.album].where((e) => (e ?? '').isNotEmpty).join(' â€¢ ');
+                          final subtitle = [s.artist, s.album].where((e) => (e ?? '').isNotEmpty).join(' • ');
                           return SongTile(
                             song: s,
                             subtitle: subtitle,

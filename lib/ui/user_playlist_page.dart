@@ -15,7 +15,7 @@ import 'song_picker_page.dart';
 import 'now_playing_next_gen.dart';
 
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 
 
@@ -144,16 +144,16 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.renamePlaylist, style: GoogleFonts.outfit()),
+          title: Text(AppLocalizations.of(context)!.renamePlaylist, style: TextStyle()),
           content: TextField(
             controller: controller,
             autofocus: true,
-            style: GoogleFonts.outfit(),
-            decoration: InputDecoration(hintText: AppLocalizations.of(context)!.playlistName, hintStyle: GoogleFonts.outfit()),
+            style: TextStyle(),
+            decoration: InputDecoration(hintText: AppLocalizations.of(context)!.playlistName, hintStyle: TextStyle()),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit())),
-            FilledButton(onPressed: () => Navigator.pop(ctx, controller.text), child: Text(AppLocalizations.of(context)!.save, style: GoogleFonts.outfit())),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle())),
+            FilledButton(onPressed: () => Navigator.pop(ctx, controller.text), child: Text(AppLocalizations.of(context)!.save, style: TextStyle())),
           ],
         );
       },
@@ -170,11 +170,11 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.deletePlaylist, style: GoogleFonts.outfit()),
-        content: Text(AppLocalizations.of(context)!.confirmDeletePlaylist, style: GoogleFonts.outfit()),
+        title: Text(AppLocalizations.of(context)!.deletePlaylist, style: TextStyle()),
+        content: Text(AppLocalizations.of(context)!.confirmDeletePlaylist, style: TextStyle()),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit())),
-          FilledButton.tonal(onPressed: () => Navigator.pop(ctx, true), child: Text(AppLocalizations.of(context)!.delete, style: GoogleFonts.outfit())),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle())),
+          FilledButton.tonal(onPressed: () => Navigator.pop(ctx, true), child: Text(AppLocalizations.of(context)!.delete, style: TextStyle())),
         ],
       ),
     );
@@ -211,7 +211,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
           children: [
             ListTile(
               leading: PhosphorIcon(PhosphorIcons.plus()),
-              title: Text(l10n.createPlaylist, style: GoogleFonts.outfit()),
+              title: Text(l10n.createPlaylist, style: TextStyle()),
               onTap: () async {
                 Navigator.pop(ctx);
                 final name = await _promptForText(context, title: l10n.createPlaylist, hint: l10n.playlistNameHint);
@@ -236,8 +236,8 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
                   final p = playlists[i];
                   return ListTile(
                     leading: PhosphorIcon(PhosphorIcons.playlist()),
-                    title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.outfit()),
-                    subtitle: Text(l10n.songCount(p.songIds.length), style: GoogleFonts.outfit()),
+                    title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle()),
+                    subtitle: Text(l10n.songCount(p.songIds.length), style: TextStyle()),
                     onTap: () {
                       for (final s in selectedSongs) {
                          cubit.addSongToUserPlaylist(p.id, s.id);
@@ -261,7 +261,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
     return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(title, style: GoogleFonts.outfit()),
+        title: Text(title, style: TextStyle()),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -269,8 +269,8 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
           onSubmitted: (_) => Navigator.pop(context, controller.text),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit())),
-          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(AppLocalizations.of(context)!.confirm, style: GoogleFonts.outfit())),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle())),
+          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(AppLocalizations.of(context)!.confirm, style: TextStyle())),
         ],
       ),
     );
@@ -311,7 +311,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
       cubit.removeSongFromUserPlaylist(widget.playlistId, s.id);
     }
         if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.playlistSongRemoved, style: GoogleFonts.outfit()))); // Ensure this key exists or use generic
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.playlistSongRemoved, style: TextStyle()))); // Ensure this key exists or use generic
        _exitSelectionMode();
        _future = _load(); // Refresh list
        setState(() {});
@@ -373,12 +373,12 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
                                      onPressed: _exitSelectionMode,
                                    ),
                                    const SizedBox(width: 8),
-                                    Text('${_selectedIds.length}', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                                    Text('${_selectedIds.length}', style: TextStyle(fontWeight: FontWeight.bold)),
                                    const Spacer(),
                                    TextButton.icon(
                                      onPressed: _selectAll,
                                      icon: PhosphorIcon(_selectedIds.length == songs.length ? PhosphorIcons.minusCircle(PhosphorIconsStyle.fill) : PhosphorIcons.checkSquareOffset()),
-                                     label: Text(_selectedIds.length == songs.length ? "Désélect. tout" : l10n.selectAll, style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
+                                     label: Text(_selectedIds.length == songs.length ? "Désélect. tout" : l10n.selectAll, style: TextStyle(fontWeight: FontWeight.w600)),
                                    )
                                 ],
                             ) : null,
@@ -401,7 +401,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
                                 displayName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.outfit(
+                                style: TextStyle(
                                   color: theme.colorScheme.onSurface,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -461,7 +461,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
                                       const SizedBox(width: 6),
                                       Text(
                                         l10n.songCount(songs.length),
-                                        style: GoogleFonts.outfit(
+                                        style: TextStyle(
                                           color: theme.colorScheme.onSecondaryContainer,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 12,
@@ -478,7 +478,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
                                           await _playAndOpen(songs, 0);
                                         },
                                    icon: PhosphorIcon(PhosphorIcons.play(), size: 20),
-                                   label: Text(l10n.playAll, style: GoogleFonts.outfit()),
+                                   label: Text(l10n.playAll, style: TextStyle()),
                                  ),
                                 const SizedBox(width: 8),
                                  IconButton.filledTonal(
@@ -537,7 +537,7 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
                                   FilledButton.icon(
                                     onPressed: () => _addSongs(cubit),
                                     icon: PhosphorIcon(PhosphorIcons.plus()),
-                                    label: Text(l10n.addSongs, style: GoogleFonts.outfit()),
+                                    label: Text(l10n.addSongs, style: TextStyle()),
                                   ),
                                 ],
                               ),

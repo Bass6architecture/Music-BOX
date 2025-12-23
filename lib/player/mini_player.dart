@@ -1,4 +1,4 @@
-﻿import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
@@ -12,13 +12,13 @@ import '../ui/now_playing_next_gen.dart';
 import '../ui/song_actions_sheet.dart';
 import '../ui/widgets/bouncy_button.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import '../core/theme/app_theme.dart';
 
 class MiniPlayer extends StatefulWidget {
   const MiniPlayer({super.key, this.disableNavigation = false});
   
-  /// Si true, dÃ©sactive l'ouverture de la page now playing (pour Ã©viter les boucles)
+  /// Si true, désactive l'ouverture de la page now playing (pour éviter les boucles)
   final bool disableNavigation;
 
   @override
@@ -36,7 +36,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) => openNextGenNowPlaying(context),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          // âœ… Animation "Directe" (Zoom + Fade) sans effet de glissement
+          // ✅ Animation "Directe" (Zoom + Fade) sans effet de glissement
           // C'est plus rapide et ne donne pas l'impression de "suivre le doigt"
           const curve = Curves.easeOutCubic;
           final curvedAnimation = CurvedAnimation(parent: animation, curve: curve);
@@ -51,7 +51,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
         },
         transitionDuration: const Duration(milliseconds: 250),
         reverseTransitionDuration: const Duration(milliseconds: 200),
-        opaque: false, // âœ… Transparent pour voir l'Ã©cran derriÃ¨re lors du dismiss
+        opaque: false, // ✅ Transparent pour voir l'écran derrière lors du dismiss
       ),
     ).whenComplete(() {
       _presenting = false;
@@ -66,11 +66,11 @@ class _MiniPlayerState extends State<MiniPlayer> {
     final song = context.select((PlayerCubit c) => c.currentSong);
 
     if (song == null) {
-      // Rien en cours â€” pas de barre
+      // Rien en cours — pas de barre
       return const SizedBox.shrink();
     }
 
-    // Appliquer les overrides pour garantir des chaÃ®nes non nulles
+    // Appliquer les overrides pour garantir des chaînes non nulles
     final safeSong = cubit.applyOverrides(song);
     // Violet principal de l'app
     final acc = Theme.of(context).colorScheme.primary;
@@ -167,7 +167,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                   safeSong.title.isNotEmpty ? safeSong.title : 'Titre inconnu',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.outfit(
+                                  style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.bold,
                                     color: Theme.of(context).colorScheme.onSurface,
@@ -178,7 +178,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                   safeSong.artist?.isNotEmpty == true ? safeSong.artist! : 'Artiste inconnu',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.outfit(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w400,
                                     color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
@@ -187,7 +187,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                               ],
                             ),
                           ),
-                           // ContrÃ´les circulaires 48dp
+                           // Contrôles circulaires 48dp
                           _MiniIconButton(
                             icon: PhosphorIcons.skipBack(),
                             onPressed: () async { try { await player.seekToPrevious(); } catch (_) {} },

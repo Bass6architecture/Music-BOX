@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -28,6 +29,16 @@ import 'ui/screens/modern_music_widgets.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // âœ… GESTION DES ERREURS GLOBALES: EmpÃªche le crash si AdMob fail sans rÃ©seau
+  PlatformDispatcher.instance.onError = (error, stack) {
+    final errStr = error.toString().toLowerCase();
+    if (errStr.contains('socketexception')) {
+      debugPrint('[GlobalError] Capture d\'une erreur rÃ©seau (attendue hors-ligne): $error');
+      return true; // Erreur traitÃ©e, on ne crash pas l'app
+    }
+    return false; // Autres erreurs passÃ©es au framework
+  };
   
   // âœ… OPTIMISATION RAM: Augmenter le cache d'images pour une fluiditÃ© maximale
   // On utilise 500MB de RAM pour les images (vs 100MB par dÃ©faut)
@@ -193,8 +204,8 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
     // Limite de 10s pour le chargement comme demandÃ©
     final timeout = Future.delayed(const Duration(seconds: 10));
     
-    // Wait for songs to be loaded (or timeout)
-    final songsLoaded = _waitForSongs(cubit);
+    // Wait for songs to be loaded and state restored (or timeout)
+    final songsLoaded = _waitForInitialization(cubit);
     
     await Future.any([songsLoaded, timeout]);
     
@@ -236,23 +247,23 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
     }
   }
   
-  Future<void> _waitForSongs(PlayerCubit cubit) async {
-    // If already loaded, return immediately
-    if (cubit.state.allSongs.isNotEmpty) return;
+  Future<void> _waitForInitialization(PlayerCubit cubit) async {
+    // If not loading state, return immediately
+    if (!cubit.state.isLoading) return;
     
     // Otherwise wait for state change
     final completer = Completer<void>();
     late StreamSubscription sub;
     
     sub = cubit.stream.listen((state) {
-      if (state.allSongs.isNotEmpty && !completer.isCompleted) {
+      if (!state.isLoading && !completer.isCompleted) {
         completer.complete();
         sub.cancel();
       }
     });
     
     // Also check again in case it loaded between check and subscription
-    if (cubit.state.allSongs.isNotEmpty && !completer.isCompleted) {
+    if (!cubit.state.isLoading && !completer.isCompleted) {
       completer.complete();
       sub.cancel();
     }

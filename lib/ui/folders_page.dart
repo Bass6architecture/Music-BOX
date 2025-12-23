@@ -1,4 +1,4 @@
-﻿import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
 import 'dart:io' as io;
 import 'package:flutter/material.dart';
 
@@ -8,7 +8,7 @@ import 'package:music_box/generated/app_localizations.dart';
 import 'package:path/path.dart' as p;
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 
 import '../player/player_cubit.dart';
@@ -52,7 +52,7 @@ class _FoldersPageState extends State<FoldersPage> {
       );
       if (!mounted) return;
       final cubit = context.read<PlayerCubit>();
-      // Filtrer via PlayerCubit pour respecter les dossiers masquÃ©s existants
+      // Filtrer via PlayerCubit pour respecter les dossiers masqués existants
       final visibleSongs = cubit.filterSongs(allSongs.where((s) => s.uri != null).toList());
 
       final counts = <String, int>{};
@@ -82,7 +82,7 @@ class _FoldersPageState extends State<FoldersPage> {
     setState(() => _folderCounts.remove(folder));
 
     // Snackbar avec Annuler / OK
-    // âœ… SupprimÃ© : Plus de message SnackBar
+    // ✅ Supprimé : Plus de message SnackBar
     /*
     var canceled = false;
     final snack = SnackBar(
@@ -91,7 +91,7 @@ class _FoldersPageState extends State<FoldersPage> {
         label: AppLocalizations.of(context)!.cancel,
         onPressed: () async {
           canceled = true;
-          // Fermer immÃ©diatement toute snackbar visible (y compris la suivante si dÃ©jÃ  affichÃ©e)
+          // Fermer immédiatement toute snackbar visible (y compris la suivante si déjà affichée)
           if (mounted) {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
           }
@@ -104,10 +104,10 @@ class _FoldersPageState extends State<FoldersPage> {
     );
     ScaffoldMessenger.of(context).showSnackBar(snack);
 
-    // AprÃ¨s la premiÃ¨re snackbar, proposer "Voir dossiers masquÃ©s"
+    // Après la première snackbar, proposer "Voir dossiers masqués"
     await Future.delayed(const Duration(milliseconds: 1500));
     if (!mounted) return;
-    // Ne pas montrer si l'utilisateur a annulÃ©, ou si le dossier n'est plus masquÃ©
+    // Ne pas montrer si l'utilisateur a annulé, ou si le dossier n'est plus masqué
     final stillHidden = context.read<PlayerCubit>().state.hiddenFolders.contains(folder);
     if (!canceled && stillHidden) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -139,7 +139,7 @@ class _FoldersPageState extends State<FoldersPage> {
             children: [
               ListTile(
                 leading: PhosphorIcon(PhosphorIcons.eyeSlash()),
-                title: Text(AppLocalizations.of(context)!.hideFolder, style: GoogleFonts.outfit()),
+                title: Text(AppLocalizations.of(context)!.hideFolder, style: TextStyle()),
                 onTap: () async {
                   Navigator.pop(ctx);
                   await _hideFolder(folder);
@@ -147,7 +147,7 @@ class _FoldersPageState extends State<FoldersPage> {
               ),
               ListTile(
                 leading: PhosphorIcon(PhosphorIcons.info()),
-                title: Text(AppLocalizations.of(context)!.folderProperties, style: GoogleFonts.outfit()),
+                title: Text(AppLocalizations.of(context)!.folderProperties, style: TextStyle()),
                 onTap: () {
                   Navigator.pop(ctx);
                   showDialog<void>(
@@ -172,7 +172,7 @@ class _FoldersPageState extends State<FoldersPage> {
               ),
               ListTile(
                 leading: PhosphorIcon(PhosphorIcons.folderOpen()),
-                title: Text(AppLocalizations.of(context)!.openLocation, style: GoogleFonts.outfit()),
+                title: Text(AppLocalizations.of(context)!.openLocation, style: TextStyle()),
                 onTap: () async {
                   Navigator.pop(ctx);
                   if (!io.Platform.isAndroid) {
@@ -184,16 +184,16 @@ class _FoldersPageState extends State<FoldersPage> {
                     return;
                   }
                   
-                  debugPrint('ðŸ“‚ Ouverture du dossier: $folder');
+                  debugPrint('📂 Ouverture du dossier: $folder');
                   
                   // Essayer d'ouvrir dans l'explorateur
                   bool intentLaunched = false;
                   
-                  // MÃ©thode 1: Construire l'URI Documents correctement
+                  // Méthode 1: Construire l'URI Documents correctement
                   try {
                     // Encoder le chemin correctement pour Documents UI
                     String documentPath = folder.replaceFirst('/storage/emulated/0/', '');
-                    // URL encoder le chemin pour Ã©viter les problÃ¨mes avec les caractÃ¨res spÃ©ciaux
+                    // URL encoder le chemin pour éviter les problèmes avec les caractères spéciaux
                     documentPath = Uri.encodeComponent(documentPath);
                     
                     final intent = AndroidIntent(
@@ -204,11 +204,11 @@ class _FoldersPageState extends State<FoldersPage> {
                     );
                     await intent.launch();
                     intentLaunched = true;
-                    debugPrint('âœ… Dossier ouvert avec Documents UI');
+                    debugPrint('✅ Dossier ouvert avec Documents UI');
                   } catch (e1) {
-                    debugPrint('âŒ MÃ©thode 1 (Documents) Ã©chouÃ©e: $e1');
+                    debugPrint('❌ Méthode 1 (Documents) échouée: $e1');
                     
-                    // MÃ©thode 2: Ouvrir le gestionnaire de fichiers gÃ©nÃ©rique
+                    // Méthode 2: Ouvrir le gestionnaire de fichiers générique
                     try {
                       final intent = AndroidIntent(
                         action: 'android.intent.action.VIEW',
@@ -217,13 +217,13 @@ class _FoldersPageState extends State<FoldersPage> {
                       );
                       await intent.launch();
                       intentLaunched = true;
-                      debugPrint('âœ… Gestionnaire de fichiers ouvert');
+                      debugPrint('✅ Gestionnaire de fichiers ouvert');
                     } catch (e2) {
-                      debugPrint('âŒ MÃ©thode 2 (gestionnaire) Ã©chouÃ©e: $e2');
+                      debugPrint('❌ Méthode 2 (gestionnaire) échouée: $e2');
                     }
                   }
                   
-                  // Si aucun intent n'a marchÃ©, afficher le chemin
+                  // Si aucun intent n'a marché, afficher le chemin
                   if (!intentLaunched) {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -314,7 +314,7 @@ class _FoldersPageState extends State<FoldersPage> {
                         titlePadding: const EdgeInsetsDirectional.only(start: 16, bottom: 16),
                         title: Text(
                           AppLocalizations.of(context)!.folders,
-                          style: GoogleFonts.outfit(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 24),
+                          style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 24),
                         ),
                         background: Container(
                           decoration: BoxDecoration(
@@ -330,7 +330,7 @@ class _FoldersPageState extends State<FoldersPage> {
                         ),
                       ),
                     ),
-                  // âœ… Barre visible vers dossiers masquÃ©s (toujours affichÃ©e)
+                  // ✅ Barre visible vers dossiers masqués (toujours affichée)
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -359,7 +359,7 @@ class _FoldersPageState extends State<FoldersPage> {
                               Expanded(
                                 child: Text(
                                   AppLocalizations.of(context)!.hiddenFolders,
-                                  style: GoogleFonts.outfit(
+                                  style: TextStyle(
                                     color: theme.colorScheme.onSurfaceVariant,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -479,7 +479,7 @@ class _FolderTile extends StatelessWidget {
                     children: [
                       Text(
                         name,
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -489,7 +489,7 @@ class _FolderTile extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         AppLocalizations.of(context)!.songCount(count),
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(
                           color: theme.colorScheme.onSurfaceVariant,
                           fontSize: 12,
                         ),

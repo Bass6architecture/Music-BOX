@@ -6,7 +6,7 @@ import 'package:music_box/player/player_cubit.dart';
 import 'package:music_box/ui/artist_detail_page.dart';
 import 'package:music_box/widgets/optimized_artwork.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 class ArtistsPage extends StatefulWidget {
   const ArtistsPage({super.key, this.embedded = false});
@@ -85,7 +85,7 @@ class _ArtistsPageState extends State<ArtistsPage> {
                 const SizedBox(height: 16),
                 Text(
                   AppLocalizations.of(context)!.noArtists,
-                  style: GoogleFonts.outfit(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -114,7 +114,7 @@ class _ArtistsPageState extends State<ArtistsPage> {
                     titlePadding: const EdgeInsetsDirectional.only(start: 16, bottom: 16),
                     title: Text(
                       AppLocalizations.of(context)!.artists,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         color: theme.colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                       ),
@@ -266,7 +266,7 @@ class _ArtistCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                         color: theme.colorScheme.onSurface,
@@ -278,7 +278,7 @@ class _ArtistCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         color: theme.colorScheme.onSurfaceVariant,
                         fontSize: 12,
                       ),

@@ -1,4 +1,4 @@
-﻿import 'widgets/music_box_scaffold.dart';
+import 'widgets/music_box_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -15,7 +15,7 @@ import '../widgets/song_actions.dart';
 import 'package:share_plus/share_plus.dart'; 
 import 'dart:math' as math;
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 
 class FolderSongsPage extends StatefulWidget {
@@ -151,7 +151,7 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
           children: [
             ListTile(
               leading: PhosphorIcon(PhosphorIcons.plus()),
-              title: Text(l10n.createPlaylist, style: GoogleFonts.outfit()),
+              title: Text(l10n.createPlaylist, style: TextStyle()),
               onTap: () async {
                 Navigator.pop(ctx);
                 final name = await _promptForText(context, title: l10n.createPlaylist, hint: l10n.playlistNameHint);
@@ -176,8 +176,8 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
                   final p = playlists[i];
                   return ListTile(
                     leading: PhosphorIcon(PhosphorIcons.playlist()),
-                    title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.outfit()),
-                    subtitle: Text(l10n.songCount(p.songIds.length), style: GoogleFonts.outfit()),
+                    title: Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle()),
+                    subtitle: Text(l10n.songCount(p.songIds.length), style: TextStyle()),
                     onTap: () {
                       for (final s in selectedSongs) {
                          cubit.addSongToUserPlaylist(p.id, s.id);
@@ -201,17 +201,17 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
     return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(title, style: GoogleFonts.outfit()),
+        title: Text(title, style: TextStyle()),
         content: TextField(
           controller: controller,
           autofocus: true,
-          style: GoogleFonts.outfit(),
-          decoration: InputDecoration(hintText: hint, hintStyle: GoogleFonts.outfit()),
+          style: TextStyle(),
+          decoration: InputDecoration(hintText: hint, hintStyle: TextStyle()),
           onSubmitted: (_) => Navigator.pop(context, controller.text),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.cancel, style: GoogleFonts.outfit())),
-          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(AppLocalizations.of(context)!.confirm, style: GoogleFonts.outfit())),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle())),
+          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(AppLocalizations.of(context)!.confirm, style: TextStyle())),
         ],
       ),
     );
@@ -249,14 +249,14 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.deleteSong, style: GoogleFonts.outfit()),
-        content: Text("Voulez-vous vraiment supprimer ${selectedSongs.length} chansons dÃ©finitivement ?", style: GoogleFonts.outfit()),
+        title: Text(l10n.deleteSong, style: TextStyle()),
+        content: Text("Voulez-vous vraiment supprimer ${selectedSongs.length} chansons définitivement ?", style: TextStyle()),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel, style: GoogleFonts.outfit())),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel, style: TextStyle())),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.delete, style: GoogleFonts.outfit()),
+            child: Text(l10n.delete, style: TextStyle()),
           ),
         ],
       ),
@@ -318,12 +318,12 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
                                       onPressed: _exitSelectionMode,
                                     ),
                                    const SizedBox(width: 8),
-                                   Text('${_selectedIds.length}', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold)),
+                                   Text('${_selectedIds.length}', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                                    const Spacer(),
                                    TextButton.icon(
                                      onPressed: _selectAll,
                                      icon: PhosphorIcon(_selectedIds.length == songs.length ? PhosphorIcons.minusSquare() : PhosphorIcons.checkSquare()),
-                                     label: Text(_selectedIds.length == songs.length ? "DÃ©sÃ©lect. tout" : AppLocalizations.of(context)!.selectAll, style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
+                                     label: Text(_selectedIds.length == songs.length ? "Désélect. tout" : AppLocalizations.of(context)!.selectAll, style: TextStyle(fontWeight: FontWeight.w600)),
                                    )
                                 ],
                             ) : null,
@@ -333,7 +333,7 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
                                 widget.folderName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.outfit(
+                                style: TextStyle(
                                   color: theme.colorScheme.onSurface,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -386,7 +386,7 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
                                     const SizedBox(width: 6),
                                     Text(
                                       AppLocalizations.of(context)!.songCount(songs.length),
-                                      style: GoogleFonts.outfit(
+                                      style: TextStyle(
                                         color: theme.colorScheme.onSurfaceVariant,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -395,7 +395,7 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
                                     FilledButton.tonalIcon(
                                       onPressed: songs.isEmpty ? null : () => _playAll(songs, shuffle: true),
                                       icon: PhosphorIcon(PhosphorIcons.shuffle(), size: 20),
-                                      label: Text(AppLocalizations.of(context)!.shuffleAll, style: GoogleFonts.outfit(fontWeight: FontWeight.w600)),
+                                      label: Text(AppLocalizations.of(context)!.shuffleAll, style: TextStyle(fontWeight: FontWeight.w600)),
                                       style: FilledButton.styleFrom(
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 16,
@@ -414,7 +414,7 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
                               child: Center(
                                 child: Text(
                                   AppLocalizations.of(context)!.noSongs,
-                                  style: GoogleFonts.outfit(),
+                                  style: TextStyle(),
                                 ),
                               ),
                             )
@@ -427,7 +427,7 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
                                    }
                                   
                                   final s = songs[index];
-                                  final subtitle = [s.artist, s.album].where((e) => (e ?? '').isNotEmpty).join(' â€¢ ');
+                                  final subtitle = [s.artist, s.album].where((e) => (e ?? '').isNotEmpty).join(' • ');
                                   
                                   return SongTile(
                                     song: s,
@@ -524,7 +524,7 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
              const SizedBox(height: 4),
              Text(
                label,
-               style: GoogleFonts.outfit(
+               style: TextStyle(
                  color: color,
                  fontSize: 10,
                ),
