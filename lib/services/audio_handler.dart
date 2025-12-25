@@ -15,10 +15,11 @@ class MusicBoxAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandl
   bool _isLiked = false;
 
   MusicBoxAudioHandler(this._player) {
-    debugPrint('ðŸŽµ AudioHandler crÃ©Ã© !');
+    debugPrint('🎵 AudioHandler créé !');
     
-    // Restaurer l'Ã©tat depuis le stockage (pour affichage immÃ©diat en arriÃ¨re-plan)
-    _restoreLastState();
+    // ✅ SUPPRIMÉ: _restoreLastState() - PlayerCubit gère la restauration
+    // Cela évite les blocages et conflits au démarrage
+
 
     // Ã‰couter TOUTES les mises Ã  jour pour diffuser l'Ã©tat
     _player.playbackEventStream.listen(_broadcastState);

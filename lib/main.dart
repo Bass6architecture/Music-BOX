@@ -5,8 +5,6 @@ import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:on_audio_query/on_audio_query.dart';
-import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 
@@ -123,7 +121,7 @@ class MusicBoxApp extends StatelessWidget {
   }
 }
 
-/// Fast initial route - skips splash and goes directly to HomeScreen or PermissionWrapper
+/// Fast initial route - goes directly to HomeScreen or PermissionWrapper
 class _InitialRoute extends StatefulWidget {
   const _InitialRoute();
 
@@ -131,46 +129,21 @@ class _InitialRoute extends StatefulWidget {
   State<_InitialRoute> createState() => _InitialRouteState();
 }
 
-class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
+class _InitialRouteState extends State<_InitialRoute> {
   bool _hasNavigated = false;
-
 
   @override
   void initState() {
     super.initState();
     
-    // Pulse animation for dots
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    )..repeat();
-    
-    // Fade in animation
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 400),
-      vsync: this,
-    );
-    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
-    _fadeController.forward();
-    
-    
-    // Initialiser AdMob ici seulement (quand UI visible) pour Ã©viter crash background
+    // Initialiser AdMob ici seulement (quand UI visible) pour éviter crash background
     AdService().initialize();
     
     // Connect ArtworkPreloader to OptimizedArtwork cache
     ArtworkPreloader.setCache(OptimizedArtwork.artworkCache);
 
+    // Check permissions and navigate immediately
     _checkAndNavigate();
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    _fadeController.dispose();
-    super.dispose();
   }
 
   Future<void> _checkAndNavigate() async {
@@ -189,86 +162,8 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
       return;
     }
     
-    // Wait for songs to load and pre-cache artwork
-    await _waitAndPreload();
-    
-    // Navigate to home
+    // ✅ Go directly to HomeScreen - songs load in background
     _navigateTo(const HomeScreen());
-  }
-  
-  Future<void> _waitAndPreload() async {
-    final cubit = context.read<PlayerCubit>();
-    final audioQuery = OnAudioQuery();
-    
-    // Set timeout to prevent infinite splash
-    // Limite de 10s pour le chargement comme demandÃ©
-    final timeout = Future.delayed(const Duration(seconds: 10));
-    
-    // Wait for songs to be loaded and state restored (or timeout)
-    final songsLoaded = _waitForInitialization(cubit);
-    
-    await Future.any([songsLoaded, timeout]);
-    
-    if (!mounted || _hasNavigated) return;
-    
-    // Status update (optional logging)
-    debugPrint('[Splash] Chargement des pochettes...');
-    
-    // Get all unique IDs for pre-caching
-    try {
-      final songs = cubit.state.allSongs;
-      final songIds = songs.map((s) => s.id).toList();
-      
-      // Query albums and artists
-      final albums = await audioQuery.queryAlbums();
-      final artists = await audioQuery.queryArtists();
-      
-      final albumIds = albums.map((a) => a.id).toList();
-      final artistIds = artists.map((a) => a.id).toList();
-      
-      debugPrint('[Splash] Pre-caching: ${songIds.length} songs, ${albumIds.length} albums, ${artistIds.length} artists');
-      
-      // Pre-cache all artwork with mini timeout
-      final preloadFuture = ArtworkPreloader.preloadAll(
-        songIds: songIds,
-        albumIds: albumIds,
-        artistIds: artistIds,
-        sizePx: 300,
-      );
-      
-      // Give it max 8 more seconds for artwork (total ~10s splash max)
-      await Future.any([
-        preloadFuture,
-        Future.delayed(const Duration(seconds: 8)),
-      ]);
-      
-    } catch (e) {
-      debugPrint('[Splash] Pre-cache error: $e');
-    }
-  }
-  
-  Future<void> _waitForInitialization(PlayerCubit cubit) async {
-    // If not loading state, return immediately
-    if (!cubit.state.isLoading) return;
-    
-    // Otherwise wait for state change
-    final completer = Completer<void>();
-    late StreamSubscription sub;
-    
-    sub = cubit.stream.listen((state) {
-      if (!state.isLoading && !completer.isCompleted) {
-        completer.complete();
-        sub.cancel();
-      }
-    });
-    
-    // Also check again in case it loaded between check and subscription
-    if (!cubit.state.isLoading && !completer.isCompleted) {
-      completer.complete();
-      sub.cancel();
-    }
-    
-    await completer.future;
   }
   
   void _navigateTo(Widget page) {
@@ -278,7 +173,7 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         pageBuilder: (context, animation, _) => page,
-        transitionDuration: const Duration(milliseconds: 300),
+        transitionDuration: const Duration(milliseconds: 200),
         transitionsBuilder: (context, animation, _, child) {
           return FadeTransition(opacity: animation, child: child);
         },
@@ -288,66 +183,12 @@ class _InitialRouteState extends State<_InitialRoute> with TickerProviderStateMi
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
+    // Simple loading indicator while checking permissions
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // App Logo
-              Image.asset(
-                'assets/app_icon.png',
-                width: 100,
-                height: 100,
-              ),
-              const SizedBox(height: 32),
-              // Pulsating dots loader
-              AnimatedBuilder(
-                animation: _pulseController,
-                builder: (context, child) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(3, (index) {
-                      final delay = index * 0.2;
-                      final value = ((_pulseController.value + delay) % 1.0);
-                      final scale = 0.5 + (0.5 * _bounce(value));
-                      final opacity = 0.4 + (0.6 * _bounce(value));
-                      
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Transform.scale(
-                          scale: scale,
-                          child: Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primary.withValues(alpha: opacity),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: const Center(
+        child: CircularProgressIndicator(),
       ),
     );
   }
-  
-  // Smooth bounce curve
-  double _bounce(double t) {
-    return (1 - (2 * t - 1).abs());
-  }
 }
-
-
-
-

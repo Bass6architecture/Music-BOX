@@ -473,20 +473,24 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
           uriType: UriType.EXTERNAL,
           ignoreCase: true,
         );
-        final validSongs = songs.where((s) => s.duration != null && s.duration! > 0).toList();
+        final validSongs = songs.where((s) => 
+          s.duration != null && 
+          s.duration! > 0 &&
+          s.uri != null &&
+          s.uri!.isNotEmpty
+        ).toList();
         
         // âœ… Filter out hidden folders
         final filteredSongs = filterSongs(validSongs);
         
-        // âœ… Populate both songs (queue) and allSongs (library)
+        // âœ… Populate songs (sans restaurer la derniÃ¨re chanson pour Ã©viter les sauts)
         emit(state.copyWith(
           songs: filteredSongs, 
           allSongs: filteredSongs,
         ));
       
-        // âœ… Restore player state (last song, shuffle, loop) in background
-        // to avoid blocking the splash screen / startup flow.
-        _restorePlayerState(); 
+        // âœ… Restore other player settings (shuffle, loop, etc.)
+        await _restorePlayerState(); 
       } else {
         debugPrint('[PlayerCubit] Audio permission denied.');
       }
@@ -735,40 +739,9 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
       }
     });
 
-    // âœ… CRITICAL FIX: Listen to track changes from notification buttons
-    // This ensures artwork, liked state, and progress bar are updated when user
-    // presses Next/Previous in the notification
-    player.currentIndexStream.listen((index) async {
-      if (index == null) return;
-      
-      // âœ… Skip if we just changed the track from within the app (prevents visual jump)
-      if (_ignoreIndexChangesUntil != null && DateTime.now().isBefore(_ignoreIndexChangesUntil!)) {
-        debugPrint('ðŸŽµ Ignoring index change (from app, not notification)');
-        return;
-      }
-      
-      // Only update if the index actually changed
-      if (state.currentIndex != index && index < state.songs.length) {
-        final newSong = state.songs[index];
-        debugPrint('ðŸŽµ Track changed from notification: ${newSong.title}');
-        
-        // Update state
-        emit(state.copyWith(currentIndex: index, currentSongId: newSong.id));
-        
-        // âœ… Immediately refresh notification with proper artwork and liked state
-        if (_audioHandler != null) {
-          // Refresh artwork in background (will call setMediaItemWithLikedState when ready)
-          Future.microtask(() async {
-            await _refreshCurrentArtworkIfNeeded();
-            _debounceWidgetUpdate();
-          });
-        }
-        
-        // Update stats
-        _savePlayerState();
-        Future.microtask(_persistPlayStats);
-      }
-    });
+    // ✅ Le premier listener currentIndexStream (ligne ~576) gère déjà les changements d'index
+    // y compris ceux depuis la notification. Pas besoin d'un second listener.
+
 
     // Push an initial widget update so title/artist/artwork are shown even before playback resumes
     await _pushWidgetUpdate();
@@ -2992,87 +2965,13 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         debugPrint('Error applying restored audio settings: $e');
       }
       
-      // Restore Last Song
-      if (player.playing || state.songs.isEmpty) return;
+      // ✅ NE PAS restaurer la dernière chanson - cela causait des conflits
+      // avec la sélection utilisateur. Le MiniPlayer s'affichera quand 
+      // l'utilisateur sélectionnera une chanson.
+      debugPrint('🎵 [Restore] Settings restored. Last song restoration disabled to avoid conflicts.');
       
-      final lastSongId = prefs.getInt(_keyLastSongId);
-      if (lastSongId != null) {
-        final index = state.songs.indexWhere((s) => s.id == lastSongId);
-          if (index != -1) {
-            debugPrint('ðŸ”„ Restoring last played song: ${state.songs[index].title}');
-            
-            // âœ… INSTANT UPDATE: Emit immediately so the UI (MiniPlayer) shows the song
-            emit(state.copyWith(
-              currentIndex: index,
-              currentSongId: lastSongId,
-            ));
-            _pushWidgetUpdate();
-
-            // âœ… Build sources in background
-            final sources = <AudioSource>[];
-            for (final s in state.songs) {
-              if (s.uri != null && s.uri!.isNotEmpty) {
-                Uri? artUri;
-                final customPath = state.customArtworkPaths[s.id];
-                if (customPath != null && customPath.isNotEmpty) {
-                  artUri = Uri.file(customPath);
-                } else if (_defaultCoverPath != null) {
-                  artUri = Uri.file(_defaultCoverPath!);
-                }
-                
-                sources.add(AudioSource.uri(
-                  Uri.parse(s.uri!),
-                  tag: MediaItem(
-                    id: s.uri!, // âœ… Use URI as ID (consistent with _updateQueue)
-                    album: s.album ?? '',
-                    title: s.title,
-                    artist: s.artist ?? '',
-                    artUri: artUri,
-                    duration: Duration(milliseconds: s.duration ?? 0),
-                    extras: {'songId': s.id},
-                  ),
-                ));
-              }
-            }
-            
-            if (sources.isEmpty) {
-              debugPrint('â Œ No valid sources for restore');
-              return;
-            }
-          
-          // Trigger artwork load in background
-          Future.microtask(_refreshCurrentArtworkIfNeeded);
-
-          await player.setAudioSources(
-            sources,
-            initialIndex: index,
-            initialPosition: Duration.zero,
-          );
-          
-          // âœ… FORCE UI UPDATE to ensure MiniPlayer shows up
-          _pushWidgetUpdate();
-          debugPrint('âœ… Last song restored and UI update pushed.');
-          
-          // Update AudioHandler with the current MediaItem
-          if (_audioHandler != null && index < sources.length) {
-            final currentItem = (sources[index] as UriAudioSource).tag as MediaItem;
-            final isLiked = state.favorites.contains(lastSongId);
-            _audioHandler!.setMediaItemWithLikedState(currentItem, isLiked);
-            
-            // Also set the full queue for notification
-            final mediaItems = sources
-                .where((s) => s is UriAudioSource && s.tag is MediaItem)
-                .map((s) => (s as UriAudioSource).tag as MediaItem)
-                .toList();
-            _audioHandler!.setQueueItems(mediaItems);
-          }
-          
-          // Ensure we don't auto-play
-          if (player.playing) await player.pause();
-        }
-      }
     } catch (e) {
-      debugPrint('âŒ Error restoring player state: $e');
+      debugPrint('❌ Error restoring player state: $e');
     }
   }
 

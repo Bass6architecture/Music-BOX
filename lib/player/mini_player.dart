@@ -75,7 +75,6 @@ class _MiniPlayerState extends State<MiniPlayer> {
     // Violet principal de l'app
     final acc = Theme.of(context).colorScheme.primary;
 
-
     return Material(
       color: Colors.transparent,
       elevation: 0,

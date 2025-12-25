@@ -17,7 +17,6 @@ import '../search_page.dart';
 
 import '../folders_page.dart';
 import 'songs_screen.dart';
-import 'for_you_page.dart';
 import '../widgets/music_box_scaffold.dart';
 import '../background_selection_page.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -76,12 +75,6 @@ class HomeScreenState extends State<HomeScreen>
     final l10n = AppLocalizations.of(context)!;
     return [
       _NavigationItem(
-        icon: PhosphorIcons.sparkle(),
-        selectedIcon: PhosphorIcons.sparkle(PhosphorIconsStyle.fill),
-        label: l10n.forYou,
-        page: const ForYouPage(),
-      ),
-      _NavigationItem(
         icon: PhosphorIcons.musicNotes(),
         selectedIcon: PhosphorIcons.musicNotes(PhosphorIconsStyle.fill),
         label: l10n.songs,
@@ -135,8 +128,9 @@ class HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final playerCubit = context.watch<PlayerCubit>();
-    final hasCurrentSong = playerCubit.currentSong != null;
+    final playerCubit = context.read<PlayerCubit>();
+    // ✅ Utiliser context.select pour que hasCurrentSong se mette à jour quand currentSong change
+    final hasCurrentSong = context.select((PlayerCubit c) => c.currentSong) != null;
     final navigationItems = _getNavigationItems(context);
 
     // If selection mode is active, we hide everything around the main content
