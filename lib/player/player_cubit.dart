@@ -461,7 +461,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
 
   Future<void> loadAllSongs() async {
     try {
-      emit(state.copyWith(isLoading: true)); // âœ… Start loading
+      emit(state.copyWith(isLoading: true)); // ✅ Start loading
       
       final audioQuery = OnAudioQuery();
       final hasPermission = await Permission.audio.request().isGranted;
@@ -480,16 +480,39 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
           s.uri!.isNotEmpty
         ).toList();
         
-        // âœ… Filter out hidden folders
+        // ✅ Filter out hidden folders
         final filteredSongs = filterSongs(validSongs);
         
-        // âœ… Populate songs (sans restaurer la derniÃ¨re chanson pour Ã©viter les sauts)
+        // ✅ LIRE la dernière chanson AVANT d'émettre
+        int? lastIndex;
+        int? lastSongId;
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          lastSongId = prefs.getInt(_keyLastSongId);
+          debugPrint('🎵 [LoadAllSongs] Read lastSongId from prefs: $lastSongId');
+          if (lastSongId != null && filteredSongs.isNotEmpty) {
+            lastIndex = filteredSongs.indexWhere((s) => s.id == lastSongId);
+            debugPrint('🎵 [LoadAllSongs] Found at index: $lastIndex');
+            if (lastIndex == -1) {
+              lastIndex = null;
+              lastSongId = null;
+            }
+          }
+        } catch (e) {
+          debugPrint('🎵 [LoadAllSongs] Error reading lastSongId: $e');
+        }
+        
+        debugPrint('🎵 [LoadAllSongs] Emitting state with currentIndex=$lastIndex, currentSongId=$lastSongId');
+        
+        // ✅ UN SEUL emit atomique avec songs + lastSong
         emit(state.copyWith(
           songs: filteredSongs, 
           allSongs: filteredSongs,
+          currentIndex: lastIndex,
+          currentSongId: lastSongId,
         ));
       
-        // âœ… Restore other player settings (shuffle, loop, etc.)
+        // ✅ Restore player settings (shuffle, loop, etc.)
         await _restorePlayerState(); 
       } else {
         debugPrint('[PlayerCubit] Audio permission denied.');
@@ -2943,12 +2966,10 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         eqBands = eqBandsStr.map((e) => double.tryParse(e) ?? 0.0).toList();
       }
       
-
-      
       emit(state.copyWith(
         crossfadeDuration: crossfade,
         gaplessEnabled: gapless,
-        playbackSpeed: speed, // 1.0 = normal
+        playbackSpeed: speed,
         equalizerEnabled: eqEnabled,
         equalizerBands: eqBands,
       ));
@@ -2965,10 +2986,8 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         debugPrint('Error applying restored audio settings: $e');
       }
       
-      // ✅ NE PAS restaurer la dernière chanson - cela causait des conflits
-      // avec la sélection utilisateur. Le MiniPlayer s'affichera quand 
-      // l'utilisateur sélectionnera une chanson.
-      debugPrint('🎵 [Restore] Settings restored. Last song restoration disabled to avoid conflicts.');
+      // ✅ NE PAS restaurer la dernière chanson - cause des conflits visuels
+      debugPrint('🎵 [Restore] Player settings restored (no last song restoration).');
       
     } catch (e) {
       debugPrint('❌ Error restoring player state: $e');
