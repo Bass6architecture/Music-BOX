@@ -461,7 +461,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
 
   Future<void> loadAllSongs() async {
     try {
-      emit(state.copyWith(isLoading: true)); // ✅ Start loading
+      emit(state.copyWith(isLoading: true));
       
       final audioQuery = OnAudioQuery();
       final hasPermission = await Permission.audio.request().isGranted;
@@ -473,6 +473,7 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
           uriType: UriType.EXTERNAL,
           ignoreCase: true,
         );
+        
         final validSongs = songs.where((s) => 
           s.duration != null && 
           s.duration! > 0 &&
@@ -483,48 +484,46 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
         // ✅ Filter out hidden folders
         final filteredSongs = filterSongs(validSongs);
         
-        // ✅ LIRE la dernière chanson AVANT d'émettre
+        // ✅ Restaurer la dernière chanson
         int? lastIndex;
         int? lastSongId;
         try {
           final prefs = await SharedPreferences.getInstance();
           lastSongId = prefs.getInt(_keyLastSongId);
-          debugPrint('🎵 [LoadAllSongs] Read lastSongId from prefs: $lastSongId');
           if (lastSongId != null && filteredSongs.isNotEmpty) {
             lastIndex = filteredSongs.indexWhere((s) => s.id == lastSongId);
-            debugPrint('🎵 [LoadAllSongs] Found at index: $lastIndex');
             if (lastIndex == -1) {
               lastIndex = null;
               lastSongId = null;
             }
           }
         } catch (e) {
-          debugPrint('🎵 [LoadAllSongs] Error reading lastSongId: $e');
+          debugPrint('[LoadAllSongs] Error reading lastSongId: $e');
         }
         
-        debugPrint('🎵 [LoadAllSongs] Emitting state with currentIndex=$lastIndex, currentSongId=$lastSongId');
-        
-        // ✅ UN SEUL emit atomique avec songs + lastSong
+        // ✅ UN SEUL emit atomique avec songs + lastSong + isLoading=false
         emit(state.copyWith(
           songs: filteredSongs, 
           allSongs: filteredSongs,
           currentIndex: lastIndex,
           currentSongId: lastSongId,
+          isLoading: false,
         ));
       
         // ✅ Restore player settings (shuffle, loop, etc.)
         await _restorePlayerState(); 
       } else {
         debugPrint('[PlayerCubit] Audio permission denied.');
+        emit(state.copyWith(isLoading: false));
       }
     } catch (e, stack) {
       debugPrint('Error loading songs: $e');
       debugPrint('Stack: $stack');
-    } finally {
-      // âœ… ALWAYS mark as not loading, even on error or denial
       emit(state.copyWith(isLoading: false));
     }
   }
+
+
 
   Future<void> init() async {
     final session = await AudioSession.instance;
@@ -689,9 +688,13 @@ class PlayerCubit extends Cubit<PlayerStateModel> {
     await _loadSoftDeletedSongIds();
     await _loadHideMetadataSaveWarning();
     
-    await _initEqualizer(); // âœ… Init Equalizer at startup
-
+    // ✅ Charger les chansons EN PREMIER (avant l'égaliseur qui peut bloquer)
     await loadAllSongs();
+
+    // ✅ Initialiser l'égaliseur en arrière-plan (ne pas bloquer)
+    _initEqualizer().catchError((e) {
+      debugPrint('[Init] Equalizer init failed: $e');
+    });
 
     // Listen for native widget control actions
     _nativeChannel.setMethodCallHandler((call) async {

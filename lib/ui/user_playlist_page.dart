@@ -61,6 +61,12 @@ class _UserPlaylistPageState extends State<UserPlaylistPage> {
 
   Future<List<SongModel>> _load() async {
     final cubit = context.read<PlayerCubit>();
+    
+    // ✅ Attendre que les chansons soient chargées
+    while (cubit.state.isLoading) {
+      await cubit.stream.first;
+    }
+    
     // ✅ Optimization: Use cached songs from Cubit instead of querying again
     final allSongs = cubit.state.allSongs;
     

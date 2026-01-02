@@ -41,6 +41,12 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> with AutomaticK
 
   Future<List<SongModel>> _load() async {
     final cubit = context.read<PlayerCubit>();
+    
+    // ✅ Attendre que les chansons soient chargées
+    while (cubit.state.isLoading) {
+      await cubit.stream.first;
+    }
+    
     final lastMap = cubit.state.lastPlayed;
     if (lastMap.isEmpty) return <SongModel>[];
 

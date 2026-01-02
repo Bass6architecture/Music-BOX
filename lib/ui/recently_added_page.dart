@@ -40,6 +40,12 @@ class _RecentlyAddedPageState extends State<RecentlyAddedPage> with AutomaticKee
   Future<List<SongModel>> _load() async {
     // ✅ Optimization: Use cached songs from Cubit
     final cubit = context.read<PlayerCubit>();
+    
+    // ✅ Attendre que les chansons soient chargées
+    while (cubit.state.isLoading) {
+      await cubit.stream.first;
+    }
+    
     final allSongs = cubit.state.allSongs;
     
     // Filtrer les fichiers avec des URIs valides

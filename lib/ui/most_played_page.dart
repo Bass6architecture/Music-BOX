@@ -39,6 +39,12 @@ class _MostPlayedPageState extends State<MostPlayedPage> with AutomaticKeepAlive
 
   Future<List<SongModel>> _load() async {
     final cubit = context.read<PlayerCubit>();
+    
+    // ✅ Attendre que les chansons soient chargées
+    while (cubit.state.isLoading) {
+      await cubit.stream.first;
+    }
+    
     final counts = cubit.state.playCounts;
     if (counts.isEmpty) return <SongModel>[];
 

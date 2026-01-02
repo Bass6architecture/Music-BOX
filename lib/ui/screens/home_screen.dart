@@ -16,6 +16,7 @@ import '../search_page.dart';
 // import '../now_playing_page.dart'; // replaced by immersive sheet
 
 import '../folders_page.dart';
+import '../for_you_page.dart';
 import 'songs_screen.dart';
 import '../widgets/music_box_scaffold.dart';
 import '../background_selection_page.dart';
@@ -74,6 +75,12 @@ class HomeScreenState extends State<HomeScreen>
   List<_NavigationItem> _getNavigationItems(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return [
+      _NavigationItem(
+        icon: PhosphorIcons.sparkle(),
+        selectedIcon: PhosphorIcons.sparkle(PhosphorIconsStyle.fill),
+        label: 'For You',
+        page: const ForYouPage(),
+      ),
       _NavigationItem(
         icon: PhosphorIcons.musicNotes(),
         selectedIcon: PhosphorIcons.musicNotes(PhosphorIconsStyle.fill),

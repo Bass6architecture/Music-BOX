@@ -40,6 +40,12 @@ class _FavoriteSongsPageState extends State<FavoriteSongsPage> {
 
   Future<List<SongModel>> _load() async {
     final cubit = context.read<PlayerCubit>();
+    
+    // ✅ Attendre que les chansons soient chargées
+    while (cubit.state.isLoading) {
+      await cubit.stream.first;
+    }
+    
     final favIds = cubit.state.favorites;
     final allSongs = cubit.state.allSongs;
     

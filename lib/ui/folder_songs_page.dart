@@ -43,6 +43,12 @@ class _FolderSongsPageState extends State<FolderSongsPage> {
 
   Future<List<SongModel>> _load() async {
     final cubit = context.read<PlayerCubit>();
+    
+    // ✅ Attendre que les chansons soient chargées
+    while (cubit.state.isLoading) {
+      await cubit.stream.first;
+    }
+    
     final allSongs = cubit.state.allSongs;
     
     final fromFolder = allSongs.where((s) {

@@ -12,6 +12,7 @@ import 'generated/app_localizations.dart';
 
 
 import 'ui/screens/home_screen.dart';
+import 'ui/screens/splash_screen.dart';
 import 'widgets/permission_wrapper.dart';
 import 'widgets/optimized_artwork.dart';
 import 'player/player_cubit.dart';
@@ -109,7 +110,7 @@ class MusicBoxApp extends StatelessWidget {
                     routes: {
                       '/modern': (context) => const ModernMusicWidgets(),
                     },
-                    home: const _InitialRoute(),
+                    home: const SplashScreen(),
                   );
                 },
               );

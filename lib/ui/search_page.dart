@@ -57,7 +57,12 @@ class _SearchPageState extends State<SearchPage> {
       final cubit = context.read<PlayerCubit>();
       List<SongModel> songs;
       
-      // âœ… Optimization: Use cached songs if available
+      // ✅ Attendre que les chansons soient chargées
+      while (cubit.state.isLoading) {
+        await cubit.stream.first;
+      }
+      
+      // ✅ Optimization: Use cached songs if available
       if (cubit.state.allSongs.isNotEmpty) {
         songs = cubit.state.allSongs;
       } else {

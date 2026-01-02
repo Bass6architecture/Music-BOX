@@ -11,7 +11,7 @@ class AppConstants {
   static const Duration shortAnimation = Duration(milliseconds: 200);
   static const Duration mediumAnimation = Duration(milliseconds: 400);
   static const Duration longAnimation = Duration(milliseconds: 600);
-  static const Duration splashDuration = Duration(milliseconds: 1500);
+  static const Duration splashDuration = Duration(milliseconds: 6000);
   
   // Layout
   static const double miniPlayerHeight = 72.0;

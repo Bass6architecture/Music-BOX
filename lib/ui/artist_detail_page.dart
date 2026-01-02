@@ -44,6 +44,12 @@ class _ArtistDetailPageState extends State<ArtistDetailPage> {
 
   Future<List<SongModel>> _load() async {
     final cubit = context.read<PlayerCubit>();
+    
+    // ✅ Attendre que les chansons soient chargées
+    while (cubit.state.isLoading) {
+      await cubit.stream.first;
+    }
+    
     // ✅ Optimization: Use cached songs
     final allSongs = cubit.state.allSongs;
     

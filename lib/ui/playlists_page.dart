@@ -31,9 +31,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
     final playlists = cubit.state.userPlaylists;
 
     final allSongs = cubit.state.allSongs;
-    debugPrint('PlaylistsPage build: allSongs=${allSongs.length}, hiddenFolders=${cubit.state.hiddenFolders}');
     final visibleSongs = cubit.filterSongs(allSongs);
-    debugPrint('PlaylistsPage build: visibleSongs=${visibleSongs.length}');
     final visibleSongIds = visibleSongs.map((s) => s.id).toSet();
       
       final favoritesCount = visibleSongs.where((s) => cubit.state.favorites.contains(s.id)).length;
