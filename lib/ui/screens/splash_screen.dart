@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../../core/constants/app_constants.dart';
 import '../../services/battery_optimization_service.dart';
 import '../../services/artwork_preloader.dart';
 import '../../widgets/permission_wrapper.dart';
@@ -53,10 +52,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _startLoading() async {
-    // Demander l'optimisation batterie au premier lancement
     BatteryOptimizationService.requestIfNeeded();
-    
-    // ✅ Connecter le cache artwork
     ArtworkPreloader.setCache(OptimizedArtwork.artworkCache);
     
     // Check permissions
@@ -66,9 +62,8 @@ class _SplashScreenState extends State<SplashScreen>
     
     final hasAudio = audio.isGranted || storage.isGranted;
     final hasNotif = notification.isGranted;
-    final allGranted = hasAudio && hasNotif;
     
-    if (!allGranted) {
+    if (!hasAudio || !hasNotif) {
       await Future.delayed(const Duration(seconds: 2));
       if (!context.mounted) return;
       _navigateTo(const PermissionWrapper());
@@ -78,59 +73,45 @@ class _SplashScreenState extends State<SplashScreen>
     // ✅ Attendre que les chansons soient chargées
     final cubit = context.read<PlayerCubit>();
     
-    // Boucle while robuste pour attendre le chargement
     while (cubit.state.isLoading || cubit.state.allSongs.isEmpty) {
       if (!mounted) return;
       await Future.delayed(const Duration(milliseconds: 100));
-      
-      // Timeout après 20 secondes
-      if (DateTime.now().difference(_startTime).inSeconds > 20) {
-        debugPrint('[SplashScreen] Timeout waiting for songs');
+      if (DateTime.now().difference(_startTime).inSeconds > 25) {
         break;
       }
     }
     
     if (!mounted) return;
     
-    // ✅ Précharger les pochettes des chansons visibles
+    // ✅ Précharger TOUTES les pochettes (pas de limite)
     final songs = cubit.state.allSongs;
     if (songs.isNotEmpty) {
-      debugPrint('[SplashScreen] Preloading ${songs.length} songs artwork...');
+      debugPrint('[SplashScreen] Preloading ALL ${songs.length} songs...');
       
-      // Récupérer les IDs pour le préchargement
-      final songIds = songs.take(30).map((s) => s.id).toList();
-      
-      // Albums uniques
+      final songIds = songs.map((s) => s.id).toList();
       final albumIds = songs
           .where((s) => s.albumId != null)
           .map((s) => s.albumId!)
           .toSet()
-          .take(15)
           .toList();
-      
-      // Artistes uniques
       final artistIds = songs
           .where((s) => s.artistId != null)
           .map((s) => s.artistId!)
           .toSet()
-          .take(10)
           .toList();
       
-      // Précharger les pochettes
-      await ArtworkPreloader.preloadVisible(
+      // Précharger TOUT
+      await ArtworkPreloader.preloadAll(
         songIds: songIds,
         albumIds: albumIds,
         artistIds: artistIds,
-        maxSongs: 30,
-        maxAlbums: 15,
-        maxArtists: 10,
         sizePx: 300,
       );
       
-      debugPrint('[SplashScreen] Artwork preloading complete');
+      debugPrint('[SplashScreen] ALL artwork preloaded!');
     }
     
-    // ✅ Durée minimale du splash (3 secondes)
+    // Durée minimale 3 secondes
     final elapsed = DateTime.now().difference(_startTime);
     if (elapsed < const Duration(seconds: 3)) {
       await Future.delayed(const Duration(seconds: 3) - elapsed);
@@ -146,10 +127,7 @@ class _SplashScreenState extends State<SplashScreen>
         pageBuilder: (context, animation, secondaryAnimation) => page,
         transitionDuration: const Duration(milliseconds: 500),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
+          return FadeTransition(opacity: animation, child: child);
         },
       ),
     );

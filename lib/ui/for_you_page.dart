@@ -21,6 +21,9 @@ class _ForYouPageState extends State<ForYouPage> {
   List<SongModel> _quickPlaySongs = [];
   final _random = Random();
   
+  // Seuil pour considérer l'utilisateur comme "régulier"
+  static const int _minListensForHistory = 5;
+  
   @override
   void initState() {
     super.initState();
@@ -41,10 +44,15 @@ class _ForYouPageState extends State<ForYouPage> {
   
   void _playQuickPlay() {
     if (_quickPlaySongs.isEmpty) return;
-    
     final cubit = context.read<PlayerCubit>();
     HapticFeedback.mediumImpact();
     cubit.setQueueAndPlay(_quickPlaySongs, 0);
+  }
+  
+  /// Vérifie si l'utilisateur a un historique suffisant (≥5 écoutes)
+  bool _hasListeningHistory(PlayerStateModel state) {
+    final totalListens = state.playCounts.values.fold(0, (a, b) => a + b);
+    return totalListens >= _minListensForHistory;
   }
 
   @override
@@ -70,12 +78,7 @@ class _ForYouPageState extends State<ForYouPage> {
                   color: theme.colorScheme.primary.withValues(alpha: 0.5),
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  l10n.noSongs,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                ),
+                Text(l10n.noSongs),
               ],
             ),
           );
@@ -85,41 +88,45 @@ class _ForYouPageState extends State<ForYouPage> {
           WidgetsBinding.instance.addPostFrameCallback((_) => _refreshQuickPlay());
         }
         
+        final hasHistory = _hasListeningHistory(state);
+        
         return RefreshIndicator(
-          onRefresh: () async {
-            _refreshQuickPlay();
-          },
+          onRefresh: () async => _refreshQuickPlay(),
           child: CustomScrollView(
             slivers: [
-              // Quick Play Header
+              // Quick Play Header (toujours visible)
               SliverToBoxAdapter(
                 child: _buildQuickPlayHeader(context, l10n),
               ),
               
-              // Recently Played - Pochettes RONDES
-              if (state.lastPlayed.isNotEmpty) ...[
-                _buildSectionHeader(context, l10n.recentlyPlayed, PhosphorIcons.clockCounterClockwise()),
-                _buildCircularSongList(context, _getRecentlyPlayed(state, allSongs)),
+              if (hasHistory) ...[
+                // ✅ UTILISATEUR RÉGULIER (≥5 écoutes)
+                
+                // Recently Played
+                if (state.lastPlayed.isNotEmpty) ...[
+                  _buildSectionHeader(context, l10n.recentlyPlayed, PhosphorIcons.clockCounterClockwise()),
+                  _buildSongList(context, _getRecentlyPlayed(state, allSongs)),
+                ],
+                
+                // Most Played
+                if (state.playCounts.isNotEmpty) ...[
+                  _buildSectionHeader(context, l10n.mostPlayed, PhosphorIcons.chartBar()),
+                  _buildSongList(context, _getMostPlayed(state, allSongs)),
+                ],
+              ] else ...[
+                // ✅ NOUVEL UTILISATEUR (<5 écoutes)
+                
+                // Découvrir (chansons aléatoires)
+                _buildSectionHeader(context, l10n.discover, PhosphorIcons.compass()),
+                _buildSongList(context, _getDiscoverSongs(allSongs)),
               ],
               
-              // Most Played - Pochettes CARRÉES avec badge
-              if (state.playCounts.isNotEmpty) ...[
-                _buildSectionHeader(context, l10n.mostPlayed, PhosphorIcons.chartBar()),
-                _buildSquareSongListWithBadge(context, _getMostPlayed(state, allSongs), state),
-              ],
-              
-              // Recently Added - Pochettes CARRÉES normales
+              // Recently Added (toujours visible)
               _buildSectionHeader(context, l10n.recentlyAdded, PhosphorIcons.sparkle()),
-              _buildSquareSongList(context, _getRecentlyAdded(allSongs)),
+              _buildSongList(context, _getRecentlyAdded(allSongs)),
               
-              // Discover - Pochettes CARRÉES avec overlay gradient
-              _buildSectionHeader(context, l10n.discover, PhosphorIcons.compass()),
-              _buildDiscoverSongList(context, _getDiscoverSongs(state, allSongs)),
-              
-              // Bottom padding for mini player
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 100),
-              ),
+              // Bottom padding
+              const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
           ),
         );
@@ -132,38 +139,46 @@ class _ForYouPageState extends State<ForYouPage> {
     final displaySong = _quickPlaySongs.isNotEmpty ? _quickPlaySongs.first : null;
     
     return Container(
-      height: 200,
+      height: 180,
       margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(alpha: 0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Background artwork
+            // Background (pochette nette)
             if (displaySong != null)
               OptimizedArtwork.square(
                 id: displaySong.id,
                 type: ArtworkType.AUDIO,
-                size: 300,
-                borderRadius: BorderRadius.zero,
+                size: 400, // ✅ Plus grande pour plus de netteté
               )
             else
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      theme.colorScheme.primary,
-                      theme.colorScheme.secondary,
-                    ],
+                    colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
                   ),
                 ),
               ),
             
-            // Blur overlay
+            // ✅ Blur RÉDUIT (15 au lieu de 50)
             BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -171,7 +186,7 @@ class _ForYouPageState extends State<ForYouPage> {
                     end: Alignment.bottomRight,
                     colors: [
                       Colors.black.withValues(alpha: 0.4),
-                      Colors.black.withValues(alpha: 0.7),
+                      Colors.black.withValues(alpha: 0.6),
                     ],
                   ),
                 ),
@@ -183,7 +198,6 @@ class _ForYouPageState extends State<ForYouPage> {
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  // Left: Info
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,11 +205,7 @@ class _ForYouPageState extends State<ForYouPage> {
                       children: [
                         Row(
                           children: [
-                            Icon(
-                              PhosphorIcons.shuffle(),
-                              color: Colors.white,
-                              size: 20,
-                            ),
+                            Icon(PhosphorIcons.shuffle(), color: Colors.white, size: 20),
                             const SizedBox(width: 8),
                             Text(
                               l10n.quickPlay,
@@ -206,42 +216,29 @@ class _ForYouPageState extends State<ForYouPage> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         Text(
                           l10n.songsReady(_quickPlaySongs.length),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.7),
-                          ),
+                          style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
                         ),
                         const SizedBox(height: 16),
-                        // Play button
                         ElevatedButton.icon(
                           onPressed: _playQuickPlay,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: theme.colorScheme.primary,
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                           ),
-                          icon: Icon(PhosphorIcons.play(PhosphorIconsStyle.fill), size: 18),
-                          label: Text(
-                            l10n.playMix,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
+                          icon: Icon(PhosphorIcons.play(PhosphorIconsStyle.fill), size: 16),
+                          label: Text(l10n.playMix, style: const TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
                   ),
-                  // Right: Refresh button
                   IconButton(
                     onPressed: _refreshQuickPlay,
-                    icon: Icon(
-                      PhosphorIcons.arrowsClockwise(),
-                      color: Colors.white.withValues(alpha: 0.8),
-                      size: 28,
-                    ),
+                    icon: Icon(PhosphorIcons.arrowsClockwise(), color: Colors.white70, size: 24),
                   ),
                 ],
               ),
@@ -257,7 +254,7 @@ class _ForYouPageState extends State<ForYouPage> {
     
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
         child: Row(
           children: [
             Container(
@@ -265,15 +262,17 @@ class _ForYouPageState extends State<ForYouPage> {
               decoration: BoxDecoration(
                 color: theme.colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                  width: 1,
+                ),
               ),
-              child: Icon(icon, size: 18, color: theme.colorScheme.primary),
+              child: Icon(icon, size: 16, color: theme.colorScheme.primary),
             ),
             const SizedBox(width: 12),
             Text(
               title,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -281,17 +280,14 @@ class _ForYouPageState extends State<ForYouPage> {
     );
   }
   
-  // POCHETTES RONDES pour Recently Played
-  Widget _buildCircularSongList(BuildContext context, List<SongModel> songs) {
-    if (songs.isEmpty) {
-      return const SliverToBoxAdapter(child: SizedBox.shrink());
-    }
+  Widget _buildSongList(BuildContext context, List<SongModel> songs) {
+    if (songs.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
     
     final theme = Theme.of(context);
     
     return SliverToBoxAdapter(
       child: SizedBox(
-        height: 160,
+        height: 180,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -305,185 +301,8 @@ class _ForYouPageState extends State<ForYouPage> {
                 cubit.setQueueAndPlay(songs, index);
               },
               child: Container(
-                width: 100,
+                width: 130,
                 margin: const EdgeInsets.symmetric(horizontal: 6),
-                child: Column(
-                  children: [
-                    // Pochette RONDE
-                    Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.2),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: OptimizedArtwork.square(
-                          id: song.id,
-                          type: ArtworkType.AUDIO,
-                          size: 90,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      song.title,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                    ),
-                    Text(
-                      song.artist ?? 'Unknown',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                        fontSize: 10,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-  
-  // POCHETTES CARRÉES avec badge pour Most Played
-  Widget _buildSquareSongListWithBadge(BuildContext context, List<SongModel> songs, PlayerStateModel state) {
-    if (songs.isEmpty) {
-      return const SliverToBoxAdapter(child: SizedBox.shrink());
-    }
-    
-    final theme = Theme.of(context);
-    
-    return SliverToBoxAdapter(
-      child: SizedBox(
-        height: 180,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          itemCount: songs.length.clamp(0, 15),
-          itemBuilder: (context, index) {
-            final song = songs[index];
-            final playCount = state.playCounts[song.id] ?? 0;
-            
-            return GestureDetector(
-              onTap: () {
-                final cubit = context.read<PlayerCubit>();
-                HapticFeedback.lightImpact();
-                cubit.setQueueAndPlay(songs, index);
-              },
-              child: Container(
-                width: 130,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Stack(
-                      children: [
-                        Container(
-                          width: 130,
-                          height: 130,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.15),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: OptimizedArtwork.square(
-                              id: song.id,
-                              type: ArtworkType.AUDIO,
-                              size: 130,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                        ),
-                        // Badge play count
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primary,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '${playCount}x',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      song.title,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  // POCHETTES CARRÉES normales pour Recently Added
-  Widget _buildSquareSongList(BuildContext context, List<SongModel> songs) {
-    if (songs.isEmpty) {
-      return const SliverToBoxAdapter(child: SizedBox.shrink());
-    }
-    
-    final theme = Theme.of(context);
-    
-    return SliverToBoxAdapter(
-      child: SizedBox(
-        height: 180,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          itemCount: songs.length.clamp(0, 15),
-          itemBuilder: (context, index) {
-            final song = songs[index];
-            return GestureDetector(
-              onTap: () {
-                final cubit = context.read<PlayerCubit>();
-                HapticFeedback.lightImpact();
-                cubit.setQueueAndPlay(songs, index);
-              },
-              child: Container(
-                width: 130,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -491,31 +310,32 @@ class _ForYouPageState extends State<ForYouPage> {
                       width: 130,
                       height: 130,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: theme.colorScheme.outline.withValues(alpha: 0.15),
+                          width: 1.5,
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.12),
-                            blurRadius: 8,
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
                         ],
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                         child: OptimizedArtwork.square(
                           id: song.id,
                           type: ArtworkType.AUDIO,
                           size: 130,
-                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     Text(
                       song.title,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -523,120 +343,10 @@ class _ForYouPageState extends State<ForYouPage> {
                       song.artist ?? 'Unknown',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                        fontSize: 10,
+                        fontSize: 11,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-  
-  // POCHETTES avec overlay gradient pour Discover
-  Widget _buildDiscoverSongList(BuildContext context, List<SongModel> songs) {
-    if (songs.isEmpty) {
-      return const SliverToBoxAdapter(child: SizedBox.shrink());
-    }
-    
-    final theme = Theme.of(context);
-    
-    return SliverToBoxAdapter(
-      child: SizedBox(
-        height: 180,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          itemCount: songs.length.clamp(0, 15),
-          itemBuilder: (context, index) {
-            final song = songs[index];
-            return GestureDetector(
-              onTap: () {
-                final cubit = context.read<PlayerCubit>();
-                HapticFeedback.lightImpact();
-                cubit.setQueueAndPlay(songs, index);
-              },
-              child: Container(
-                width: 140,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                child: Stack(
-                  children: [
-                    Container(
-                      width: 140,
-                      height: 160,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: theme.colorScheme.secondary.withValues(alpha: 0.2),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: OptimizedArtwork.square(
-                          id: song.id,
-                          type: ArtworkType.AUDIO,
-                          size: 160,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                    ),
-                    // Gradient overlay with title
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        height: 70,
-                        decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(16),
-                            bottomRight: Radius.circular(16),
-                          ),
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.8),
-                            ],
-                          ),
-                        ),
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              song.title,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 12,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              song.artist ?? 'Unknown',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.7),
-                                fontSize: 10,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
                     ),
                   ],
                 ),
@@ -653,8 +363,7 @@ class _ForYouPageState extends State<ForYouPage> {
     if (lastMap.isEmpty) return [];
     
     final songMap = {for (var s in allSongs) s.id: s};
-    final sorted = lastMap.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
+    final sorted = lastMap.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
     
     return sorted
         .where((e) => songMap.containsKey(e.key))
@@ -668,8 +377,7 @@ class _ForYouPageState extends State<ForYouPage> {
     if (counts.isEmpty) return [];
     
     final songMap = {for (var s in allSongs) s.id: s};
-    final sorted = counts.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
+    final sorted = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
     
     return sorted
         .where((e) => songMap.containsKey(e.key) && e.value > 0)
@@ -688,14 +396,9 @@ class _ForYouPageState extends State<ForYouPage> {
     return recent.take(15).toList();
   }
   
-  List<SongModel> _getDiscoverSongs(PlayerStateModel state, List<SongModel> allSongs) {
-    final played = state.playCounts.keys.toSet();
-    final lastPlayed = state.lastPlayed.keys.toSet();
-    final touchedIds = played.union(lastPlayed);
-    
-    final unplayed = allSongs.where((s) => !touchedIds.contains(s.id)).toList();
-    unplayed.shuffle(_random);
-    
-    return unplayed.take(15).toList();
+  /// Chansons aléatoires pour les nouveaux utilisateurs
+  List<SongModel> _getDiscoverSongs(List<SongModel> allSongs) {
+    final shuffled = List<SongModel>.from(allSongs)..shuffle(_random);
+    return shuffled.take(15).toList();
   }
 }
