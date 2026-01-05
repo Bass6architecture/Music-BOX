@@ -296,6 +296,24 @@ abstract class AppLocalizations {
   /// **'Lecture Rapide'**
   String get quickPlay;
 
+  /// No description provided for @playMix.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lancer le Mix'**
+  String get playMix;
+
+  /// No description provided for @songsReady.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count} chansons prêtes'**
+  String songsReady(int count);
+
+  /// No description provided for @discover.
+  ///
+  /// In fr, this message translates to:
+  /// **'Découvrir'**
+  String get discover;
+
   /// No description provided for @listeningHabits.
   ///
   /// In fr, this message translates to:

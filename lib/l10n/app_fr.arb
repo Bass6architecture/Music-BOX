@@ -35,6 +35,16 @@
   "mostPlayed": "Les plus écoutés",
   "forYou": "Pour Vous",
   "quickPlay": "Lecture Rapide",
+  "playMix": "Lancer le Mix",
+  "songsReady": "{count} chansons prêtes",
+  "@songsReady": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "discover": "Découvrir",
   "listeningHabits": "En Boucle",
   "forgottenGems": "Pépites Oubliées",
   "allTimeHits": "Intemporel",

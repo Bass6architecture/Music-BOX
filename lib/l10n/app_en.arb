@@ -36,6 +36,16 @@
   "mostPlayed": "Most Played",
   "forYou": "For You",
   "quickPlay": "Quick Play",
+  "playMix": "Play Mix",
+  "songsReady": "{count} songs ready",
+  "@songsReady": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "discover": "Discover",
   "listeningHabits": "On Repeat",
   "forgottenGems": "Forgotten Gems",
   "allTimeHits": "Timeless",

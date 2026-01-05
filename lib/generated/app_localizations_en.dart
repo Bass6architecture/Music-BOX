@@ -108,6 +108,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quickPlay => 'Quick Play';
 
   @override
+  String get playMix => 'Play Mix';
+
+  @override
+  String songsReady(int count) {
+    return '$count songs ready';
+  }
+
+  @override
+  String get discover => 'Discover';
+
+  @override
   String get listeningHabits => 'On Repeat';
 
   @override

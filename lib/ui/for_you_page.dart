@@ -9,8 +9,6 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../generated/app_localizations.dart';
 import '../player/player_cubit.dart';
 import '../widgets/optimized_artwork.dart';
-import 'album_detail_page.dart';
-import 'artist_detail_page.dart';
 
 class ForYouPage extends StatefulWidget {
   const ForYouPage({super.key});
@@ -35,7 +33,6 @@ class _ForYouPageState extends State<ForYouPage> {
     
     if (allSongs.isEmpty) return;
     
-    // Sélectionner 30 chansons aléatoires
     final shuffled = List<SongModel>.from(allSongs)..shuffle(_random);
     setState(() {
       _quickPlaySongs = shuffled.take(30).toList();
@@ -84,7 +81,6 @@ class _ForYouPageState extends State<ForYouPage> {
           );
         }
         
-        // Refresh quick play si vide
         if (_quickPlaySongs.isEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) => _refreshQuickPlay());
         }
@@ -97,28 +93,28 @@ class _ForYouPageState extends State<ForYouPage> {
             slivers: [
               // Quick Play Header
               SliverToBoxAdapter(
-                child: _buildQuickPlayHeader(context, state),
+                child: _buildQuickPlayHeader(context, l10n),
               ),
               
-              // Continue Listening
+              // Recently Played - Pochettes RONDES
               if (state.lastPlayed.isNotEmpty) ...[
                 _buildSectionHeader(context, l10n.recentlyPlayed, PhosphorIcons.clockCounterClockwise()),
-                _buildHorizontalSongList(context, _getRecentlyPlayed(state, allSongs)),
+                _buildCircularSongList(context, _getRecentlyPlayed(state, allSongs)),
               ],
               
-              // Most Played
+              // Most Played - Pochettes CARRÉES avec badge
               if (state.playCounts.isNotEmpty) ...[
                 _buildSectionHeader(context, l10n.mostPlayed, PhosphorIcons.chartBar()),
-                _buildHorizontalSongList(context, _getMostPlayed(state, allSongs)),
+                _buildSquareSongListWithBadge(context, _getMostPlayed(state, allSongs), state),
               ],
               
-              // Recently Added
+              // Recently Added - Pochettes CARRÉES normales
               _buildSectionHeader(context, l10n.recentlyAdded, PhosphorIcons.sparkle()),
-              _buildHorizontalSongList(context, _getRecentlyAdded(allSongs)),
+              _buildSquareSongList(context, _getRecentlyAdded(allSongs)),
               
-              // Discover (never played)
-              _buildSectionHeader(context, 'Discover', PhosphorIcons.compass()),
-              _buildHorizontalSongList(context, _getDiscoverSongs(state, allSongs)),
+              // Discover - Pochettes CARRÉES avec overlay gradient
+              _buildSectionHeader(context, l10n.discover, PhosphorIcons.compass()),
+              _buildDiscoverSongList(context, _getDiscoverSongs(state, allSongs)),
               
               // Bottom padding for mini player
               const SliverToBoxAdapter(
@@ -131,22 +127,19 @@ class _ForYouPageState extends State<ForYouPage> {
     );
   }
   
-  Widget _buildQuickPlayHeader(BuildContext context, PlayerStateModel state) {
+  Widget _buildQuickPlayHeader(BuildContext context, AppLocalizations l10n) {
     final theme = Theme.of(context);
-    final size = MediaQuery.of(context).size;
-    
-    // Prendre la première chanson du quick play pour l'affichage
     final displaySong = _quickPlaySongs.isNotEmpty ? _quickPlaySongs.first : null;
     
     return Container(
-      height: 220,
+      height: 200,
       margin: const EdgeInsets.all(16),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Background avec artwork blur
+            // Background artwork
             if (displaySong != null)
               OptimizedArtwork.square(
                 id: displaySong.id,
@@ -170,15 +163,15 @@ class _ForYouPageState extends State<ForYouPage> {
             
             // Blur overlay
             BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                     colors: [
-                      Colors.black.withValues(alpha: 0.3),
-                      Colors.black.withValues(alpha: 0.6),
+                      Colors.black.withValues(alpha: 0.4),
+                      Colors.black.withValues(alpha: 0.7),
                     ],
                   ),
                 ),
@@ -188,87 +181,66 @@ class _ForYouPageState extends State<ForYouPage> {
             // Content
             Padding(
               padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  // Title
-                  Row(
-                    children: [
-                      Icon(
-                        PhosphorIcons.shuffle(),
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Quick Play',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                  // Left: Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              PhosphorIcons.shuffle(),
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              l10n.quickPlay,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const Spacer(),
-                      // Refresh button
-                      IconButton(
-                        onPressed: _refreshQuickPlay,
-                        icon: Icon(
-                          PhosphorIcons.arrowsClockwise(),
-                          color: Colors.white.withValues(alpha: 0.8),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.songsReady(_quickPlaySongs.length),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.7),
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        // Play button
+                        ElevatedButton.icon(
+                          onPressed: _playQuickPlay,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: theme.colorScheme.primary,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          icon: Icon(PhosphorIcons.play(PhosphorIconsStyle.fill), size: 18),
+                          label: Text(
+                            l10n.playMix,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  
-                  const Spacer(),
-                  
-                  // Song info
-                  if (displaySong != null) ...[
-                    Text(
-                      '${_quickPlaySongs.length} songs ready',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.8),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      displaySong.title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      displaySong.artist ?? 'Unknown Artist',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.7),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Play button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _playQuickPlay,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: theme.colorScheme.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      icon: Icon(PhosphorIcons.play(PhosphorIconsStyle.fill)),
-                      label: const Text(
-                        'Play Mix',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
+                  // Right: Refresh button
+                  IconButton(
+                    onPressed: _refreshQuickPlay,
+                    icon: Icon(
+                      PhosphorIcons.arrowsClockwise(),
+                      color: Colors.white.withValues(alpha: 0.8),
+                      size: 28,
                     ),
                   ),
                 ],
@@ -288,8 +260,15 @@ class _ForYouPageState extends State<ForYouPage> {
         padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: theme.colorScheme.primary),
-            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, size: 18, color: theme.colorScheme.primary),
+            ),
+            const SizedBox(width: 12),
             Text(
               title,
               style: theme.textTheme.titleMedium?.copyWith(
@@ -302,10 +281,93 @@ class _ForYouPageState extends State<ForYouPage> {
     );
   }
   
-  Widget _buildHorizontalSongList(BuildContext context, List<SongModel> songs) {
+  // POCHETTES RONDES pour Recently Played
+  Widget _buildCircularSongList(BuildContext context, List<SongModel> songs) {
     if (songs.isEmpty) {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
     }
+    
+    final theme = Theme.of(context);
+    
+    return SliverToBoxAdapter(
+      child: SizedBox(
+        height: 160,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          itemCount: songs.length.clamp(0, 15),
+          itemBuilder: (context, index) {
+            final song = songs[index];
+            return GestureDetector(
+              onTap: () {
+                final cubit = context.read<PlayerCubit>();
+                HapticFeedback.lightImpact();
+                cubit.setQueueAndPlay(songs, index);
+              },
+              child: Container(
+                width: 100,
+                margin: const EdgeInsets.symmetric(horizontal: 6),
+                child: Column(
+                  children: [
+                    // Pochette RONDE
+                    Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: OptimizedArtwork.square(
+                          id: song.id,
+                          type: ArtworkType.AUDIO,
+                          size: 90,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      song.title,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                    Text(
+                      song.artist ?? 'Unknown',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        fontSize: 10,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+  
+  // POCHETTES CARRÉES avec badge pour Most Played
+  Widget _buildSquareSongListWithBadge(BuildContext context, List<SongModel> songs, PlayerStateModel state) {
+    if (songs.isEmpty) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+    
+    final theme = Theme.of(context);
     
     return SliverToBoxAdapter(
       child: SizedBox(
@@ -316,13 +378,269 @@ class _ForYouPageState extends State<ForYouPage> {
           itemCount: songs.length.clamp(0, 15),
           itemBuilder: (context, index) {
             final song = songs[index];
-            return _SongCard(
-              song: song,
+            final playCount = state.playCounts[song.id] ?? 0;
+            
+            return GestureDetector(
               onTap: () {
                 final cubit = context.read<PlayerCubit>();
                 HapticFeedback.lightImpact();
                 cubit.setQueueAndPlay(songs, index);
               },
+              child: Container(
+                width: 130,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Stack(
+                      children: [
+                        Container(
+                          width: 130,
+                          height: 130,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: OptimizedArtwork.square(
+                              id: song.id,
+                              type: ArtworkType.AUDIO,
+                              size: 130,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        ),
+                        // Badge play count
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '${playCount}x',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      song.title,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // POCHETTES CARRÉES normales pour Recently Added
+  Widget _buildSquareSongList(BuildContext context, List<SongModel> songs) {
+    if (songs.isEmpty) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+    
+    final theme = Theme.of(context);
+    
+    return SliverToBoxAdapter(
+      child: SizedBox(
+        height: 180,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          itemCount: songs.length.clamp(0, 15),
+          itemBuilder: (context, index) {
+            final song = songs[index];
+            return GestureDetector(
+              onTap: () {
+                final cubit = context.read<PlayerCubit>();
+                HapticFeedback.lightImpact();
+                cubit.setQueueAndPlay(songs, index);
+              },
+              child: Container(
+                width: 130,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 130,
+                      height: 130,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.12),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: OptimizedArtwork.square(
+                          id: song.id,
+                          type: ArtworkType.AUDIO,
+                          size: 130,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      song.title,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      song.artist ?? 'Unknown',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        fontSize: 10,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+  
+  // POCHETTES avec overlay gradient pour Discover
+  Widget _buildDiscoverSongList(BuildContext context, List<SongModel> songs) {
+    if (songs.isEmpty) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+    
+    final theme = Theme.of(context);
+    
+    return SliverToBoxAdapter(
+      child: SizedBox(
+        height: 180,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          itemCount: songs.length.clamp(0, 15),
+          itemBuilder: (context, index) {
+            final song = songs[index];
+            return GestureDetector(
+              onTap: () {
+                final cubit = context.read<PlayerCubit>();
+                HapticFeedback.lightImpact();
+                cubit.setQueueAndPlay(songs, index);
+              },
+              child: Container(
+                width: 140,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 140,
+                      height: 160,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.colorScheme.secondary.withValues(alpha: 0.2),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: OptimizedArtwork.square(
+                          id: song.id,
+                          type: ArtworkType.AUDIO,
+                          size: 160,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                    // Gradient overlay with title
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        height: 70,
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(16),
+                            bottomRight: Radius.circular(16),
+                          ),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withValues(alpha: 0.8),
+                            ],
+                          ),
+                        ),
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              song.title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              song.artist ?? 'Unknown',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 10,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             );
           },
         ),
@@ -379,77 +697,5 @@ class _ForYouPageState extends State<ForYouPage> {
     unplayed.shuffle(_random);
     
     return unplayed.take(15).toList();
-  }
-}
-
-class _SongCard extends StatelessWidget {
-  final SongModel song;
-  final VoidCallback onTap;
-  
-  const _SongCard({
-    required this.song,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 130,
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Artwork
-            Container(
-              width: 130,
-              height: 130,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: OptimizedArtwork.square(
-                  id: song.id,
-                  type: ArtworkType.AUDIO,
-                  size: 130,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            // Title
-            Text(
-              song.title,
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            // Artist
-            Text(
-              song.artist ?? 'Unknown',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                fontSize: 11,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
