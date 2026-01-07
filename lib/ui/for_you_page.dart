@@ -101,9 +101,11 @@ class _ForYouPageState extends State<ForYouPage> {
                   _buildRankedSongList(context, _getMostPlayed(state, allSongs)),
                 ],
                 
-                // Pépites Oubliées (noir et blanc)
-                _buildSectionHeader(context, l10n.forgottenGems),
-                _buildGrayscaleSongList(context, _getForgottenGems(state, allSongs)),
+                // Pépites Oubliées (noir et blanc) - seulement si non vide
+                if (_getForgottenGems(state, allSongs).isNotEmpty) ...[
+                  _buildSectionHeader(context, l10n.forgottenGems),
+                  _buildGrayscaleSongList(context, _getForgottenGems(state, allSongs)),
+                ],
               ] else ...[
                 // Nouvel utilisateur - Découvrir
                 _buildSectionHeader(context, l10n.discover),
@@ -399,17 +401,17 @@ class _ForYouPageState extends State<ForYouPage> {
             ListTile(
               leading: Icon(PhosphorIcons.play()),
               title: Text(l10n.playNext),
-              onTap: () { cubit.playNext(song); Navigator.pop(ctx); },
+              onTap: () { cubit.addToQueue([song], playNext: true); Navigator.pop(ctx); },
             ),
             ListTile(
               leading: Icon(PhosphorIcons.queue()),
               title: Text(l10n.addToQueue),
-              onTap: () { cubit.addToQueue(song); Navigator.pop(ctx); },
+              onTap: () { cubit.addToQueue([song]); Navigator.pop(ctx); },
             ),
             ListTile(
               leading: Icon(isFavorite ? PhosphorIcons.heartBreak() : PhosphorIcons.heart()),
               title: Text(isFavorite ? l10n.removeFromFavorites : l10n.addToFavorites),
-              onTap: () { cubit.toggleFavorite(song.id); Navigator.pop(ctx); },
+              onTap: () { cubit.toggleFavoriteById(song.id); Navigator.pop(ctx); },
             ),
           ],
         ),
@@ -476,13 +478,13 @@ class _ForYouPageState extends State<ForYouPage> {
     if (lastPlayed.isEmpty) return [];
     
     final now = DateTime.now().millisecondsSinceEpoch;
-    final thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+    final fifteenDaysMs = 15 * 24 * 60 * 60 * 1000;
     
     final songMap = {for (var s in allSongs) s.id: s};
     
-    // Chansons écoutées il y a plus de 30 jours
+    // Chansons écoutées il y a plus de 15 jours
     final forgotten = lastPlayed.entries
-        .where((e) => (now - e.value) > thirtyDaysMs && songMap.containsKey(e.key))
+        .where((e) => (now - e.value) > fifteenDaysMs && songMap.containsKey(e.key))
         .map((e) => songMap[e.key]!)
         .toList();
     
