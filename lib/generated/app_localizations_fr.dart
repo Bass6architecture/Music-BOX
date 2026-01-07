@@ -309,7 +309,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get contact => 'Contact';
 
   @override
-  String get contactDesc => 'synergydevv@gmail.com';
+  String get contactDesc => 'synergydev.official@gmail.com';
 
   @override
   String get cannotOpenPrivacyPolicy =>

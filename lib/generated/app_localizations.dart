@@ -683,7 +683,7 @@ abstract class AppLocalizations {
   /// No description provided for @contactDesc.
   ///
   /// In fr, this message translates to:
-  /// **'synergydevv@gmail.com'**
+  /// **'synergydev.official@gmail.com'**
   String get contactDesc;
 
   /// No description provided for @cannotOpenPrivacyPolicy.

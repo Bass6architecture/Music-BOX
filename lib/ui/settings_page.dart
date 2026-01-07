@@ -445,9 +445,9 @@ class _SettingsPageState extends State<SettingsPage> {
             context,
             icon: PhosphorIcons.envelope(),
             title: l10n.contact,
-            subtitle: 'synergydevv@gmail.com',
+            subtitle: 'synergydev.official@gmail.com',
             onTap: () async {
-              final emailUri = Uri.parse('mailto:synergydevv@gmail.com?subject=${Uri.encodeComponent(l10n.contactSubject)}');
+              final emailUri = Uri.parse('mailto:synergydev.official@gmail.com?subject=${Uri.encodeComponent(l10n.contactSubject)}');
               try {
                 await launchUrl(emailUri);
               } catch (e) {
