@@ -8,7 +8,6 @@
   "save": "Guardar",
   "share": "Compartir",
   "edit": "Editar",
-  "rename": "Renombrar",
   "add": "Añadir",
   "remove": "Quitar",
   "removeFromList": "Quitar de la lista",
@@ -24,12 +23,12 @@
   
   "songs": "Canciones",
   "playlists": "Listas",
-  "yourPlaylists": "Tus Listas",
   "albums": "Álbumes",
   "artists": "Artistas",
   "folders": "Carpetas",
   "settings": "Ajustes",
   "nowPlaying": "Reproduciendo",
+  "yourPlaylists": "Tus Listas",
   "favorites": "Favoritos",
   "recentlyAdded": "Añadido recientemente",
   "recentlyPlayed": "Reproducido recientemente",
@@ -113,6 +112,13 @@
   "hiddenFoldersDesc": "Gestionar carpetas ocultas",
   
   "version": "Versión {version}",
+  "@version": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   
   "privacyPolicy": "Política de Privacidad",
   "privacyPolicyDesc": "Ver nuestra política de privacidad",
@@ -143,6 +149,7 @@
   "songDetails": "Detalles canción",
   "editMetadata": "Editar metadatos",
   "selectAll": "Seleccionar todo",
+  "deleteSong": "Eliminar canción",
   "confirmDeleteSong": "¿Seguro que quieres eliminar este archivo?",
   "songAdded": "Canción añadida",
   "createPlaylist": "Crear lista",
@@ -156,6 +163,7 @@
   "album": "Álbum",
   "duration": "Duración",
   "sortByDateAdded": "Fecha añadido",
+  "noSongs": "Sin canciones",
   "grantPermission": "Conceder permiso",
   "openSettings": "Abrir Ajustes",
   "permissionRequired": "Permiso requerido",
@@ -163,7 +171,7 @@
   "permissionPermanentlyDenied": "Permiso denegado permanentemente. Actívalo en Ajustes.",
   "storagePermissionRequired": "Se requiere permiso de almacenamiento para reproducir música.",
   "changeCover": "Cambiar portada",
-  "deleteSong": "Eliminar canción",
+  
   "showLyrics": "Mostrar letra",
   "hideLyrics": "Ocultar letra",
   "lyricsEdit": "Editar Letra",
@@ -178,14 +186,29 @@
   "unknownArtist": "Artista desconocido",
   "unknownAlbum": "Álbum desconocido",
   "unknownTitle": "Título desconocido",
-  "noSongs": "Sin canciones",
+  
   "noAlbums": "Sin álbumes",
   "noArtists": "Sin artistas",
   "noPlaylists": "Sin listas",
   "noFolders": "Sin carpetas",
   
   "songCount": "{count, plural, =0{Sin canciones} =1{1 canción} other{{count} canciones}}",
+  "@songCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
   "albumCount": "{count, plural, =0{Sin álbumes} =1{1 álbum} other{{count} álbumes}}",
+  "@albumCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   
   "playlistName": "Nombre de lista",
   "renamePlaylist": "Renombrar",
@@ -248,6 +271,13 @@
   "scanComplete": "Escaneo completo",
   "scanFailed": "Escaneo fallido",
   "foundSongs": "{count} canciones encontradas",
+  "@foundSongs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   
   "metadata": "Metadatos",
   "genre": "Género",
@@ -262,7 +292,6 @@
   "metadataFailed": "Fallo al guardar",
   "coverSaved": "Portada guardada",
   "coverFailed": "Fallo al guardar portada",
-  
   "confirmDelete": "Confirmar eliminación",
   "fileDeleted": "Archivo eliminado",
   "fileDeletionFailed": "Fallo al eliminar",
@@ -342,11 +371,11 @@
     }
   },
   
-  "errorPermissionDenied": "Permiso denegado",
+  "errorPermissionDenied": "Permiso denegado. Comprueba los ajustes de la app",
   "errorFileNotFound": "Archivo no encontrado",
   "errorInsufficientStorage": "Espacio insuficiente",
   "errorNetworkProblem": "Problema de conexión",
-  "errorCorruptFile": "Archivo corrupto",
+  "errorCorruptFile": "Archivo corrupto o formato inválido",
   "errorGeneric": "Ocurrió un error",
   
   "sleepTimer": "Temporizador",
@@ -382,9 +411,12 @@
   "permissionNotificationDesc": "Para controles de reproducción",
   "permissionBatteryTitle": "Reproducción 2º Plano",
   "permissionBatteryDesc": "Evita cortes con pantalla apagada",
+  "permissionRequired": "Permiso Requerido",
   "permissionIntro": "Para ofrecer la mejor experiencia, Music Box necesita algunos permisos.",
+  "grant": "Autoriser",
   "enable": "Activar",
   "accessApp": "Acceder a Music Box",
+  "openSettings": "Ajustes",
 
   "backupAndData": "Copia y Datos",
   "exportData": "Exportar Datos",
@@ -398,7 +430,7 @@
   "restoreSuccessMessage": "Tus datos han sido restaurados.\n\nPor favor reinicia la app.",
   "backupReadError": "No se pudo leer el archivo de copia.",
   "sleepTimerTitle": "Temporizador",
-  "sleepTimerDesc": "Programar parada",
+  "sleepTimerDesc": "Programar parada de música",
   "sleepTimerStoppingSoon": "Parando pronto...",
   "sleepTimerActive": "Activo: Para en {minutes} min",
   "@sleepTimerActive": {
@@ -458,16 +490,17 @@
   "gaplessPlayback": "Sin pausas",
   "gaplessPlaybackDesc": "Saltar silencios (experimental)",
   
-  "playbackSpeed": "Velocidad",
+  "playbackSpeed": "Velocidad de reproducción",
   "playbackSpeedDesc": "Ajustar velocidad audio",
-  "defaultSpeed": "Velocidad Normal",
+  "defaultSpeed": "Velocidad normal",
 
   "contactSubject": "Soporte Music Box",
-  "sortNewest": "Más reciente",
-  "sortOldest": "Más antiguo",
-  "sortShortest": "Más corto",
-  "sortLongest": "Más largo",
+  "sortNewest": "Reciente",
+  "sortOldest": "Antiguo",
+  "sortShortest": "Corto",
+  "sortLongest": "Largo",
   "noConnectionMessage": "Verifica tu conexión y reintenta",
+  "hiddenFolders": "Carpetas ocultas",
   "selectSource": "Seleccionar fuente",
   "localGallery": "Galería",
   "preview": "Vista previa",
@@ -477,6 +510,7 @@
   "finishCurrentSong": "Terminar canción actual",
   "sleepTimerFadeOut": "Desvanecimiento final (15s)",
   "customEqualizer": "Ecualizador",
+  "equalizerEnabled": "Activar Ecualizador",
   "equalizerBands": "Bandas de Frecuencia",
   "equalizerPresets": "Preajustes"
 }
